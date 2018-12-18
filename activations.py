@@ -32,8 +32,10 @@ class Identity(ActivationFunction):
 class Gaussian(ActivationFunction):
     name = "Gaussian activation function"
     def __call__(self, x): return np.exp(-(x ** 2))
-    def dydx(self, x): return - 2.0 * x * np.exp(-(x ** 2))
+    def dydx(self, x): return - 2.0 * x * self.__call__(x)
 
+class SoftMax(ActivationFunction):
+    pass
 
 if __name__ == "__main__":
     a = Logistic()
