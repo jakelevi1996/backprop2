@@ -29,6 +29,17 @@ class Identity(ActivationFunction):
     def __call__(self, x): return x
     def dydx(self, x): return np.ones(x.shape)
 
+# class Relu(ActivationFunction):
+#     name = "ReLU activation function"
+#     def __call__(self, x):
+#         f = np.zeros(x.shape)
+#         f[x > 0] = x[x > 0]
+#         return f
+#     def dydx(self, x):
+#         f = np.zeros(x.shape)
+#         f[x > 0] = 1.0
+#         return f
+
 class Gaussian(ActivationFunction):
     name = "Gaussian activation function"
     def __call__(self, x): return np.exp(-(x ** 2))

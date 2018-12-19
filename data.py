@@ -64,8 +64,11 @@ class SinusoidalDataSet(DataSet):
 def generate_sinusoidal_data():
     pass
 
+def CircleDataSet(DataSet):
+    pass
+
 if __name__ == "__main__":
-    s = SinusoidalDataSet(n_train=100, n_test=50)
+    s = SinusoidalDataSet(n_train=100, n_test=50, xlim=[0, 1])
     # s.print_data()
     filename = "Data/sinusoidal_data_set.npz"
     s.save(filename)
