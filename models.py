@@ -1,6 +1,30 @@
+"""
+Module to contain neural network classes, which themselves contain methods for
+initialisation, evaluation, and gradient calculations.
+
+Notation convention: it is assumed that each neural network has L hidden layers
+and 1 output layer, with N_0 units in the first (input) hidden layer, N_1 units
+in the second hidden layer, ..., N_L-1 units in the last hidden layer, and N_L
+units in the output layer. Each model can accept multidimensional inputs and
+outputs; the dimension of the input data is D_in, and the dimension of the
+output data is N_L (== the number of units in the output layer). Each neural
+network can accept multiple input points simultaneously; when inputs are fed to
+a neural network, it is assumed that N_D input points are fed simultaneously in
+a numpy.ndarray with shape [D_in, N_D] (IE the first array dimension refers to
+the dimension within each input point, and the second array dimension refers to
+a particular input point)*. When such an input is fed into the neural network,
+the output will be a numpy.ndarray with shape [N_L, N_D]
+
+*This convention is chosen to simplify matrix multiplication during
+forward-propagation and back-propagation; it is possible that in future the
+array shape dimensions will be swapped, and the matrix multiplication operations
+will be carried out with np.einsum operations with subscripts [0, 1] and [2, 1]
+(whereas conventional matrix multiplication is equivalent to np.einsum with
+subscripts [0, 1] and [1, 2])
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.random import normal as randn
 
 import activations as a
 import errors as e
@@ -42,28 +66,39 @@ def check_reduce(*arg_list):
 
 
 class NeuralLayer():
-    # TODO: integrate this into NeuralNetwork class
-    def __init__(
-        self, num_units, num_inputs, act_func=a.Logistic,
-        weight_init_std=1.0, bias_init_std=1.0
-    ):
+    def __init__(self, num_units, num_inputs, act_func, weight_std, bias_std):
+        """
+        __init__: initialise the constants and parameters for a neural network
+        layer. This method is called during NeuralNetwork.__init__()
+        """
         # Set layer constants
         self.input_dim = num_inputs
         self.output_dim = num_units
         self.act_func = act_func
         
         # Randomly initialise parameters
-        self.weights = randn(0, weight_init_std, size=[num_units, num_inputs])
-        self.bias = randn(0, bias_init_std, size=[num_units, 1])
-
-        # TODO: add options for different initialisers, including depending on
-        # previous layers (see Glorot)
+        self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
+        self.bias = np.random.normal(0, bias_std, [num_units, 1])
     
     def activate(self, input):
-        # Calculate the pre-activation and output as a function of the input,
-        # and store the input for gradient calculation
+        """
+        activate: calculate the pre-activation and output of this layer as a
+        function of the input, and store the input for subsequent gradient
+        calculations.
+
+        Inputs:
+        -   input: input to the layer. Should be a numpy.ndarray with shape
+            [self.input_dim, N_D]
+
+        Outputs:
+        -   self.output: output from the layer, in a numpy.ndarray with shape
+            [self.output_dim, N_D]
+        -   self.pre_activation (not returned): result of linear transformation
+            being applied to the input, before nonlinearity is applied to give
+            the output, in a numpy.ndarray with shape [self.output_dim, N_D]
+        """
         self.input = input
-        self.pre_activation = self.weights.dot(input) + self.bias
+        self.pre_activation = np.matmul(self.weights, input) + self.bias
         self.output = self.act_func(self.pre_activation)
         return self.output
     
@@ -88,8 +123,8 @@ class NeuralNetwork():
         error_func=e.SumOfSquares()
     ):
         """
-        __init__: initialise the weights, biases and activation functions for
-        each layer of the neural network, and the error function.
+        __init__: initialise the network-constants and the weights, biases and
+        activation functions for each layer of the neural network
 
         Inputs:
         -   input_dim: dimension of the input to the neural network
@@ -132,44 +167,37 @@ class NeuralNetwork():
                 num_units, num_inputs, act_func, weight_std, bias_std
             ))
 
+        # TODO: add options for different initialisers, including depending on
+        # previous layers (see Glorot)
 
-        # # Randomly initialise weights:
-        # self.initialise_weights(num_hidden_units, weight_std, bias_std)
-        # # Set activation and error functions:
-        # self.hidden_act = hidden_act
-        # self.output_act = output_act
-        # self.error_func = error_func
-        # # TODO: implement all layers
-        # self.neural_layers = None
-
-
-    def initialise_weights(self, nhu, weight_std, bias_std):
-        # First layer weights and biases (from input):
-        self.weights = [randn(0, weight_std, [nhu[0], self.input_dim])]
-        self.biases = [randn(0, bias_std, [nhu[0], 1])]
-        # Connections between hidden units:
-        for i in range(1, len(nhu)):
-            self.weights.append(randn(0, weight_std, [nhu[i], nhu[i - 1]]))
-            self.biases.append(randn(0, bias_std, [nhu[i], 1]))
-        # Final layer weights and biases (to output):
-        self.weights.append(randn(0, weight_std, [self.output_dim, nhu[-1]]))
-        self.biases.append(randn(0, bias_std, [self.output_dim, 1]))
-    
     def forward_prop(self, x):
-        # Calculate activations of input layer
-        self.layer_outputs = []
-        self.activations = [self.weights[0].dot(x) + self.biases[0]]
-        # Calculate activations and output from hidden layers
-        for w, b in zip(self.weights[1:], self.biases[1:]):
-            self.layer_outputs.append(self.hidden_act(self.activations[-1]))
-            self.activations.append(w.dot(self.layer_outputs[-1]) + b)
-        # Calculate outputs from output layer
-        self.layer_outputs.append(self.output_act(self.activations[-1]))
+        """
+        forward_prop: propogate an input forward through the network, and return
+        the output from the network.
 
-        return self.layer_outputs[-1].reshape(self.output_dim)
+        Inputs:
+        -   x: input to the neural network. Should be a numpy.ndarray with shape
+            [self.input_dim, N_D]
+
+        Outputs:
+        -   layer_output: output from the final layer in the network, == the
+            network output. Should be in a numpy.ndarray with shape
+            [self.output_dim, N_D]
+        """
+        # Calculate output from the first layer
+        layer_output = self.layers[0].activate(x)
+        # Calculate outputs from subsequent layers
+        for layer in self.layers[1:]:
+            layer_output = layer.activate(layer_output)
+        # Return network output
+        return layer_output
+
     
-    def __call__(self, x): self.forward_prop(x)
-    # __call__: wrapper for the forward_prop method
+    def __call__(self, x):
+        """
+        __call__: wrapper for the forward_prop method
+        """
+        return self.forward_prop(x)
 
     def back_prop(self, x, target):
         # Perform forward propagation to calculate unit activations:
@@ -220,6 +248,9 @@ class NeuralNetwork():
     def get_gradient_vector(self):
         pass
 
+    def get_hessian(self):
+        pass
+
     def set_parameter_vector(self, new_parameters):
         pass
     
@@ -253,22 +284,23 @@ class NeuralNetwork():
                 )
 
         if return_errors: return train_error, test_error
-
-    def linesearch_condition(self, ): pass
-
-    def gradient_descent_backtracking(self, x, t, ): pass
     
-    def eval_hessian(self, ): pass
-
-    def convexified_newton(self, ): pass
     
-    def save_model(self, filename):
+    def save_model(self, filename, filename_prepend_timestamp=True):
+        # params = self.get_parameter_vector()
+        # Save params, self.num_units_list, and identities of activation
+        # functions as np.ndarrays in an npz file
         pass
+        return filename
     
-    def load_model(self, filename): pass
+    def load_model(self, filename):
+        pass
+        params = np.load(filename)
+        self.set_parameter_vector(params)
 
     
     def plot_evals(self, filename, xlims=[-10, 10]):
+        # TODO: move this to plotting module
         x = np.linspace(*xlims, 200)
         y = list(map(self.forward_prop, x))
         plt.figure(figsize=[8, 6])
@@ -285,13 +317,20 @@ class NeuralNetwork():
                 layer.weights, "Biases:", layer.bias, "-" * 50, sep="\n"
             )
     
-
-
+class Dinosaur():
+    pass
 
 if __name__ == "__main__":
     np.random.seed(0)
-    n = NeuralNetwork(num_hidden_units=[3, 4, 5], input_dim=2, output_dim=3)
+    D_in, N_L, N_D = 2, 3, 7
+    n = NeuralNetwork(
+        num_hidden_units=[3, 4, 5], input_dim=D_in, output_dim=N_L
+    )
     n.print_weights()
+
+    x = np.random.normal(size=[D_in, N_D])
+    y = n(x)
+    print(x, y, y.shape, [N_L, N_D], sep="\n")
 
     # # n.plot_evals("Data/evaluations")
     # n.eval_gradient(0.4, 1.3)
