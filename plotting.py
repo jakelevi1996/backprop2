@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import data, models
+import data
 
 def min_and_max(*input_arrays):
     """
@@ -13,24 +13,35 @@ def min_and_max(*input_arrays):
     return min_elem, max_elem
 
 def plot_1D_regression(
-    filename, x_train, y_train, x_test, y_test, x_pred=None, y_pred=None,
-    train_marker="bo", test_marker="ro", pred_marker="g-", tp=0.75,
-    figsize=[8, 6], plot_title="1D regression data"
+    filename, dataset, x_pred=None, y_pred=None, train_marker="bo",
+    test_marker="ro", pred_marker="g-", tp=0.75, figsize=[8, 6],
+    fig_title="1D regression data", fig_title_append=None
 ):
     """
-    plot_1D_regression:
-    TODO: write docstring
+    plot_1D_regression: plot the training data, test data, and optionally also
+    model predictions, for a 1D regression data set. The dataset argument should
+    be an instance of data.DataSet, and should contain x_train, y_train, x_test,
+    and y_test attributes
     """
     plt.figure(figsize=figsize)
-    plt.plot(x_train, y_train, train_marker, alpha=tp)
-    plt.plot(x_test, y_test, test_marker, alpha=tp)
+    # Plot training and test data
+    plt.plot(
+        dataset.x_train.ravel(), dataset.y_train.ravel(), train_marker, alpha=tp
+    )
+    plt.plot(
+        dataset.x_test.ravel(), dataset.y_test.ravel(), test_marker, alpha=tp
+    )
     plot_preds = False if ((x_pred is None) or (y_pred is None)) else True
     if plot_preds:
-        plt.plot(x_pred, y_pred, pred_marker, alpha=tp)
+        # Plot predictions
+        plt.plot(x_pred.ravel(), y_pred.ravel(), pred_marker, alpha=tp)
         plt.legend(["Training data", "Test data", "Predictions"])
     else:
         plt.legend(["Training data", "Test data"])
-    plt.title(plot_title)
+    if fig_title_append is not None:
+        fig_title += fig_title_append
+    # Format, save and close
+    plt.title(fig_title)
     plt.xlabel("x")
     plt.ylabel("y")
     plt.grid(True)
@@ -38,11 +49,23 @@ def plot_1D_regression(
     plt.close()
 
 def plot_2D_nD_regression(
-    filename, n_output_dims, dataset, y_pred, fig_title=None
+    filename, n_output_dims, dataset, y_pred, fig_title=None,
+    fig_title_append=None
 ):
     """
-    plot_2D_nD_regression: 
-    TODO: write docstring
+    plot_2D_nD_regression: plot the training data, test data, and model
+    predictions for a regression data set with 2 input dimensions and
+    n_output_dims output dimensions.
+
+    Inputs:
+    -   filename: string containing the filename that the plot should be saved
+        to
+    -   n_output_dims: number of output dimensions to plot
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes. It is assumed that
+        x_test is a uniform 2D grid created using np.meshgrid, and x_train is a
+        subset of the points contained in x_test
+    -   y_pred: 
     """
     # Create subplots and set figure size
     fig, axes = plt.subplots(3, n_output_dims, sharex=True, sharey=True)
@@ -81,12 +104,15 @@ def plot_2D_nD_regression(
     axes[2][0].set_ylabel("Predictions")
     if fig_title is None:
         fig_title = "2D to {}D regression data".format(n_output_dims)
+    if fig_title_append is not None:
+        fig_title += fig_title_append
     fig.suptitle(fig_title, fontsize=16)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(filename)
     plt.close()
 
-
+def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
+    raise NotImplementedError
 
 def plot_2D_classification(self, filename, figsize=[8, 6]):
     pass
@@ -95,35 +121,49 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
 def plot_training_curves():
     pass
 
-def plot_speed_test():
+def plot_speed_trials():
     pass
+
+def plot_act_func(filename, act_func, xlims, npoints):
+    """
+    plot_act_func: plot an activation function and its derivatives
+    """
+    x = np.linspace(*xlims, npoints)
+    y = act_func.y(x)
+    dydx = act_func.dydx(x)
+    plt.figure(figsize=[8, 6])
+    plt.plot(x, y, 'b', x, dydx, 'r', alpha=0.75)
+    plt.legend(["Function", "Derivative"])
+    plt.title(act_func.name)
+    plt.grid(True)
+    plt.savefig(filename)
+    plt.close()
 
 if __name__ == "__main__":
     np.random.seed(0)
     # Generate training and test sets for 1D to 1D regression
-    s11 = data.SinusoidalDataSet11(n_train=100, n_test=50, xlim=[0, 1])
-    # Generate untrained evaluations
+    s11 = data.SinusoidalDataSet1D1D(n_train=100, n_test=50, xlim=[0, 1])
+    # Generate random predictions
     min_elem, max_elem = min_and_max(s11.x_train, s11.x_test)
-    x_pred = np.linspace(min_elem, max_elem, 200).reshape(1, -1)
-    n = models.NeuralNetwork(1, 1)
-    y_pred = n(x_pred)
+    N_D = 200
+    x_pred = np.linspace(min_elem, max_elem, N_D).reshape(1, -1)
+    y_pred = np.random.normal(size=[1, N_D])
     # Plot
     plot_1D_regression(
-        "Results/Untrained predictions 1D sinusoid",
-        s11.x_train.ravel(), s11.y_train.ravel(), s11.x_test.ravel(),
-        s11.y_test.ravel(), x_pred.ravel(), y_pred.ravel()
+        "Results/Random predictions 1D sinusoid", s11,
+        x_pred.ravel(), y_pred.ravel(), pred_marker="go"
     )
 
     # Generate training and test sets for 2D to 3D regression
-    s23 = data.SinusoidalDataSet2n(
-        nx0=100, nx1=100, train_ratio=0.9, output_dim=4
+    output_dim = 4
+    s23 = data.SinusoidalDataSet2DnD(
+        nx0=100, nx1=100, train_ratio=0.9, output_dim=output_dim
     )
-    # Generate untrained evaluations
-    n = models.NeuralNetwork(2, 4)
-    y_pred = n(s23.x_test)
+    # Generate random predictions
+    y_pred = np.random.normal(size=[output_dim, s23.x_test.shape[1]])
     # Plot
     plot_2D_nD_regression(
-        "Results/Untrained predictions 2D sinusoid", n_output_dims=4,
+        "Results/Random predictions 2D sinusoid", n_output_dims=4,
         dataset=s23, y_pred=y_pred
     )
     # print(s23.x_test.T)

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 class DataSet():
     """
@@ -66,16 +65,16 @@ def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     -   noise_std: standard deviation of the noise which is added to the final
         output. Should be either a scalar or a np.ndarray with shape
         [output_dim, 1]
-    
+
     Outputs:
     -   y: output data, in a np.ndarray with shape [output_dim, N_D]
     """
     y = np.dot(ampl, np.sin(2 * np.pi * np.dot(freq, (x - phase))))
     return y + np.random.normal(offset, noise_std, [output_dim, x.shape[1]])
 
-class SinusoidalDataSet11(DataSet):
+class SinusoidalDataSet1D1D(DataSet):
     """
-    SinusoidalDataSet11: class for a sinusoidal data set with 1D inputs and 1D
+    SinusoidalDataSet1D1D: class for a sinusoidal data set with 1D inputs and 1D
     outputs, and sensible default values for phase, frequency, amplitude and
     offset
     """
@@ -87,18 +86,18 @@ class SinusoidalDataSet11(DataSet):
         self.input_dim  , self.output_dim   = 1         , 1
         self.n_train    , self.n_test       = n_train   , n_test
         # Generate input/output training and test data
-        self.x_train = np.random.uniform(*xlim, size=[1, n_train])
-        self.x_test = np.random.uniform(*xlim, size=[1, n_test])
-        self.y_train = noisy_sin(
+        self.x_train    = np.random.uniform(*xlim, size=[1, n_train])
+        self.x_test     = np.random.uniform(*xlim, size=[1, n_test])
+        self.y_train    = noisy_sin(
             self.x_train, phase, freq, ampl, offset, noise_std, 1
         )
-        self.y_test = noisy_sin(
+        self.y_test     = noisy_sin(
             self.x_test, phase, freq, ampl, offset, noise_std, 1
         )
 
-class SinusoidalDataSet2n(DataSet):
+class SinusoidalDataSet2DnD(DataSet):
     """
-    SinusoidalDataSet2n: class for a sinusoidal data set with 2D inputs and nD
+    SinusoidalDataSet2DnD: class for a sinusoidal data set with 2D inputs and nD
     outputs. The test set is a uniform mesh of points (which makes plotting
     easier), and the training set is a random subset of these.
 
@@ -157,14 +156,14 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # Generate 1D to 1D sinusoidal regression dataset
-    s11 = SinusoidalDataSet11(n_train=100, n_test=50, xlim=[0, 1])
+    s11 = SinusoidalDataSet1D1D(n_train=100, n_test=50, xlim=[0, 1])
     filename = "Data/sin_dataset_11.npz"
     s11.save(filename)
     s_load = DataSet(filename)
     s_load.print_data()
 
     # Test 2D to 3D sinusoidal regression dataset
-    s23 = SinusoidalDataSet2n(nx0=23, nx1=56, output_dim=3)
+    s23 = SinusoidalDataSet2DnD(nx0=23, nx1=56, output_dim=3)
     filename = "Data/sin_dataset_23.npz"
     s23.save(filename)
     sl = DataSet(filename)
