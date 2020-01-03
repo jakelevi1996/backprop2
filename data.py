@@ -15,6 +15,10 @@ class DataSet():
             self.x_train    , self.y_train      = None, None
             self.x_test     , self.y_test       = None, None
     
+    def get_train_batch(self, batch_size):  raise NotImplementedError
+    
+    def get_test_batch(self, batch_size):   raise NotImplementedError
+    
     def save(self, filename):
         np.savez(
             filename, input_dim=self.input_dim, output_dim=self.output_dim,
@@ -39,10 +43,10 @@ class DataSet():
     
     def print_data(self, first_n=10):
         print(
-            "x_train.T:", self.x_train.T[:first_n],
-            "y_train.T:", self.y_train.T[:first_n],
-            "x_test.T:", self.x_test.T[:first_n],
-            "y_test.T:", self.y_test.T[:first_n], sep="\n"
+            "x_train.T:",   self.x_train.T[:first_n],
+            "y_train.T:",   self.y_train.T[:first_n],
+            "x_test.T:",    self.x_test.T[:first_n],
+            "y_test.T:",    self.y_test.T[:first_n], sep="\n"
         )
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):

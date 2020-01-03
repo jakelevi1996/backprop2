@@ -231,8 +231,8 @@ class NeuralNetwork(Model):
 
     def forward_prop(self, x):
         """
-        forward_prop: propogate an input forward through the network, and return
-        the output from the network.
+        forward_prop: propogate an input forward through the network, and store
+        and return the output from the network.
 
         Inputs:
         -   x: input to the neural network. Should be a numpy array with shape
@@ -240,16 +240,17 @@ class NeuralNetwork(Model):
 
         Outputs:
         -   layer_output: output from the final layer in the network, == the
-            network output. Should be in a numpy array with shape
-            (output_dim, N_D)
+            network output. Should be in a numpy array with shape (output_dim,
+            N_D)
         """
         # Calculate output from the first layer
         layer_output = self.layers[0].activate(x)
         # Calculate outputs from subsequent layers
         for layer in self.layers[1:]:
             layer_output = layer.activate(layer_output)
-        # Return network output
-        return layer_output
+        # Store and return network output
+        self.y = layer_output
+        return self.y
 
     def __call__(self, x):
         """
@@ -272,17 +273,18 @@ class NeuralNetwork(Model):
             be a numpy array with shape (output_dim, N_D)
 
         Outputs:
-        -   y: network output, in a numpy array with shape (output_dim, N_D)
+        -   self.y (not returned): network output, in a numpy array with shape
+            (output_dim, N_D)
         -   gradients (not returned): the gradients for all parameters in the
             network are calculated and stored in self.layers[i].w_grad and
             self.layers[i].b_grad, ready to be extracted using the
             get_gradient_vector method
         """
         # Perform forward propagation to calculate activations
-        y = self.forward_prop(x)
+        self.forward_prop(x)
         # Calculate the output layer delta and gradients
         self.layers[-1].delta = np.multiply(
-            self.error_func.dEdy(y, target),
+            self.error_func.dEdy(self.y, target),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
         )
         self.layers[-1].calc_gradients()
@@ -290,8 +292,6 @@ class NeuralNetwork(Model):
         for i in reversed(range(self.num_layers - 1)):
             self.layers[i].backprop(self.layers[i + 1])
             self.layers[i].calc_gradients()
-        
-        return y
 
     def get_parameter_vector(self):
         """
@@ -302,6 +302,8 @@ class NeuralNetwork(Model):
         initialised along with the network which is a view into the layer
         objects that automatically updates when the weights are modified? It's
         plausible that block initialises new memory every time it is called
+        -   Initialise attribute during network initialisation, and update using
+            pointer method?
 
         Inputs: None
 
@@ -322,7 +324,7 @@ class NeuralNetwork(Model):
         get_gradient_vector: return the mean (across data points) of the
         gradients (of the error between the targets and the network's
         predictions based on x) with respect to all of the parameters in the
-        network as a long 1D vector
+        network, as a long 1D vector
 
         Inputs:
         -   x: input to the neural network. Should be a numpy array with shape
@@ -374,23 +376,31 @@ class NeuralNetwork(Model):
             )
             v_pointer += n_b
     
-    def mean_error(self, x, t):
+    def mean_error(self, t, x=None):
         """
-        mean_error: for a given set of inputs, calculate the network predictions
-        and the error between the network predictions and the targets, returning
-        the mean of the error across all data points
+        mean_error: calculate the mean (across all data points) of the error
+        between the given targets and the network's predictions. If a set of
+        inputs is provided then the network predictions are calculated using
+        these inputs; otherwise the most recently calculated network predictions
+        are used, in which case the targets provided to this function must have
+        the same number of data points (axis 1 of the numpy array).
 
         Inputs:
-        -   x: input to the neural network. Should be a numpy array with shape
-            (input_dim, N_D)
-        -   target: targets that the neural network is trying to predict. Should
-            be a numpy array with shape (output_dim, N_D)
+        -   t: targets that the neural network is trying to predict. Should be a
+            numpy array with shape (output_dim, N_D)
+        -   x (optional): input to the neural network, in a numpy array with
+            shape (input_dim, N_D). If x == None (default value), then the most
+            recently calculated network predictions are used, in which case the
+            targets provided to this function must have the same number of data
+            points (axis 1 of the numpy array)
 
         Outputs:
-        -   e: mean error across all data points as a numpy float64
+        -   e: mean error across all data points, as a numpy float64 scalar
         """
-        y = self.forward_prop(x)
-        return self.error_func(y, t).mean()
+        if x is not None: self.forward_prop(x)
+        else: assert self.y.shape[1] == t.shape[1]
+
+        return self.error_func(self.y, t).mean()
 
     def save_model(self, filename, filename_prepend_timestamp=True):
         # Save params, self.num_units_list, and identities of activation
@@ -437,7 +447,12 @@ if __name__ == "__main__":
     n.back_prop(x, t)
     n.print_grads()
     
-    print(x, y, t, "Mean error = {:.5f}".format(n.mean_error(x, t)), sep="\n")
+    e = n.mean_error(t, x)
+    print(x, y, t, "Mean error = {:.5f}".format(e), sep="\n")
+
+    w = n.get_parameter_vector()
+    dEdw = n.get_gradient_vector(x, t)
+    print(w.shape, dEdw.shape)
 
     # # n.plot_evals("Data/evaluations")
     # n.eval_gradient(0.4, 1.3)

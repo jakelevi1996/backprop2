@@ -118,8 +118,22 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
     pass
     # TODO: add plotting method for binary/discrete data
 
-def plot_training_curves():
-    pass
+def plot_training_curves(
+    filename, train_errors, test_errors, burn_in, figsize=[8, 6],
+    e_lims=[0, 0.5], t_lims=None, i_lims=None
+):
+    # TODO: update this to match outputs from optimiser functions, and comment
+    plt.figure(figsize=figsize)
+    plt.plot(train_errors[burn_in:], 'b')
+    plt.plot(test_errors[burn_in:], 'r')
+    plt.title("Learning curves")
+    plt.legend(["Training data", "Test data"])
+    plt.xlabel("Iteration")
+    plt.ylabel("Mean error")
+
+    plt.grid(True)
+    plt.savefig("Results/Training curves")
+    plt.close()
 
 def plot_speed_trials():
     pass
