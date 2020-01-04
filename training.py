@@ -59,19 +59,23 @@ def train_1D_regression_sgd_2way_tracking():
     p.plot_1D_regression(
         "Results/1D sin predictions (untrained)", sin_data, x_pred, y_pred,
     )
-    o.sgd_2way_tracking(
-        n, sin_data, n_iters=10000, print_every=1000
+    train_errors, test_errors, times, iters, _ = o.sgd_2way_tracking(
+        n, sin_data, n_iters=10000, print_every=1000, store_every=100
         # n_iters=20000, print_every=1000
     )
     y_pred = n(x_pred)
     p.plot_1D_regression(
         "Results/1D sin predictions (trained w ft)", sin_data, x_pred, y_pred,
     )
+    p.plot_training_curves(
+        "Results/SGDLS training curves",
+        train_errors, test_errors, times, iters,
+        e_lims=[0, 0.25], t_lims=None, i_lims=None
+    )
     
 
 if __name__ == "__main__":
     np.random.seed(0)
-    train_1D_regression_sgd()
+    # train_1D_regression_sgd()
     # train_2D4D_regression_sgd()
-    # train_1D_regression_sgd_2way_tracking()
-    
+    train_1D_regression_sgd_2way_tracking()

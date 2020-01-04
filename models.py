@@ -217,6 +217,7 @@ class NeuralNetwork(Model):
             self.num_units_list[0], self.input_dim, act_funcs[0],
             weight_std, bias_std
         )]
+        num_params = self.num_units_list[0] * (self.input_dim + 1)
         # Initialise the rest of the layers
         for (num_units, num_inputs, act_func) in zip(
             self.num_units_list[1:], self.num_units_list[:-1], act_funcs[1:]
@@ -224,6 +225,11 @@ class NeuralNetwork(Model):
             self.layers.append(NeuralLayer(
                 num_units, num_inputs, act_func, weight_std, bias_std
             ))
+            num_params += num_units * (num_inputs + 1)
+        
+        # Initialise memory for the parameter and gradient vectors
+        self.param_vector   = np.empty(num_params)
+        self.grad_vector    = np.empty(num_params)
     
     def glorot_initialiser(self, act_funcs):
         # TODO: Should initialisers have their own classes?
@@ -313,11 +319,19 @@ class NeuralNetwork(Model):
             layer 0 bias, layer 1 weights, layer 1 bias, ..., final layer
             weights, final layer bias
         """
-        return np.block([
-            params for layer in self.layers for params in (
-                layer.weights.ravel(), layer.bias.ravel()
-            )
-        ])
+        # Initialise the pointer and iterate through the layers
+        i = 0
+        for layer in self.layers:
+            # Calculate the number of weight and bias parameters in the layer
+            n_w, n_b = layer.output_dim * layer.input_dim, layer.output_dim
+            # Set the weights and update the pointer
+            self.param_vector[i : i + n_w] = layer.weights.ravel()
+            i += n_w
+            # Set the biases and update the pointer
+            self.param_vector[i : i + n_b] = layer.bias.ravel()
+            i += n_b
+        
+        return self.param_vector
 
     def get_gradient_vector(self, x, target):
         """
@@ -340,12 +354,19 @@ class NeuralNetwork(Model):
             layer bias (same convention as the get_parameter_vector method)
         """
         self.back_prop(x, target)
-        return np.block([
-            grads for layer in self.layers for grads in (
-                layer.w_grad.mean(axis=-1).ravel(),
-                layer.b_grad.mean(axis=-1).ravel()
-            )
-        ])
+        # Initialise the pointer and iterate through the layers
+        i = 0
+        for layer in self.layers:
+            # Calculate the number of weight and bias parameters in the layer
+            n_w, n_b = layer.output_dim * layer.input_dim, layer.output_dim
+            # Set the weight gradients and update the pointer
+            self.grad_vector[i : i + n_w] = layer.w_grad.mean(axis=-1).ravel()
+            i += n_w
+            # Set the biase gradients and update the pointer
+            self.grad_vector[i : i + n_b] = layer.b_grad.mean(axis=-1).ravel()
+            i += n_b
+        
+        return self.grad_vector
 
     def get_hessian(self): raise NotImplementedError
 

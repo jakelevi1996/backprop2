@@ -83,13 +83,12 @@ def plot_2D_nD_regression(
     # Plot test set, training set, and evaluations
     for i in range(n_output_dims):
         axes[0][i].pcolormesh(
-            x_test0, x_test1,
-            dataset.y_test[i].reshape(nx1, nx0),
+            x_test0, x_test1, dataset.y_test[i].reshape(nx1, nx0),
             vmin=y_min, vmax=y_max
         )
+        y_train = np.where(train_inds, dataset.y_test[i], np.nan)
         axes[1][i].pcolormesh(
-            x_test0, x_test1,
-            np.where(train_inds, dataset.y_test[i], np.nan).reshape(nx1, nx0),
+            x_test0, x_test1, np.reshape(y_train, [nx1, nx0]),
             vmin=y_min, vmax=y_max
         )
         axes[2][i].pcolormesh(
@@ -119,20 +118,39 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
     # TODO: add plotting method for binary/discrete data
 
 def plot_training_curves(
-    filename, train_errors, test_errors, burn_in, figsize=[8, 6],
-    e_lims=[0, 0.5], t_lims=None, i_lims=None
+    filename, train_errors, test_errors, times, iters, figsize=[15, 6],
+    e_lims=[0, 0.5], t_lims=None, i_lims=None, tp=0.75
 ):
-    # TODO: update this to match outputs from optimiser functions, and comment
-    plt.figure(figsize=figsize)
-    plt.plot(train_errors[burn_in:], 'b')
-    plt.plot(test_errors[burn_in:], 'r')
-    plt.title("Learning curves")
-    plt.legend(["Training data", "Test data"])
-    plt.xlabel("Iteration")
-    plt.ylabel("Mean error")
-
-    plt.grid(True)
-    plt.savefig("Results/Training curves")
+    # TODO: update this to match outputs from optimiser functions, and comment,
+    # and accept multiple different training curves (EG from different
+    # optimisers) and legends (in a seperate subplot?)
+    fig, axes = plt.subplots(1, 3)
+    fig.set_size_inches(figsize)
+    # Plot errors against time
+    axes[0].plot(times, train_errors, 'b--', times, test_errors, 'b-', alpha=tp)
+    axes[0].set_xlabel("Time (s)")
+    axes[0].set_ylabel("Mean error")
+    axes[0].grid(True)
+    if t_lims is not None: axes[0].set_xlim(*t_lims)
+    if e_lims is not None: axes[0].set_ylim(*e_lims)
+    # Plot errors against iteration
+    axes[1].plot(iters, train_errors, 'b--', iters, test_errors, 'b-', alpha=tp)
+    axes[1].set_xlabel("Iteration")
+    axes[1].set_ylabel("Mean error")
+    axes[1].grid(True)
+    if i_lims is not None: axes[1].set_xlim(*i_lims)
+    if e_lims is not None: axes[1].set_ylim(*e_lims)
+    # Plot iteration against time
+    axes[2].plot(times, iters, 'b--', times, iters, 'b-', alpha=tp)
+    axes[2].set_xlabel("Time (s)")
+    axes[2].set_ylabel("Iteration")
+    axes[2].grid(True)
+    if t_lims is not None: axes[2].set_xlim(*t_lims)
+    if i_lims is not None: axes[2].set_ylim(*i_lims)
+    # Format, save and close
+    fig.suptitle("Learning curves")
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(filename)
     plt.close()
 
 def plot_speed_trials():

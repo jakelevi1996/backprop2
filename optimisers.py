@@ -31,7 +31,7 @@ def display_progress(i, t0, model, dataset):
     print(progress_str.format(i, t, e_train, e_test))
 
 def stochastic_gradient_descent(
-    model, dataset, n_iters=4000, learning_rate=1e-3, print_every=50
+    model, dataset, n_iters=4000, print_every=50, learning_rate=1e-3
 ):
     """
     stochastic_gradient_descent: given a model and a dataset, perform simple
@@ -68,7 +68,7 @@ def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     enough, then return True to indicate that the line search should back-track.
 
     The linesearch criterion is derived by rearranging a truncated first-order
-    Taylor series:
+    Taylor series (NB for gradient descent, <v, df/dx> should be negative):
     *   f(x + t*v) = f(x) + t * <v, df/dx> + ...
     *   => f(x) - f(x + t*v) ~~ - t * <v, df/dx>
 
@@ -85,7 +85,8 @@ def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     return min_reduction > (E0 - E_new)
 
 def sgd_2way_tracking(
-    model, dataset, n_iters=4000, print_every=50, t0=1, alpha=0.8, beta=0.5
+    model, dataset, n_iters=5000, print_every=500, store_every=500,
+    t0=1, alpha=0.8, beta=0.5
 ):
     """
     sgd_2way_tracking: given a model and a dataset, perform stochastic gradient
@@ -99,6 +100,7 @@ def sgd_2way_tracking(
     -   dataset: the dataset which the model will be trained on
     -   n_iters: the number of outer loop iterations to perform
     -   print_every: how frequently to print progress to stdout
+    -   store_every: ...
     -   t0: initial step size to take
     -   alpha: fraction of the theoretical approximate step size which is
         considered acceptible
@@ -110,9 +112,20 @@ def sgd_2way_tracking(
     w = model.get_parameter_vector()
     start_time = perf_counter()
     t = t0
+    # Initialise error, time, iteration, and step-size lists
+    train_error_list, test_error_list = [], []
+    time_list, i_list, t_list = [], [], []
     for i in range(n_iters):
         # Display progress
         if i % print_every == 0: display_progress(i, start_time, model, dataset)
+        if i % store_every == 0:
+            # TODO: functionise + add to other training routines
+            e_train, e_test = get_train_test_errors(model, dataset)
+            train_error_list.append(e_train)
+            test_error_list.append(e_test)
+            time_list.append(perf_counter() - start_time)
+            i_list.append(i)
+            t_list.append(t)
         # Get the gradient and mean error for the current parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         E0 = model.mean_error(dataset.y_train)
@@ -127,7 +140,6 @@ def sgd_2way_tracking(
             t /= beta
             while not backtrack_condition(t, *backtrack_params): t /= beta
             # Try also, keep forward tracking until E starts to increase
-            t *= beta
 
         w -= t * dEdw
         model.set_parameter_vector(w)
@@ -136,6 +148,14 @@ def sgd_2way_tracking(
     print("Average time per iteration = {:.4f} ms".format(
         1e3 * (perf_counter() - start_time) / n_iters
     ))
+    # TODO: functionise + add to other training routines
+    e_train, e_test = get_train_test_errors(model, dataset)
+    train_error_list.append(e_train)
+    test_error_list.append(e_test)
+    time_list.append(perf_counter() - start_time)
+    i_list.append(i)
+    t_list.append(t)
+    return train_error_list, test_error_list, time_list, i_list, t_list
 
 def generalised_newton(): raise NotImplementedError
 
@@ -144,8 +164,12 @@ def adam_optimiser(): raise NotImplementedError
 if __name__ == "__main__":
     np.random.seed(0)
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    n = m.NeuralNetwork(1, 1, [20, 20])
-    w = n.get_parameter_vector()
-    stochastic_gradient_descent(n, sin_data, 100)
-    n.set_parameter_vector(w)
-    sgd_2way_tracking(n, sin_data, 100)
+    n = m.NeuralNetwork(1, 1, [20])
+    
+    # w = n.get_parameter_vector()
+    # stochastic_gradient_descent(n, sin_data, 100)
+    # n.set_parameter_vector(w)
+    # sgd_2way_tracking(n, sin_data, 100)
+    
+    # stochastic_gradient_descent(n, sin_data, 10000, 1000)
+    sgd_2way_tracking(n, sin_data, 10000, 1000)
