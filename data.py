@@ -32,14 +32,14 @@ class DataSet():
         with np.load(filename) as data:
             self.input_dim              = data['input_dim']
             self.output_dim             = data['output_dim']
-            self.n_train, self.n_test   = data['n_train'], data['n_test']
-            self.x_train, self.x_test   = data['x_train'], data['x_test']
-            self.y_train, self.y_test   = data['y_train'], data['y_test']
+            self.n_train, self.n_test   = data['n_train'],  data['n_test']
+            self.x_train, self.x_test   = data['x_train'],  data['x_test']
+            self.y_train, self.y_test   = data['y_train'],  data['y_test']
         # Assert that the arrays have the correct shape
-        assert self.x_train.shape == (self.input_dim , self.n_train)
-        assert self.x_test.shape  == (self.input_dim , self.n_test )
-        assert self.y_train.shape == (self.output_dim, self.n_train)
-        assert self.y_test.shape  == (self.output_dim, self.n_test )
+        assert self.x_train.shape == (self.input_dim    ,   self.n_train)
+        assert self.y_train.shape == (self.output_dim   ,   self.n_train)
+        assert self.x_test.shape  == (self.input_dim    ,   self.n_test )
+        assert self.y_test.shape  == (self.output_dim   ,   self.n_test )
     
     def print_data(self, first_n=10):
         print(

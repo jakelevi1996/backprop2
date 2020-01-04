@@ -17,10 +17,15 @@ This repository contains the following modules:
 
 ## TODO
 
+- Add datasets for Gaussians and sum-of-Gaussians, binary circles, binary multiple circles
+- Get binary cross entropy working for classification data-sets, train classification, and add plotting function for 2D binary classification
+- Add multi-class classification error function, data-sets, training, and plotting
+- Add PSO optimisation routine and compare to SGD with 2-way tracking
+- Add timeout option to optimisation routines, and replace `eval_every` with `eval_every_n_s` based on time instead of iteration (including `while next_eval < perf_counter(): next_eval += eval_every_n_s` to make sure evaluations don't play catch-up)
+- Add plotting function for step sizes
+- Make plotting function for training curves support multiple experiments, and improve structure of input arguments
 - Update readme
 - Add efficient second order training methods
-- Add backtracking line search to first-order methods
-- Update `training` and `model` modules to plot learning curves (test data and/or training data)
 - Add `DataSet` subclasses for classification
 - Add functionality to `training` module to perform systematic comparison between learning curves for different hyperparameters and activation functions (use multiprocessing?)
 - Add saving and loading to `NeuralNetwork` class

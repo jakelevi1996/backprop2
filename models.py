@@ -302,14 +302,10 @@ class NeuralNetwork(Model):
     def get_parameter_vector(self):
         """
         get_parameter_vector: return all the parameters in the network as a long
-        1D vector
-
-        TODO: Alternative to nested list comprehension? Attribute which is
-        initialised along with the network which is a view into the layer
-        objects that automatically updates when the weights are modified? It's
-        plausible that block initialises new memory every time it is called
-        -   Initialise attribute during network initialisation, and update using
-            pointer method?
+        1D vector. NB if the returned parameter vector is intended to be used
+        later to restore the model state, then a copy should be made using
+        get_parameter_vector().copy() (otherwise the memory locations pointed to
+        by the output from this function may be modified later)
 
         Inputs: None
 
