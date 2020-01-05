@@ -20,10 +20,13 @@ This repository contains the following modules:
 - Add datasets for Gaussians and sum-of-Gaussians, binary circles, binary multiple circles
 - Get binary cross entropy working for classification data-sets, train classification, and add plotting function for 2D binary classification
 - Add multi-class classification error function, data-sets, training, and plotting
+- (Low priority) investigate how number of layers and units per layer affects success/failure for learning different data sets, EG AND, XOR, circle, multiple circles, etc
 - Add PSO optimisation routine and compare to SGD with 2-way tracking
+  - Add PSO with 2-way tracking for each particle?
 - Add timeout option to optimisation routines, and replace `eval_every` with `eval_every_n_s` based on time instead of iteration (including `while next_eval < perf_counter(): next_eval += eval_every_n_s` to make sure evaluations don't play catch-up)
 - Add plotting function for step sizes
-- Make plotting function for training curves support multiple experiments, and improve structure of input arguments
+- Add plotting function which creates a movie (or gif) showing model predictions evolving over time as the network trains, and compare for different optimisation methods (this may recycle pre-existing plotting functions, and just combine plots into a movie)
+- Commit some results graphs to git and display on the readme by including links to GitHub URLs
 - Update readme
 - Add efficient second order training methods
 - Add `DataSet` subclasses for classification

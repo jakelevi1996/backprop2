@@ -2,6 +2,11 @@
 Module to contain optimisation procedures and inner loop functions (EG HNGD,
 backtracking, forward-tracking, etc.), agnostic to all models and objective
 functions
+
+TODO: replace t and t0 (step size) with s and s0, and start_time with t0
+
+TODO: make model evaluation and end of outer loop dependent on time, not on
+iteration number
 """
 import numpy as np
 from time import perf_counter
@@ -16,35 +21,41 @@ def get_train_test_errors(model, dataset):
     e_test  = model.mean_error(dataset.y_test, dataset.x_test)
     return e_train, e_test
 
-def eval_model(
-    model, dataset, start_time, time_list, i, i_list,
-    train_error_list, test_error_list, eval_print
-):
+def get_empty_results_dict(name):
     """
-    eval_model: calculate the elapsed time, train error, and test error, update
-    the time, iteration and error lists, and if eval_print == True then print
-    the progress to stdout
+    get_empty_results_dict: ...
     """
-    # Calculate elapsed time, train error, and test error
-    time_elapsed = perf_counter() - start_time
+    return {
+        "times": [], "iters": [], "train errors": [], "test errors": [],
+        "name": name
+    }
+
+def update_results(results, model, dataset, start_time, i, verbose):
+    """
+    eval_model: TODO ... calculate the elapsed time, train error, and test error, update
+    the time, iteration and error lists, and if verbose == True then print the
+    progress to stdout
+    """
+    # Update the time, iteration and error lists within the results dictionary
+    results["times"].append(perf_counter() - start_time)
+    results["iters"].append(i)
     e_train, e_test = get_train_test_errors(model, dataset)
-    # Update the time, iteration and error lists
-    time_list.append(time_elapsed)
-    i_list.append(i)
-    train_error_list.append(e_train)
-    test_error_list.append(e_test)
-    if eval_print:
+    results["train errors"].append(e_train)
+    results["test errors"].append(e_test)
+    if verbose:
         # Print progress to stdout
         progress_str = " | ".join([
             "Iter: {:6d}", "time: {:6.2f}s",
             "train error: {:8.5f}", "test error: {:8.5f}"
-        ]).format(i, time_elapsed, e_train, e_test)
+        ]).format(i, results["times"][-1], e_train, e_test)
         print(progress_str)
+    
+    return results
 
 
 def stochastic_gradient_descent(
-    model, dataset, n_iters=4000, eval_every=500, eval_print=True,
-    learning_rate=1e-3
+    model, dataset, n_iters=4000, eval_every=500, verbose=True,
+    learning_rate=1e-3, name="SGD"
 ):
     """
     stochastic_gradient_descent: given a model and a dataset, perform simple
@@ -52,38 +63,31 @@ def stochastic_gradient_descent(
     fixed learning rate.
 
     Required inputs:
-    -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
     -   model: should be an instance of models.NeuralNetwork, and should contain
         get_parameter_vector, get_gradient_vector, and set_parameter_vector
         methods
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
     """
-    # Get initial parameters and start time
+    # Get initial parameters and start time, and initialise results dictionary
     w = model.get_parameter_vector()
     start_time = perf_counter()
-    # Initialise error, time, and iteration lists
-    train_error_list, test_error_list, time_list, i_list = [], [], [], []
+    results = get_empty_results_dict(name)
     for i in range(n_iters):
         # Evaluate the model
         if i % eval_every == 0:
-            eval_model(
-                model, dataset, start_time, time_list, i, i_list,
-                train_error_list, test_error_list, eval_print
-            )
+            update_results(results, model, dataset, start_time, i, verbose)
         # Update parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         w -= learning_rate * dEdw
         model.set_parameter_vector(w)
     # Evaluate final performance
-    eval_model(
-        model, dataset, start_time, time_list, n_iters, i_list,
-        train_error_list, test_error_list, eval_print
-    )
+    update_results(results, model, dataset, start_time, n_iters, verbose)
     # Print average iteration time
     print("Average time per iteration = {:.4f} ms".format(
         1e3 * (perf_counter() - start_time) / n_iters
     ))
-    return train_error_list, test_error_list, time_list, i_list
+    return results
 
 def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     """
@@ -109,8 +113,8 @@ def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     return min_reduction > (E0 - E_new)
 
 def sgd_2way_tracking(
-    model, dataset, n_iters=5000, eval_every=500, eval_print=True,
-    t0=1, alpha=0.8, beta=0.5
+    model, dataset, n_iters=5000, eval_every=500, verbose=True,
+    t0=1, alpha=0.8, beta=0.5, name="SGD with line-search"
 ):
     """
     sgd_2way_tracking: given a model and a dataset, perform stochastic gradient
@@ -124,7 +128,7 @@ def sgd_2way_tracking(
     -   dataset: the dataset which the model will be trained on
     -   n_iters: the number of outer loop iterations to perform
     -   eval_every: how frequently to evaluate model performance
-    -   eval_print: whether to print model performance to stdout every time it
+    -   verbose: whether to print model performance to stdout every time it
         is evaluated
     -   t0: initial step size to take
     -   alpha: fraction of the theoretical approximate step size which is
@@ -137,17 +141,14 @@ def sgd_2way_tracking(
     w = model.get_parameter_vector()
     start_time = perf_counter()
     t = t0
-    # Initialise error, time, iteration, and step-size lists
-    train_error_list, test_error_list = [], []
-    time_list, i_list, t_list = [], [], []
+    # Initialise results dictionary (including step-size list)
+    results = get_empty_results_dict(name)
+    results["step sizes"] = []
     for i in range(n_iters):
         # Evaluate the model
         if i % eval_every == 0:
-            eval_model(
-                model, dataset, start_time, time_list, i, i_list,
-                train_error_list, test_error_list, eval_print
-            )
-            t_list.append(t)
+            update_results(results, model, dataset, start_time, i, verbose)
+            results["step sizes"].append(t) # TODO: do this every iteration?
         # Get the gradient and mean error for the current parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         E0 = model.mean_error(dataset.y_train)
@@ -165,17 +166,15 @@ def sgd_2way_tracking(
 
         w -= t * dEdw
         model.set_parameter_vector(w)
+        # results["step sizes"].append(t) # TODO: do this every iteration?
     # Evaluate final performance
-    eval_model(
-        model, dataset, start_time, time_list, n_iters, i_list,
-        train_error_list, test_error_list, eval_print
-    )
+    update_results(results, model, dataset, start_time, n_iters, verbose)
+    results["step sizes"].append(t)
     # Print average iteration time
     print("Average time per iteration = {:.4f} ms".format(
         1e3 * (perf_counter() - start_time) / n_iters
     ))
-    t_list.append(t)
-    return train_error_list, test_error_list, time_list, i_list, t_list
+    return results
 
 def generalised_newton(): raise NotImplementedError
 

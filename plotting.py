@@ -117,66 +117,73 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
     # TODO: add plotting method for binary/discrete data
 
 def plot_training_curves(
-    filename, num_tests, train_errors, test_errors, times, iters, names,
+    filename, results_list,
     figsize=[15, 6], e_lims=[0, 0.5], t_lims=None, i_lims=None, tp=0.75
 ):
     """
     plot_training_curves: ...
 
-    TODO: accept multiple different repeats of each experiments (also, legends
-    in a seperate subplot?); also structure the input arguments more sensibly,
-    and check the types of the inputs?
+    TODO: add legend entry to explain dotted lines = training set performance;
+    update docstring; 2*2 subplots with legend in its own subplot?
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    colours = plt.get_cmap("hsv")(np.linspace(0, 1, num_tests, endpoint=False))
-    handles, labels = [], []
-    for i in range(num_tests):
+    unique_names_list = list(set([result["name"] for result in results_list]))
+    num_tests = len(unique_names_list)
+    colour_list = plt.get_cmap("hsv")(
+        np.linspace(0, 1, num_tests, endpoint=False)
+    )
+    for result in results_list:
+        # Get line colour, depending on the name of the experiment
+        colour = colour_list[unique_names_list.index(result["name"])]
         # Plot errors against time
-        axes[0].plot(times[i], train_errors[i], c=colours[i], ls="--", alpha=tp)
-        axes[0].plot(times[i], test_errors[i], c=colours[i], ls="-", alpha=tp)
+        axes[0].plot(
+            result["times"], result["train errors"], c=colour, ls=":", alpha=tp
+        )
+        axes[0].plot(
+            result["times"], result["test errors"], c=colour, ls="-", alpha=tp
+        )
         axes[0].set_xlabel("Time (s)")
         axes[0].set_ylabel("Mean error")
         axes[0].grid(True)
-        if t_lims is not None: axes[0].set_xlim(*t_lims)
-        if e_lims is not None: axes[0].set_ylim(*e_lims)
         # Plot errors against iteration
-        axes[1].plot(iters[i], train_errors[i], c=colours[i], ls="--", alpha=tp)
-        axes[1].plot(iters[i], test_errors[i], c=colours[i], ls="-", alpha=tp)
+        axes[1].plot(
+            result["iters"], result["train errors"], c=colour, ls=":", alpha=tp
+        )
+        axes[1].plot(
+            result["iters"], result["test errors"], c=colour, ls="-", alpha=tp
+        )
         axes[1].set_xlabel("Iteration")
         axes[1].set_ylabel("Mean error")
         axes[1].grid(True)
-        if i_lims is not None: axes[1].set_xlim(*i_lims)
-        if e_lims is not None: axes[1].set_ylim(*e_lims)
         # Plot iteration against time
-        axes[2].plot(times[i], iters[i], c=colours[i], ls="-", alpha=tp)
+        axes[2].plot(
+            result["times"], result["iters"], c=colour, ls="-", alpha=tp
+        )
         axes[2].set_xlabel("Time (s)")
         axes[2].set_ylabel("Iteration")
         axes[2].grid(True)
-        if t_lims is not None: axes[2].set_xlim(*t_lims)
-        if i_lims is not None: axes[2].set_ylim(*i_lims)
-        # Add the handle and label to the lists for the legend
-        handles.append(plt.plot([], [], c=colours[i], ls="-", alpha=tp)[0])
-        labels.append(names[i])
+    
+    # Set axis labels
+    if e_lims is not None:
+        axes[0].set_ylim(*e_lims)
+        axes[1].set_ylim(*e_lims)
+    if t_lims is not None:
+        axes[0].set_xlim(*t_lims)
+        axes[2].set_xlim(*t_lims)
+    if i_lims is not None:
+        axes[1].set_xlim(*i_lims)
+        axes[2].set_ylim(*i_lims)
+
     # Format, save and close
-    if num_tests > 1: axes[2].legend(handles, labels)
+    handles = []
+    for colour in colour_list:
+        handles.append(plt.plot([], [], c=colour, ls="-", alpha=tp)[0])
+    axes[2].legend(handles, unique_names_list)
     fig.suptitle("Learning curves")
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(filename)
     plt.close()
-
-def plot_single_training_curve(
-    filename, train_errors, test_errors, times, iters,
-    figsize=[15, 6], e_lims=[0, 0.5], t_lims=None, i_lims=None, tp=1
-):
-    """
-    plot_single_training_curve: wrapper for plot_training_curves, when there is
-    only a single experiment/training curve
-    """
-    plot_training_curves(
-        filename, 1, [train_errors], [test_errors], [times], [iters], [""],
-        figsize, e_lims, t_lims, i_lims, tp
-    )
 
 def plot_speed_trials():
     pass
@@ -195,6 +202,8 @@ def plot_act_func(filename, act_func, xlims, npoints):
     plt.grid(True)
     plt.savefig(filename)
     plt.close()
+
+def plot_step_sizes(): pass
 
 if __name__ == "__main__":
     np.random.seed(0)

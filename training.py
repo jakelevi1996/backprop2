@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import models as m, data as d, optimisers as o, plotting as p, \
     activations as a, errors as e
 
+def save_results_dict(): raise NotImplementedError
+
+def load_results_dict(): raise NotImplementedError
+
 def train_1D_regression_sgd():
     # Test 1D:1D regression
     sin_data = d.SinusoidalDataSet1D1D(xlim=[0, 1], freq=0.5)
@@ -57,7 +61,7 @@ def train_1D_regression_sgd_2way_tracking():
     p.plot_1D_regression(
         "Results/1D sin predictions (untrained)", sin_data, x_pred, y_pred,
     )
-    train_errors, test_errors, times, iters, _ = o.sgd_2way_tracking(
+    results = o.sgd_2way_tracking(
         n, sin_data, 10000, 1000
         # n_iters=20000, print_every=1000
     )
@@ -65,32 +69,34 @@ def train_1D_regression_sgd_2way_tracking():
     p.plot_1D_regression(
         "Results/1D sin predictions (trained w ft)", sin_data, x_pred, y_pred,
     )
-    p.plot_single_training_curve(
-        "Results/Training curves SGDLS",
-        train_errors, test_errors, times, iters,
+    p.plot_training_curves(
+        "Results/Training curves SGDLS", [results],
         e_lims=[0, 0.25], t_lims=None, i_lims=None
     )
 
 def compare_sgd_sgd2w_learning_curves():
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    n = m.NeuralNetwork(1, 1, [20])
-    w = n.get_parameter_vector().copy()
 
-    out_1 = o.stochastic_gradient_descent(n, sin_data, 30000, 1500)
-    n.set_parameter_vector(w)
-    out_2 = o.sgd_2way_tracking(n, sin_data, 10000, 500)
-
-    train_errors    = [out_1[0], out_2[0]]
-    test_errors     = [out_1[1], out_2[1]]
-    times           = [out_1[2], out_2[2]]
-    iters           = [out_1[3], out_2[3]]
-    names           = ["SGD", "SGD with line-search"]
+    results_list = []
+    for _ in range(3):
+        n = m.NeuralNetwork(1, 1, [20])
+        w = n.get_parameter_vector().copy()
+        results_list.append(o.stochastic_gradient_descent(
+            n, sin_data, 30000, 1500, learning_rate=1e-3,
+            name="SGD, LR=1e-3"
+        ))
+        n.set_parameter_vector(w)
+        results_list.append(o.stochastic_gradient_descent(
+            n, sin_data, 30000, 1500, learning_rate=1e-1,
+            name="SGD, LR=1e-1"
+        ))
+        n.set_parameter_vector(w)
+        results_list.append(
+            o.sgd_2way_tracking(n, sin_data, 10000, 500)
+        )
 
     p.plot_training_curves(
-        "Results/Training curves SGD vs SCGLS", 2,
-        train_errors, test_errors, times, iters, names,
-        # e_lims=[0, 0.5]
-        e_lims=None
+        "Results/Training curves SGD vs SCGLS", results_list, e_lims=[0, 0.3]
     )
 
 
