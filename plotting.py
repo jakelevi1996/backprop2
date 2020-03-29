@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import data
 
 def min_and_max(*input_arrays):
@@ -79,6 +80,10 @@ def plot_2D_nD_regression(
         dataset.x_test.T.reshape(1, -1, 2),
         dataset.x_train.T.reshape(-1, 1, 2)
     ).all(axis=2).any(axis=0)
+    # try: train_inds = dataset.train_inds
+    # except AttributeError:
+    #   raise AttributeError("Dataset must have train inds")
+    # How to re-raise the same error with the same stack trace?
     # Plot test set, training set, and evaluations
     for i in range(n_output_dims):
         axes[0][i].pcolormesh(
@@ -117,54 +122,53 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
     # TODO: add plotting method for binary/discrete data
 
 def plot_training_curves(
-    filename, results_list,
-    figsize=[15, 6], e_lims=[0, 0.5], t_lims=None, i_lims=None, tp=0.75
+    result_list, name="Learning curves", dir="Results/Learning curves",
+    file_ext="png", figsize=[15, 6], e_lims=[0, 0.5], t_lims=None,
+    i_lims=None, tp=0.75, error_log_axis=False, time_log_axis=False,
+    iter_log_axis=False
 ):
     """
     plot_training_curves: ...
 
     TODO: add legend entry to explain dotted lines = training set performance;
     update docstring; 2*2 subplots with legend in its own subplot?
+
+    TODO: logarithmic axes
+
+    Are t_lims and i_lims necessary?
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    unique_names_list = list(set([result["name"] for result in results_list]))
+    unique_names_list = list(set([result.name for result in result_list]))
     num_tests = len(unique_names_list)
     colour_list = plt.get_cmap("hsv")(
-        np.linspace(0, 1, num_tests, endpoint=False)
-    )
-    for result in results_list:
+        np.linspace(0, 1, num_tests, endpoint=False))
+    for result in result_list:
         # Get line colour, depending on the name of the experiment
-        colour = colour_list[unique_names_list.index(result["name"])]
+        colour = colour_list[unique_names_list.index(result.name)]
         # Plot errors against time
-        axes[0].plot(
-            result["times"], result["train errors"], c=colour, ls=":", alpha=tp
-        )
-        axes[0].plot(
-            result["times"], result["test errors"], c=colour, ls="-", alpha=tp
-        )
+        axes[0].plot(result.times, result.train_errors, c=colour, ls="--",
+            alpha=tp)
+        axes[0].plot(result.times, result.test_errors, c=colour, ls="-",
+            alpha=tp)
         axes[0].set_xlabel("Time (s)")
         axes[0].set_ylabel("Mean error")
         axes[0].grid(True)
         # Plot errors against iteration
-        axes[1].plot(
-            result["iters"], result["train errors"], c=colour, ls=":", alpha=tp
-        )
-        axes[1].plot(
-            result["iters"], result["test errors"], c=colour, ls="-", alpha=tp
-        )
+        axes[1].plot(result.iters, result.train_errors, c=colour, ls="--",
+            alpha=tp)
+        axes[1].plot(result.iters, result.test_errors, c=colour, ls="-",
+            alpha=tp)
         axes[1].set_xlabel("Iteration")
         axes[1].set_ylabel("Mean error")
         axes[1].grid(True)
         # Plot iteration against time
-        axes[2].plot(
-            result["times"], result["iters"], c=colour, ls="-", alpha=tp
-        )
+        axes[2].plot(result.times, result.iters, c=colour, ls="-", alpha=tp)
         axes[2].set_xlabel("Time (s)")
         axes[2].set_ylabel("Iteration")
         axes[2].grid(True)
     
-    # Set axis labels
+    # Set axis limits
     if e_lims is not None:
         axes[0].set_ylim(*e_lims)
         axes[1].set_ylim(*e_lims)
@@ -177,12 +181,16 @@ def plot_training_curves(
 
     # Format, save and close
     handles = []
-    for colour in colour_list:
-        handles.append(plt.plot([], [], c=colour, ls="-", alpha=tp)[0])
-    axes[2].legend(handles, unique_names_list)
-    fig.suptitle("Learning curves")
+    for colour, result_name in zip(colour_list, unique_names_list):
+        handles.append(Line2D([], [], c=colour, ls="-", alpha=tp,
+            label=result_name))
+    handles += [
+        Line2D([], [], c="k", ls="-", alpha=tp, label="Test error"),
+        Line2D([], [], c="k", ls="--", alpha=tp, label="Train error")]
+    axes[2].legend(handles=handles)
+    fig.suptitle(name)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    plt.savefig(filename)
+    plt.savefig("{}/{}.{}".format(dir, name, file_ext))
     plt.close()
 
 def plot_speed_trials():

@@ -12,45 +12,73 @@ import numpy as np
 from time import perf_counter
 import models as m, data as d
 
-def get_train_test_errors(model, dataset):
+class Result():
     """
-    get_train_test_errors: given a model and a dataset, return the mean (across
-    data points) of the error in the training set and the test set, respectively
-    """
-    e_train = model.mean_error(dataset.y_train, dataset.x_train)
-    e_test  = model.mean_error(dataset.y_test, dataset.x_test)
-    return e_train, e_test
+    Class to store the results of optimisation in a single object which can be
+    passed directly to plotting and/or analysis functions. Also contains methods
+    for updating and displaying results
 
-def get_empty_results_dict(name):
+    TODO: Make this class configurable, so columns such as step-size and |x| are
+    optional, and the column width and format spec for each column is
+    configurable. Also implement saving and loading of results
     """
-    get_empty_results_dict: ...
-    """
-    return {
-        "times": [], "iters": [], "train errors": [], "test errors": [],
-        "name": name
-    }
+    def __init__(self, name=None, verbose=True):
+        """
+        Store the name of the experiment (which is useful later when displaying
+        results), display table headers, initialise lists for objective function
+        evaluations and the time and iteration number for each evaluation, and
+        record the start time for the results list
+        """
+        self.name = name if (name is not None) else "Unnamed experiment"
+        if verbose: self.display_headers()
+        self.verbose = verbose
 
-def update_results(results, model, dataset, start_time, i, verbose):
-    """
-    eval_model: TODO ... calculate the elapsed time, train error, and test error, update
-    the time, iteration and error lists, and if verbose == True then print the
-    progress to stdout
-    """
-    # Update the time, iteration and error lists within the results dictionary
-    results["times"].append(perf_counter() - start_time)
-    results["iters"].append(i)
-    e_train, e_test = get_train_test_errors(model, dataset)
-    results["train errors"].append(e_train)
-    results["test errors"].append(e_test)
-    if verbose:
-        # Print progress to stdout
-        progress_str = " | ".join([
-            "Iter: {:6d}", "time: {:6.2f}s",
-            "train error: {:8.5f}", "test error: {:8.5f}"
-        ]).format(i, results["times"][-1], e_train, e_test)
-        print(progress_str)
+        self.train_errors   = []
+        self.test_errors    = []
+        self.times          = []
+        self.iters          = []
+        self.step_size      = []
+        self.start_time     = perf_counter()
+        # TODO: DBS criterion
     
-    return results
+    def update(self, model, dataset, i, s):
+        t = perf_counter() - self.start_time
+        e_train = model.mean_error(dataset.y_train, dataset.x_train)
+        e_test  = model.mean_error(dataset.y_test, dataset.x_test)
+        self.train_errors.append(e_train)
+        self.test_errors.append(e_test)
+        self.times.append(t)
+        self.iters.append(i)
+        self.step_size.append(s)
+        if self.verbose: self.display_last()
+    
+    def display_headers(self):
+        # num_fields, field_width = 3, 10
+        print("\nPerforming test \"{}\"...".format(self.name))
+        print("{:9} | {:8} | {:11} | {:11} | {:10}".format(
+            "Iteration", "Time (s)", "Train error", "Test error", "Step size"))
+        print(" | ".join("-" * i for i in [9, 8, 11, 11, 10]))
+
+    def display_last(self):
+        print("{:9d} | {:8.3f} | {:11.5f} | {:11.5f} | {:10.4f}".format(
+            self.iters[-1], self.times[-1], self.train_errors[-1],
+            self.test_errors[-1], self.step_size[-1]))
+
+    def display_summary(self, n_iters):
+        t_total = perf_counter() - self.start_time
+        t_mean = t_total / n_iters
+        print("-" * 50,
+            "{:30} = {}".format("Test name", self.name),
+            "{:30} = {:,.4f} s".format("Total time", t_total),
+            "{:30} = {:,}".format("Total iterations", n_iters),
+            "{:30} = {:.4f} ms".format("Average time per iteration",
+                1e3 * t_mean),
+            "{:30} = {:,.1f}".format("Average iterations per second",
+                1 / t_mean),
+            sep="\n", end="\n\n")
+    
+    def save(self, filename): raise NotImplementedError
+    def load(self, filename): raise NotImplementedError
 
 
 def stochastic_gradient_descent(
@@ -71,23 +99,18 @@ def stochastic_gradient_descent(
     """
     # Get initial parameters and start time, and initialise results dictionary
     w = model.get_parameter_vector()
-    start_time = perf_counter()
-    results = get_empty_results_dict(name)
+    result = Result(name)
     for i in range(n_iters):
         # Evaluate the model
-        if i % eval_every == 0:
-            update_results(results, model, dataset, start_time, i, verbose)
+        if i % eval_every == 0: result.update(model, dataset, i, 1)
         # Update parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         w -= learning_rate * dEdw
         model.set_parameter_vector(w)
     # Evaluate final performance
-    update_results(results, model, dataset, start_time, n_iters, verbose)
-    # Print average iteration time
-    print("Average time per iteration = {:.4f} ms".format(
-        1e3 * (perf_counter() - start_time) / n_iters
-    ))
-    return results
+    result.update(model, dataset, n_iters, 1)
+    if verbose: result.display_summary(n_iters)
+    return result
 
 def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     """
@@ -96,7 +119,8 @@ def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     enough, then return True to indicate that the line search should back-track.
 
     The linesearch criterion is derived by rearranging a truncated first-order
-    Taylor series (NB for gradient descent, <v, df/dx> should be negative):
+    Taylor series in terms of the reduction in the objective function (NB for
+    gradient descent, <v, df/dx> should be negative):
     *   f(x + t*v) = f(x) + t * <v, df/dx> + ...
     *   => f(x) - f(x + t*v) ~~ - t * <v, df/dx>
 
@@ -139,16 +163,12 @@ def sgd_2way_tracking(
     """
     # Get initial parameters, step size and start time
     w = model.get_parameter_vector()
-    start_time = perf_counter()
     t = t0
-    # Initialise results dictionary (including step-size list)
-    results = get_empty_results_dict(name)
-    results["step sizes"] = []
+    result = Result(name)
     for i in range(n_iters):
         # Evaluate the model
         if i % eval_every == 0:
-            update_results(results, model, dataset, start_time, i, verbose)
-            results["step sizes"].append(t) # TODO: do this every iteration?
+            result.update(model, dataset, i, t)
         # Get the gradient and mean error for the current parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         E0 = model.mean_error(dataset.y_train)
@@ -166,15 +186,10 @@ def sgd_2way_tracking(
 
         w -= t * dEdw
         model.set_parameter_vector(w)
-        # results["step sizes"].append(t) # TODO: do this every iteration?
     # Evaluate final performance
-    update_results(results, model, dataset, start_time, n_iters, verbose)
-    results["step sizes"].append(t)
-    # Print average iteration time
-    print("Average time per iteration = {:.4f} ms".format(
-        1e3 * (perf_counter() - start_time) / n_iters
-    ))
-    return results
+    result.update(model, dataset, n_iters, 1)
+    if verbose: result.display_summary(n_iters)
+    return result
 
 def generalised_newton(): raise NotImplementedError
 
@@ -182,7 +197,16 @@ def adam_optimiser(): raise NotImplementedError
 
 def particle_swarm_optimiser(): raise NotImplementedError
 
+def warmup(n_its=1000):
+    """ Perform warmup routine """
+    np.random.seed(0)
+    sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+    n = m.NeuralNetwork(1, 1, [20])
+    stochastic_gradient_descent(n, sin_data, n_its, n_its//10, verbose=True,
+        name="Warmup")
+
 if __name__ == "__main__":
+    warmup()
     np.random.seed(0)
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     n = m.NeuralNetwork(1, 1, [20])
