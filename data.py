@@ -20,12 +20,11 @@ class DataSet():
     def get_test_batch(self, batch_size):   raise NotImplementedError
     
     def save(self, filename):
-        np.savez(
-            filename, input_dim=self.input_dim, output_dim=self.output_dim,
-            n_train=self.n_train, n_test=self.n_test,
-            x_train=self.x_train, x_test=self.x_test,
-            y_train=self.y_train, y_test=self.y_test
-        )
+        np.savez(filename,
+            input_dim=self.input_dim,   output_dim=self.output_dim,
+            n_train=self.n_train,       n_test=self.n_test,
+            x_train=self.x_train,       x_test=self.x_test,
+            y_train=self.y_train,       y_test=self.y_test)
 
     def load(self, filename):
         # Load data from file
@@ -36,18 +35,18 @@ class DataSet():
             self.x_train, self.x_test   = data['x_train'],  data['x_test']
             self.y_train, self.y_test   = data['y_train'],  data['y_test']
         # Assert that the arrays have the correct shape
-        assert self.x_train.shape == (self.input_dim    ,   self.n_train)
-        assert self.y_train.shape == (self.output_dim   ,   self.n_train)
-        assert self.x_test.shape  == (self.input_dim    ,   self.n_test )
-        assert self.y_test.shape  == (self.output_dim   ,   self.n_test )
+        assert self.x_train.shape == (self.n_train  ,   self.input_dim  )
+        assert self.y_train.shape == (self.n_train  ,   self.output_dim )
+        assert self.x_test.shape  == (self.n_test   ,   self.input_dim  )
+        assert self.y_test.shape  == (self.n_test   ,   self.output_dim )
     
     def print_data(self, first_n=10):
         print(
-            "x_train.T:",   self.x_train.T[:first_n],
-            "y_train.T:",   self.y_train.T[:first_n],
-            "x_test.T:",    self.x_test.T[:first_n],
-            "y_test.T:",    self.y_test.T[:first_n], sep="\n"
-        )
+            "First {} data points:".format(first_n),
+            "x_train:",   self.x_train[:first_n],
+            "y_train:",   self.y_train[:first_n],
+            "x_test:",    self.x_test[:first_n],
+            "y_test:",    self.y_test[:first_n], sep="\n")
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     """
@@ -55,9 +54,9 @@ def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     transformed set of input data, and add Gaussian noise.
 
     Inputs:
-    -   x: input data. Should be a np.ndarray with shape [input_dim, N_D]
+    -   x: input data. Should be a np.ndarray with shape [N_D, input_dim]
     -   phase: constant which is added to each dimension of the input data.
-        Should be either a scalar or a np.ndarray with shape [input_dim, 1]
+        Should be either a scalar or a np.ndarray with shape [1, input_dim]
     -   freq: linear rescaling of input data dimensions. Should be either a
         scalar or a np.ndarray with shape [output_dim, input_dim]
     -   ampl: linear transformation which is applied to the output of the
@@ -65,16 +64,16 @@ def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
         shape [output_dim, output_dim]
     -   offset: constant which is added to the linearly transformed output from
         the sinusoidal function. Should be either a scalar or a np.ndarray with
-        shape [output_dim, 1]
+        shape [1, output_dim]
     -   noise_std: standard deviation of the noise which is added to the final
         output. Should be either a scalar or a np.ndarray with shape
-        [output_dim, 1]
+        [1, output_dim]
 
     Outputs:
-    -   y: output data, in a np.ndarray with shape [output_dim, N_D]
+    -   y: output data, in a np.ndarray with shape [N_D, output_dim]
     """
-    y = np.dot(ampl, np.sin(2 * np.pi * np.dot(freq, (x - phase))))
-    return y + np.random.normal(offset, noise_std, [output_dim, x.shape[1]])
+    y = np.dot(ampl, np.sin(2 * np.pi * np.dot(freq, (x - phase).T))).T
+    return y + np.random.normal(offset, noise_std, [x.shape[0], output_dim])
 
 class SinusoidalDataSet1D1D(DataSet):
     """
@@ -90,14 +89,12 @@ class SinusoidalDataSet1D1D(DataSet):
         self.input_dim  , self.output_dim   = 1         , 1
         self.n_train    , self.n_test       = n_train   , n_test
         # Generate input/output training and test data
-        self.x_train    = np.random.uniform(*xlim, size=[1, n_train])
-        self.x_test     = np.random.uniform(*xlim, size=[1, n_test])
+        self.x_train    = np.random.uniform(*xlim, size=[n_train, 1])
+        self.x_test     = np.random.uniform(*xlim, size=[n_test, 1])
         self.y_train    = noisy_sin(
-            self.x_train, phase, freq, ampl, offset, noise_std, 1
-        )
+            self.x_train, phase, freq, ampl, offset, noise_std, 1)
         self.y_test     = noisy_sin(
-            self.x_test, phase, freq, ampl, offset, noise_std, 1
-        )
+            self.x_test, phase, freq, ampl, offset, noise_std, 1)
 
 class SinusoidalDataSet2DnD(DataSet):
     """
@@ -117,25 +114,24 @@ class SinusoidalDataSet2DnD(DataSet):
         # Generate test set inputs as a uniform mesh and reshape
         x0, x1 = np.linspace(*x0lim, nx0), np.linspace(*x1lim, nx1)
         x0_mesh, x1_mesh = np.meshgrid(x0, x1)
-        self.x_test = np.stack([x0_mesh.ravel(), x1_mesh.ravel()], axis=0)
-        n_test = self.x_test.shape[1]
+        self.x_test = np.stack([x0_mesh.ravel(), x1_mesh.ravel()], axis=1)
+        n_test = self.x_test.shape[0]
         # Randomly generate phase, frequency, amplitude, and offset
-        phase   = np.random.normal(size=[input_dim, 1])
+        phase   = np.random.normal(size=[1, input_dim])
         freq    = np.random.normal(size=[output_dim, input_dim])
         ampl    = np.random.normal(size=[output_dim, output_dim])
-        offset  = np.random.normal(size=[output_dim, 1])
+        offset  = np.random.normal(size=[1, output_dim])
         # Generate noiseless test set outputs
         self.y_test = noisy_sin(
-            self.x_test, phase, freq, ampl, offset, 0, output_dim
-        )
+            self.x_test, phase, freq, ampl, offset, 0, output_dim)
         # Generate training set as a random subset of the test set
-        n_train = int(n_test * train_ratio)
-        train_inds = np.random.choice(n_test, n_train, replace=False)
-        self.x_train = self.x_test[:, train_inds]
-        self.y_train = self.y_test[:, train_inds]
+        n_train         = int(n_test * train_ratio)
+        train_inds      = np.random.choice(n_test, n_train, replace=False)
+        self.x_train    = self.x_test[train_inds]
+        self.y_train    = self.y_test[train_inds]
         # Add noise to training and test outputs independently
-        self.y_test += np.random.normal(0, noise_std, self.y_test.shape)
-        self.y_train += np.random.normal(0, noise_std, self.y_train.shape)
+        self.y_test     += np.random.normal(0, noise_std, self.y_test.shape)
+        self.y_train    += np.random.normal(0, noise_std, self.y_train.shape)
         # Set shape constants
         self.input_dim  , self.output_dim   = input_dim , output_dim
         self.n_train    , self.n_test       = n_train   , n_test

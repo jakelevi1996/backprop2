@@ -8,25 +8,20 @@ in the second hidden layer, ..., N_L-1 units in the last hidden layer, and N_L
 units in the output layer. Each model can accept multidimensional inputs and
 outputs; the dimension of the input data is input_dim, and the dimension of the
 output data is output_dim == N_L == the number of units in the output layer.
-Each neural network can accept multiple input points simultaneously; when inputs
-are fed to a neural network, it is assumed that N_D input points are fed
-simultaneously in a numpy array with shape (input_dim, N_D) (IE the first array
-dimension refers to the dimension within each input point, and the second array
-dimension refers to a particular input point)*. When such an input is fed into
-the neural network, the output will be a numpy array with shape (output_dim,
-N_D).
 
-*This convention is chosen to simplify matrix multiplication during
-forward-propagation and back-propagation; it is possible that in future the
-array shape dimensions will be swapped, and the matrix multiplication operations
-will be carried out with np.einsum operations with subscripts [0, 1] and [2, 1]
-(whereas conventional matrix multiplication is equivalent to np.einsum with
-subscripts [0, 1] and [1, 2])
+Each neural network accepts multiple input points simultaneously; when inputs
+are fed to a neural network, it is assumed that N_D input points are fed
+simultaneously in a numpy array with shape (N_D, input_dim) (IE the first array
+dimension refers to a particular input point, and the second array dimension
+refers to the dimension within the input point)*. When such an input is fed into
+the neural network, the output will be a numpy array with shape (N_D,
+output_dim).
 
 TODO: within the whole repository, it might be more efficient to initialise
 arrays and then use the `out` optional argument of the numpy functions and
 methods to save repeated mallocs and frees (which I assume is similar to what
-happens under the hood).
+happens under the hood). TODO: try this in a new branch, and compare to
+original; sometimes einsum optimisations are not very fast
 """
 
 import numpy as np
@@ -181,11 +176,12 @@ class NeuralNetwork(Model):
         -   weight_std: standard deviation for initialisation of weights
         -   bias_std: standard deviation for initialisation of biases
         -   act_funcs: list of activation functions for each layer in the
-            network. The length of this list can be different to the number of
-            network layers; see the resize_list function for a description of
-            how the list is resized to match the number of network layers.
-            Default is [a.Logistic(), a.Identity()], IE output is identity
-            function, and all hidden layers have logistic activation functions
+            network (input layer first). The length of this list can be
+            different to the number of network layers; see the resize_list
+            function for a description of how the list is resized to match the
+            number of network layers. Default is [a.Logistic(), a.Identity()],
+            IE output is identity function, and all hidden layers have logistic
+            activation functions
         -   error_func: error function which (along with its gradients) is used
             to calculate gradients for the network parameters
 
@@ -470,6 +466,14 @@ if __name__ == "__main__":
     w = n.get_parameter_vector()
     dEdw = n.get_gradient_vector(x, t)
     print(w.shape, dEdw.shape)
+
+    # Find the size of the Hessian
+    n2 = NeuralNetwork(
+        num_hidden_units=[10], input_dim=1, output_dim=1
+    )
+    w = n2.get_parameter_vector()
+    n2.print_weights()
+    print(w.shape, np.power(w.shape, 2))
 
     # # n.plot_evals("Data/evaluations")
     # n.eval_gradient(0.4, 1.3)

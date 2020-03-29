@@ -13,13 +13,13 @@ class ErrorFunction():
 
         Inputs:
         -   y: predictions from a model. Should be in a numpy array with shape
-            (output_dim, N_D)
+            (N_D, output_dim)
         -   target: targets that the model is trying to match. Should be in a
-            numpy array with shape (output_dim, N_D)
+            numpy array with shape (N_D, output_dim)
 
         Outputs:
         -   error: array containing the error for each data point, in a numpy
-            array with shape (1, N_D)
+            array with shape (N_D, 1)
         """
         raise NotImplementedError
 
@@ -30,14 +30,14 @@ class ErrorFunction():
 
         Inputs:
         -   y: predictions from a model. Should be in a numpy array with shape
-            (output_dim, N_D)
+            (N_D, output_dim)
         -   target: targets that the model is trying to match. Should be in a
-            numpy array with shape (output_dim, N_D)
+            numpy array with shape (N_D, output_dim)
 
         Outputs:
         -   error_grad: array containing the first partial derivative of the
             error with respect to the predictions for each data point, in a
-            numpy array with shape (output_dim, N_D)
+            numpy array with shape (N_D, output_dim)
         """
         raise NotImplementedError
 
@@ -48,14 +48,14 @@ class ErrorFunction():
 
         Inputs:
         -   y: predictions from a model. Should be in a numpy array with shape
-            (output_dim, N_D)
+            (N_D, output_dim)
         -   target: targets that the model is trying to match. Should be in a
-            numpy array with shape (output_dim, N_D)
+            numpy array with shape (N_D, output_dim)
 
         Outputs:
         -   error_hessian: array containing the second partial derivative of the
             error with respect to the predictions for each data point, in a
-            numpy array with shape (output_dim, output_dim, N_D)
+            numpy array with shape (N_D, output_dim, output_dim)
 
         TODO: if the hessian is symetrical, can save time and memory by only
         calculating half? Or is it diagonal, in which case store in a
@@ -64,9 +64,7 @@ class ErrorFunction():
         raise NotImplementedError
 
     def __call__(self, y, target):
-        """
-        __call__: wrapper for the error function
-        """
+        """ Wrapper for the error function """
         return self.E(y, target)
 
 class SumOfSquares(ErrorFunction):
@@ -75,7 +73,7 @@ class SumOfSquares(ErrorFunction):
     """
     name = "sum of squares"
     def E(self, y, target):
-        return 0.5 * np.square(y - target).sum(axis=0, keepdims=True)
+        return 0.5 * np.square(y - target).sum(axis=1, keepdims=True)
     
     def dEdy(self, y, target):
         return y - target
