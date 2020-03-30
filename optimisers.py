@@ -41,8 +41,10 @@ class Result():
         self.start_time     = perf_counter()
         # TODO: DBS criterion
     
+    def time_elapsed(self): return perf_counter() - self.start_time
+    
     def update(self, model, dataset, i, s):
-        t = perf_counter() - self.start_time
+        t = self.time_elapsed()
         e_train = model.mean_error(dataset.y_train, dataset.x_train)
         e_test  = model.mean_error(dataset.y_test, dataset.x_test)
         self.train_errors.append(e_train)
@@ -65,7 +67,7 @@ class Result():
             self.test_errors[-1], self.step_size[-1]))
 
     def display_summary(self, n_iters):
-        t_total = perf_counter() - self.start_time
+        t_total = self.time_elapsed()
         t_mean = t_total / n_iters
         print("-" * 50,
             "{:30} = {}".format("Test name", self.name),
@@ -79,6 +81,152 @@ class Result():
     
     def save(self, filename): raise NotImplementedError
     def load(self, filename): raise NotImplementedError
+
+
+
+def backtrack_condition(s, E_new, E_0, delta_dot_dEdw, alpha):
+    """
+    Compares the actual reduction in the objective function to that which is
+    expected from a first-order Taylor expansion. Returns True if a reduction in
+    the step size is needed according to this criteria, otherwise returns False.
+
+    TODO: try f_new > f_0 - (alpha * expected_reduction)
+    """
+    reduction = E_0 - E_new
+    # if reduction == 0: return False
+    expected_reduction = -s * delta_dot_dEdw
+    return reduction < (alpha * expected_reduction)
+
+def check_bad_step_size(s):
+    if s == 0:
+        print("s has converged to 0; resetting t0 s_old * beta ...")
+        return True
+    elif not np.isfinite(s):
+        print("s has diverged; resetting t0 s_old/beta ...")
+        return True
+    else: return False
+
+def line_search(model, x, y, w, s, delta, dEdw, alpha, beta, final_backstep):
+    """ ... TODO: use batches """
+    # Calculate initial parameters
+    E_0 = model.mean_error(y, x)
+    E_old = E_0
+    # s_old = s
+    # w = model.get_parameter_vector()
+    model.set_parameter_vector(w + s * delta)
+    E_new = model.mean_error(y, x)
+    
+    delta_dot_dEdw = np.dot(delta, dEdw)
+    bt_params = (E_0, delta_dot_dEdw, alpha)
+
+    # Check initial backtrack condition
+    if backtrack_condition(s, E_new, *bt_params):
+        # Reduce step size until reduction is good enough and stops decreasing
+        s *= beta
+        E_old = E_new
+        model.set_parameter_vector(w + s * delta)
+        E_new = model.mean_error(y, x)
+
+        # while backtrack_condition(s, E_new, *bt_params) or E_new < E_old:
+        while backtrack_condition(s, E_new, *bt_params):
+            s *= beta
+            # if check_bad_step_size(s): return s_old * beta
+            E_old = E_new
+            model.set_parameter_vector(w + s * delta)
+            E_new = model.mean_error(y, x)
+        # if final_backstep or E_new > E_old: s /= beta
+    else:
+        # Track forwards until objective function stops decreasing
+        s /= beta
+        E_old = E_new
+        model.set_parameter_vector(w + s * delta)
+        E_new = model.mean_error(y, x)
+        # while E_new < E_old:
+        while not backtrack_condition(s, E_new, *bt_params):
+            s /= beta
+            # if check_bad_step_size(s): return s_old / beta
+            E_old = E_new
+            model.set_parameter_vector(w + s * delta)
+            E_new = model.mean_error(y, x)
+        # if final_backstep or E_new > E_old: s *= beta
+
+    return s
+
+def minimise(
+    model, dataset, get_step, n_iters=1000, t_lim=5, E_lim=-np.inf,
+    eval_every=100, line_search_flag=False, s0=1.0, alpha=0.5, beta=0.5,
+    final_backstep=False, name=None, verbose=False
+):
+    """
+    Abstract minimisation function, containing code which is common to all
+    minimisation routines. Specific minimisation functions should call this
+    function with a get_step callable, which should take a model and a dataset
+    object, and return a step vector and a gradient vector.
+
+    Inputs:
+    -   ...
+
+    TODO: use batches
+    """
+    # Set initial parameters, step size and iteration counter
+    w, s, i = model.get_parameter_vector(), s0, 0
+    # Initialise result object, including start time of iteration
+    result = Result(name, verbose)
+
+    # while True:
+    for i in range(n_iters):
+        # Get gradient and initial step
+        delta, dEdw = get_step(model, dataset)
+        
+        # # Check if delta is zero; if so, minimisation can't continue, so exit
+        # if not np.any(delta): break
+
+        # Evaluate the model
+        if i % eval_every == 0: # TODO: make this condition time-based
+            result.update(model, dataset, i, s)
+        
+        # Update parameters
+        if line_search_flag:
+            s = line_search(model, dataset.x_train, dataset.y_train, w, s,
+                delta, dEdw, alpha, beta, final_backstep)
+            w += s * delta
+        else:
+            w += delta
+            model.set_parameter_vector(w)
+        # model.set_parameter_vector(w)
+        
+        # # Increment loop counter and check loop condition
+        # i += 1
+        # if any([i >= n_iters,
+        #     result.train_errors[-1] <= E_lim,
+        #     result.time_elapsed() >= t_lim]): break
+
+    # Evaluate final performance
+    result.update(model, dataset, i, s)
+    if verbose: result.display_summary(i)
+
+    return result
+
+def get_gradient_descent_step(model, dataset, learning_rate):
+    """
+    Method to get the descent step during each iteration of gradient-descent
+    minimisation
+    """
+    dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
+
+    return -learning_rate * dEdw, dEdw
+
+def gradient_descent(
+    model, dataset, learning_rate=1e-1, name="Gradient descent",
+    final_backstep=False, **kwargs
+):
+    """ TODO: why is this ~10% slower than the old SGD function? """
+    get_step = lambda model, dataset: get_gradient_descent_step(
+        model, dataset, learning_rate)
+
+    return minimise(model, dataset, get_step, name=name,
+        final_backstep=final_backstep, **kwargs)
+
 
 
 def stochastic_gradient_descent(
@@ -112,7 +260,7 @@ def stochastic_gradient_descent(
     if verbose: result.display_summary(n_iters)
     return result
 
-def backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
+def old_backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     """
     backtrack_condition: determine whether the current step size gives a
     sufficient reduction in the objective function; if the reduction is not good
@@ -174,20 +322,20 @@ def sgd_2way_tracking(
         E0 = model.mean_error(dataset.y_train)
         # Check if the current step size gives sufficient error reduction
         backtrack_params = (model, w, -dEdw, dataset, alpha, dEdw, E0)
-        if backtrack_condition(t, *backtrack_params):
+        if old_backtrack_condition(t, *backtrack_params):
             # Reduce step size until error reduction is good enough
             t *= beta
-            while backtrack_condition(t, *backtrack_params): t *= beta
+            while old_backtrack_condition(t, *backtrack_params): t *= beta
         else:
             # Increase step size until error reduction is not good enough
             t /= beta
-            while not backtrack_condition(t, *backtrack_params): t /= beta
+            while not old_backtrack_condition(t, *backtrack_params): t /= beta
             # Try also, keep forward tracking until E starts to increase
 
         w -= t * dEdw
         model.set_parameter_vector(w)
     # Evaluate final performance
-    result.update(model, dataset, n_iters, 1)
+    result.update(model, dataset, n_iters, t)
     if verbose: result.display_summary(n_iters)
     return result
 
@@ -206,7 +354,7 @@ def warmup(n_its=1000):
         name="Warmup")
 
 if __name__ == "__main__":
-    warmup()
+    # warmup()
     np.random.seed(0)
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     n = m.NeuralNetwork(1, 1, [20])
@@ -218,4 +366,11 @@ if __name__ == "__main__":
     
     stochastic_gradient_descent(n, sin_data, 10000, 1000)
     n.set_parameter_vector(w)
+    gradient_descent(n, sin_data, n_iters=10000, eval_every=1000, verbose=True,
+        name="New SGD")
+    n.set_parameter_vector(w)
     sgd_2way_tracking(n, sin_data, 10000, 1000)
+    n.set_parameter_vector(w)
+    gradient_descent(n, sin_data, n_iters=10000, eval_every=1000, verbose=True,
+        line_search_flag=True, name="New SGD + LS", learning_rate=1.0,
+        alpha=0.8, beta=0.5, t_lim=10)
