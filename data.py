@@ -5,6 +5,9 @@ class DataSet():
     Interface class for data sets, which contains shape constants and train/test
     inputs and outputs as attributes, and methods for loading, saving, and
     printing the data.
+
+    TODO: implement get_train_batch and get_test_batch and incorporate into
+    optimisers module
     """
     def __init__(self, filename=None):
         # If a filename is specified, then load from file
@@ -46,8 +49,7 @@ class DataSet():
             "x_train.T:",   self.x_train.T[:first_n],
             "y_train.T:",   self.y_train.T[:first_n],
             "x_test.T:",    self.x_test.T[:first_n],
-            "y_test.T:",    self.y_test.T[:first_n], sep="\n"
-        )
+            "y_test.T:",    self.y_test.T[:first_n], sep="\n")
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     """

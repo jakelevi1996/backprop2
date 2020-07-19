@@ -20,8 +20,7 @@ class ActivationFunction():
         """
         # Check this method is being called by a child of ActivationFunction
         err_str = "Method must be called by a child of ActivationFunction"
-        if type(self) is ActivationFunction:
-            raise RuntimeError(err_str)
+        if type(self) is ActivationFunction: raise RuntimeError(err_str)
         # Get the list of subclasses of the ActivationFunction class
         subclass_type_list = ActivationFunction.__subclasses__()
         # Get the class of the object which is calling this method
@@ -32,7 +31,7 @@ class ActivationFunction():
         # Return a unique integer ID for the activation function
         return subclass_type_list.index(this_type)
     
-    def get_func_from_id(self, id):
+    def get_func_from_id(self, func_id):
         """
         get_func_from_id: given an integer ID (EG generated using
         get_id_from_func), return an instance of the activation function which
@@ -43,7 +42,7 @@ class ActivationFunction():
         # Get the list of subclasses of the ActivationFunction class
         subclass_type_list = ActivationFunction.__subclasses__()
         # Get the class of the activation function corresponding to id
-        func_class = subclass_type_list[id]
+        func_class = subclass_type_list[func_id]
         # Get an instance of the class
         func_object = func_class()
         # Return the instance of the correct activation function
@@ -69,15 +68,15 @@ class Logistic(ActivationFunction):
 
 class Relu(ActivationFunction):
     name = "ReLU activation function"
-    def y(self, x): return np.where(x < 0, 0.0, x)
-    def dydx(self, x): return np.where(x < 0, 0.0, 1.0)
+    def y(self, x): return np.where(x < 0.0, 0.0, x)
+    def dydx(self, x): return np.where(x < 0.0, 0.0, 1.0)
 
 class Gaussian(ActivationFunction):
     name = "Gaussian activation function"
     def y(self, x): return np.exp(-(x ** 2))
     def dydx(self, x, y=None):
         if y is None: y = self.y(x)
-        return - 2.0 * x * y
+        return -2.0 * x * y
 
 class SoftMax(ActivationFunction):
     pass

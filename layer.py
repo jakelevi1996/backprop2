@@ -15,14 +15,14 @@ class NeuralLayer():
         self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
         self.bias = np.random.normal(0, bias_std, [num_units, 1])
     
-    def activate(self, input):
+    def activate(self, layer_input):
         """
         activate: calculate the pre-activation and output of this layer as a
         function of the input, and store the input for subsequent gradient
         calculations.
 
         Inputs:
-        -   input: input to the layer. Should be a numpy array with shape
+        -   layer_input: input to the layer. Should be a numpy array with shape
             (input_dim, N_D)
 
         Outputs:
@@ -32,8 +32,8 @@ class NeuralLayer():
             being applied to the input, before nonlinearity is applied to give
             the output, in a numpy array with shape (output_dim, N_D)
         """
-        self.input = input
-        self.pre_activation = np.matmul(self.weights, input) + self.bias
+        self.input = layer_input
+        self.pre_activation = np.matmul(self.weights, layer_input) + self.bias
         self.output = self.act_func(self.pre_activation)
         return self.output
     
