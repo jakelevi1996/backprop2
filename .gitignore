@@ -1,6 +1,7 @@
-**.png
-**.npz
-**.pyc
+*.png
+*.npz
+*.pyc
+*.txt
 
 temp.py
 .vscode
