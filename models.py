@@ -119,7 +119,7 @@ class NeuralNetwork(Model):
         # Set network constants
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self._num_units_list = num_hidden_units + [output_dim]
+        self._num_units_list = list(num_hidden_units) + [output_dim]
         self._num_layers = len(self._num_units_list)
         self._error_func = error_func
 
