@@ -55,36 +55,6 @@ class Model():
     def set_parameter_vector(self, new_parameters):
         raise NotImplementedError
 
-def resize_list(old_list, new_len):
-    """
-    resize_list: add or remove elements from an existing list in order to change
-    its length. This function is used in the NeuralNetwork initialisation method
-    in case the length of the list of activation functions is different to the
-    number of network layers. If the old list is too long, then remove the
-    beginning of the list; if the old list is too short, then repeat the first
-    element in the list. The original list is not modified in-place. NB: this
-    function could be implemented with the following one-liner (which is more
-    concise but less readable):
-
-    return ((new_len - len(old_list)) * [old_list[0]]) + old_list[-new_len:]
-
-    Inputs:
-    -   old_list: the list that will be resized
-    -   new_len: the length that the new list will have
-
-    Outputs:
-    -   list which has length new_len and the same final elements as old_list
-    """
-    if new_len < len(old_list):
-        # Make the list shorter by removing the beginning
-        return old_list[-new_len:]
-    elif new_len > len(old_list):
-        # Make the list longer by repeating the first element
-        return ((new_len - len(old_list)) * [old_list[0]]) + old_list
-    else:
-        # Return original list
-        return old_list
-
 class NeuralNetwork(Model):
     def __init__(
         self, input_dim=1, output_dim=1, num_hidden_units=[10],
@@ -129,32 +99,42 @@ class NeuralNetwork(Model):
         else:
             self.gaussian_initialiser(act_funcs, weight_std, bias_std)
     
-    def gaussian_initialiser(self, act_funcs, weight_std, bias_std):
+    def gaussian_initialiser(self, act_func_list, weight_std, bias_std):
         """
         gaussian_initialiser: initialise the layers of the neural network, using
         a Gaussian distribution with zero mean, a single standard deviation for
-        all weights, and a single standard deviation for all biases
+        all weights, and a single standard deviation for all biases. Also
+        initialise the memory for the parameter and gradient vectors.
+
+        TODO: if this becomes an external function, it can accept as additional
+        arguments self._num_units_list (from which it can calculate the number
+        of layers) and self.input_dim, and return the list of layers the number
+        of parameters
         """
         # Resize the list of activation functions
-        act_funcs = resize_list(act_funcs, self._num_layers)
+        act_func = lambda i: act_func_list[
+            max(len(act_func_list) - self._num_layers + i, 0)
+        ]
         # Initialise the input layer
-        self.layers = [NeuralLayer(
-            self._num_units_list[0], self.input_dim, act_funcs[0],
+        new_layer = NeuralLayer(
+            self._num_units_list[0], self.input_dim, act_func(0),
             weight_std, bias_std
-        )]
-        num_params = self._num_units_list[0] * (self.input_dim + 1)
+        )
+        self.layers = [new_layer]
+        num_params = new_layer.num_weights + new_layer.num_bias
         # Initialise the rest of the layers
-        for (num_units, num_inputs, act_func) in zip(
-            self._num_units_list[1:], self._num_units_list[:-1], act_funcs[1:]
-        ):
-            self.layers.append(NeuralLayer(
-                num_units, num_inputs, act_func, weight_std, bias_std
-            ))
-            num_params += num_units * (num_inputs + 1)
+        for i in range(1, self._num_layers):
+            new_layer = NeuralLayer(
+                self._num_units_list[i], self._num_units_list[i-1],
+                act_func(i), weight_std, bias_std
+            )
+            self.layers.append(new_layer)
+            num_params += (new_layer.num_weights + new_layer.num_bias)
+        
         
         # Initialise memory for the parameter and gradient vectors
-        self.param_vector   = np.empty(num_params)
-        self.grad_vector    = np.empty(num_params)
+        self.param_vector = np.empty(num_params)
+        self.grad_vector = np.empty(num_params)
     
     def glorot_initialiser(self, act_funcs):
         # TODO: Should initialisers have their own classes?
