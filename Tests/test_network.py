@@ -94,15 +94,31 @@ def test_get_gradient_vector():
     """
     Test the public method for getting the parameter vector, and check that the
     gradient vector is approximately accurate using 1st order numerical
-    differentiation TODO
+    differentiation
     """
+    # Initialise network, inputs and targets
     n = get_random_network()
     N_D = 12
     x = np.random.normal(size=[n.input_dim, N_D])
     t = np.random.normal(size=[n.output_dim, N_D])
+    # Get the gradient vector and check that it has the right shape
     gradient_vector = n.get_gradient_vector(x, t)
     num_params = gradient_vector.size
     assert gradient_vector.shape == (num_params, )
+
+    # Change the weights and calculate the change in error
+    dw_max = 1e-5
+    tol = 1e-9
+    E = n.mean_error(t, x)
+    w = n.get_parameter_vector()
+    dw = np.random.uniform(-dw_max, dw_max, gradient_vector.shape)
+    n.set_parameter_vector(w + dw)
+    E_new = n.mean_error(t, x)
+    dE = E_new - E
+    # Check that the gradient is consistent with numerical approximation
+    assert abs(dE - np.dot(gradient_vector, dw)) < tol
+    # Check that the answer isn't completely distorted by precision
+    assert abs(dE) > max(abs(gradient_vector * dw))
 
 def test_get_hessian():
     # TODO
