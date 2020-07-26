@@ -6,14 +6,16 @@ class NeuralLayer():
         __init__: initialise the constants and parameters for a neural network
         layer. This method is called during NeuralNetwork.__init__()
         """
+        # Randomly initialise parameters
+        self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
+        self.bias = np.random.normal(0, bias_std, [num_units, 1])
+        
         # Set layer constants
         self.input_dim = num_inputs
         self.output_dim = num_units
         self.act_func = act_func
-        
-        # Randomly initialise parameters
-        self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
-        self.bias = np.random.normal(0, bias_std, [num_units, 1])
+        self.num_weights = self.weights.size
+        self.num_bias = self.bias.size
     
     def activate(self, layer_input):
         """

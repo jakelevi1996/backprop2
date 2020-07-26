@@ -258,14 +258,12 @@ class NeuralNetwork(Model):
         # Initialise the pointer and iterate through the layers
         i = 0
         for layer in self.layers:
-            # Calculate the number of weight and bias parameters in the layer
-            n_w, n_b = layer.output_dim * layer.input_dim, layer.output_dim
             # Set the weights and update the pointer
-            self.param_vector[i : i + n_w] = layer.weights.ravel()
-            i += n_w
+            self.param_vector[i:i+layer.num_weights] = layer.weights.ravel()
+            i += layer.num_weights
             # Set the biases and update the pointer
-            self.param_vector[i : i + n_b] = layer.bias.ravel()
-            i += n_b
+            self.param_vector[i:i+layer.num_bias] = layer.bias.ravel()
+            i += layer.num_bias
         
         return self.param_vector
 
@@ -293,14 +291,16 @@ class NeuralNetwork(Model):
         # Initialise the pointer and iterate through the layers
         i = 0
         for layer in self.layers:
-            # Calculate the number of weight and bias parameters in the layer
-            n_w, n_b = layer.output_dim * layer.input_dim, layer.output_dim
             # Set the weight gradients and update the pointer
-            self.grad_vector[i : i + n_w] = layer.w_grad.mean(axis=-1).ravel()
-            i += n_w
+            self.grad_vector[i:i+layer.num_weights] = (
+                layer.w_grad.mean(axis=-1).ravel()
+            )
+            i += layer.num_weights
             # Set the biase gradients and update the pointer
-            self.grad_vector[i : i + n_b] = layer.b_grad.mean(axis=-1).ravel()
-            i += n_b
+            self.grad_vector[i:i+layer.num_bias] = (
+                layer.b_grad.mean(axis=-1).ravel()
+            )
+            i += layer.num_bias
         
         return self.grad_vector
 
@@ -318,20 +318,18 @@ class NeuralNetwork(Model):
             get_parameter_vector method)
         """
         # Initialise the pointer and iterate through the layers
-        v_pointer = 0
+        i = 0
         for layer in self.layers:
-            # Calculate the number of weight and bias parameters in the layer
-            n_w, n_b = layer.output_dim * layer.input_dim, layer.output_dim
             # Set the weights and update the pointer
-            layer.weights = new_parameters[v_pointer:v_pointer+n_w].reshape(
+            layer.weights = new_parameters[i:i+layer.num_weights].reshape(
                 layer.output_dim, layer.input_dim
             )
-            v_pointer += n_w
+            i += layer.num_weights
             # Set the biases and update the pointer
-            layer.bias = new_parameters[v_pointer:v_pointer+n_b].reshape(
+            layer.bias = new_parameters[i:i+layer.num_bias].reshape(
                 layer.output_dim, 1
             )
-            v_pointer += n_b
+            i += layer.num_bias
 
     def mean_error(self, t, x=None):
         """
