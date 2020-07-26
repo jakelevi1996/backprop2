@@ -5,6 +5,7 @@ import numpy as np
 from models import NeuralNetwork
 import activations as a
 import errors as e
+from .util import get_random_network
 
 # Get name of output directory, and create it if it doesn't already exist
 current_dir = dirname(abspath(__file__))
@@ -16,22 +17,6 @@ np.random.seed(1812)
 np.set_printoptions(
     precision=3, linewidth=10000, suppress=True, threshold=10000
 )
-
-def get_random_network(low=3, high=6):
-    """
-    Generate a neural network with a random number of inputs, outputs, and
-    hidden layers
-    """
-    input_dim = np.random.randint(low, high)
-    output_dim = np.random.randint(low, high)
-    num_hidden_layers = np.random.randint(low, high)
-    num_hidden_units = np.random.randint(low, high, num_hidden_layers)
-    n = NeuralNetwork(
-        input_dim=input_dim,
-        output_dim=output_dim,
-        num_hidden_units=num_hidden_units
-    )
-    return n
 
 def test_network_init():
     """
