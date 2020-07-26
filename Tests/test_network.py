@@ -70,20 +70,9 @@ def test_back_propagation():
     t = np.random.normal(size=[n.output_dim, N_D])
     n.back_prop(x, t)
 
-def test_backprop2(): pass
-
-def test_mean_error():
-    """
-    Test calculating the mean error of a network with multi-dimensional inputs
-    and outputs, and multiple data points
-    """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
-    mean_error = n.mean_error(t, x)
-    assert mean_error.shape == ()
-    assert mean_error.size == 1
+def test_backprop2():
+    # TODO
+    pass
 
 def test_get_parameter_vector():
     """ Test the public method for getting the gradient vector """
@@ -107,6 +96,7 @@ def test_get_gradient_vector():
     assert gradient_vector.shape == (num_params, )
 
 def test_get_hessian():
+    # TODO
     pass
 
 def test_set_parameter_vector():
@@ -127,6 +117,19 @@ def test_set_parameter_vector():
     # Get new network output, and verify it is different to the old output
     y_new = n(x)
     assert not (y_old == y_new).all()
+    
+def test_mean_error():
+    """
+    Test calculating the mean error of a network with multi-dimensional inputs
+    and outputs, and multiple data points
+    """
+    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    N_D = 10
+    x = np.random.normal(size=[n.input_dim, N_D])
+    t = np.random.normal(size=[n.output_dim, N_D])
+    mean_error = n.mean_error(t, x)
+    assert mean_error.shape == ()
+    assert mean_error.size == 1
 
 def test_save_load():
     # TODO

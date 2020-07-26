@@ -114,14 +114,14 @@ class NeuralNetwork(Model):
         -   error_func: error function which (along with its gradients) is used
             to calculate gradients for the network parameters
 
-        Outputs: None
+        Outputs: initialised network
         """
         # Set network constants
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.num_units_list = num_hidden_units + [output_dim]
-        self.num_layers = len(self.num_units_list)
-        self.error_func = error_func
+        self._num_units_list = num_hidden_units + [output_dim]
+        self._num_layers = len(self._num_units_list)
+        self._error_func = error_func
 
         # Load or initialise weights
         if filename is not None:
@@ -136,16 +136,16 @@ class NeuralNetwork(Model):
         all weights, and a single standard deviation for all biases
         """
         # Resize the list of activation functions
-        act_funcs = resize_list(act_funcs, self.num_layers)
+        act_funcs = resize_list(act_funcs, self._num_layers)
         # Initialise the input layer
         self.layers = [NeuralLayer(
-            self.num_units_list[0], self.input_dim, act_funcs[0],
+            self._num_units_list[0], self.input_dim, act_funcs[0],
             weight_std, bias_std
         )]
-        num_params = self.num_units_list[0] * (self.input_dim + 1)
+        num_params = self._num_units_list[0] * (self.input_dim + 1)
         # Initialise the rest of the layers
         for (num_units, num_inputs, act_func) in zip(
-            self.num_units_list[1:], self.num_units_list[:-1], act_funcs[1:]
+            self._num_units_list[1:], self._num_units_list[:-1], act_funcs[1:]
         ):
             self.layers.append(NeuralLayer(
                 num_units, num_inputs, act_func, weight_std, bias_std
@@ -183,19 +183,6 @@ class NeuralNetwork(Model):
         self.y = layer_output
         return self.y
 
-    def __call__(self, x):
-        """
-        Wrapper for the forward_prop method. TODO: add optional arguments t and
-        w, which are used to calculate mean error, and optionally set the
-        parameter vector first. Could be used to tidy up the optimisers module.
-
-        def __call__(self, x, t=None, w=None):
-            if w is not None: self.set_parameter_vector(w)
-            if t is None: return return self.forward_prop(x)
-            else: return self.mean_error(t, x) # swap round t and x
-        """
-        return self.forward_prop(x)
-
     def back_prop(self, x, target):
         """
         back_prop: propogate an input forward through the network to form a
@@ -222,12 +209,12 @@ class NeuralNetwork(Model):
         self.forward_prop(x)
         # Calculate the output layer delta and gradients
         self.layers[-1].delta = np.multiply(
-            self.error_func.dEdy(self.y, target),
+            self._error_func.dEdy(self.y, target),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
         )
         self.layers[-1].calc_gradients()
         # Calculate deltas and gradients for hidden layers
-        for i in reversed(range(self.num_layers - 1)):
+        for i in reversed(range(self._num_layers - 1)):
             self.layers[i].backprop(self.layers[i + 1])
             self.layers[i].calc_gradients()
 
@@ -238,14 +225,18 @@ class NeuralNetwork(Model):
         method has already been called, in order to calculate gradients and
         layer inputs and outputs.
         """
+        # Perform forward propagation and back propagation to calculate 1st
+        # order gradients
+        self.back_prop(x, target)
+        # Propogate epsilons (second-order derivatives)
         self.layers[-1].epsilon = np.einsum(
             "ijk,ik,jk->ijk",
-            self.error_func.d2Edy2(self.y, target),
+            self._error_func.d2Edy2(self.y, target),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
         ) # + diagonal term
         # Calculate deltas and gradients for hidden layers
-        for i in reversed(range(self.num_layers - 1)):
+        for i in reversed(range(self._num_layers - 1)):
             self.layers[i].backprop(self.layers[i + 1])
 
     def get_parameter_vector(self):
@@ -313,7 +304,7 @@ class NeuralNetwork(Model):
         
         return self.grad_vector
 
-    def get_hessian(self): raise NotImplementedError
+    def get_hessian(self, block_list): raise NotImplementedError
 
     def set_parameter_vector(self, new_parameters):
         """
@@ -341,7 +332,7 @@ class NeuralNetwork(Model):
                 layer.output_dim, 1
             )
             v_pointer += n_b
-    
+
     def mean_error(self, t, x=None):
         """
         mean_error: calculate the mean (across all data points) of the error
@@ -371,10 +362,10 @@ class NeuralNetwork(Model):
         if x is not None: self.forward_prop(x)
         else: assert self.y.shape[1] == t.shape[1]
 
-        return self.error_func(self.y, t).mean()
+        return self._error_func(self.y, t).mean()
 
     def save_model(self, filename, filename_prepend_timestamp=True):
-        # Save params, self.num_units_list, and identities of activation
+        # Save params, self._num_units_list, and identities of activation
         # functions as np.ndarrays in an npz file, and return the filename
         # params = self.get_parameter_vector()
         raise NotImplementedError
@@ -384,20 +375,36 @@ class NeuralNetwork(Model):
         # self.set_parameter_vector(params)
         raise NotImplementedError
 
-    def print_weights(self):
+    def print_weights(self, file=None):
         for i, layer in enumerate(self.layers):
             print(
-                "Layer {}/{}:".format(i + 1, self.num_layers), "Weights:",
-                layer.weights, "Biases:", layer.bias, "-" * 50, sep="\n"
+                "Layer {}/{}:".format(i + 1, self._num_layers),
+                "Weights:", layer.weights,
+                "Biases:", layer.bias,
+                "-" * 50, sep="\n", file=file
             )
 
-    def print_grads(self):
+    def print_grads(self, file=None):
         for i, layer in enumerate(self.layers):
             print(
-                "Layer {}/{}:".format(i + 1, self.num_layers),
-                "Weight gradients:", layer.w_grad, "Bias gradients:",
-                layer.b_grad, "-" * 50, sep="\n"
+                "Layer {}/{}:".format(i + 1, self._num_layers),
+                "Weight gradients:", layer.w_grad,
+                "Bias gradients:", layer.b_grad,
+                "-" * 50, sep="\n", file=file
             )
+
+    def __call__(self, x):
+        """
+        Wrapper for the forward_prop method. TODO: add optional arguments t and
+        w, which are used to calculate mean error, and optionally set the
+        parameter vector first. Could be used to tidy up the optimisers module.
+
+        def __call__(self, x, t=None, w=None):
+            if w is not None: self.set_parameter_vector(w)
+            if t is None: return return self.forward_prop(x)
+            else: return self.mean_error(t, x) # swap round t and x
+        """
+        return self.forward_prop(x)
     
 class Dinosaur():
     pass
