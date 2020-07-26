@@ -17,12 +17,21 @@ np.set_printoptions(
     precision=3, linewidth=10000, suppress=True, threshold=10000
 )
 
-def get_random_network():
+def get_random_network(low=3, high=6):
     """
     Generate a neural network with a random number of inputs, outputs, and
-    hidden layers TODO
+    hidden layers
     """
-    pass
+    input_dim = np.random.randint(low, high)
+    output_dim = np.random.randint(low, high)
+    num_hidden_layers = np.random.randint(low, high)
+    num_hidden_units = np.random.randint(low, high, num_hidden_layers)
+    n = NeuralNetwork(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        num_hidden_units=num_hidden_units
+    )
+    return n
 
 def test_network_init():
     """
@@ -50,10 +59,10 @@ def test_forward_propagation():
     multiple hidden layers, and multiple data points, and assert that the output
     is the correct shape
 
-    TODO: use random network (see above) and parameterise with different random
-    seeds
+    TODO: parameterise with different random seeds for different network shapes
+    and sizes
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 10
     x = np.random.normal(size=[n.input_dim, N_D])
     y = n.forward_prop(x)
@@ -64,7 +73,7 @@ def test_back_propagation():
     Test back propagation, with multi-dimensional inputs and outputs, and
     multiple data points
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 10
     x = np.random.normal(size=[n.input_dim, N_D])
     t = np.random.normal(size=[n.output_dim, N_D])
@@ -76,7 +85,7 @@ def test_backprop2():
 
 def test_get_parameter_vector():
     """ Test the public method for getting the gradient vector """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     param_vector = n.get_parameter_vector()
     num_params = param_vector.size
     assert param_vector.shape == (num_params, )
@@ -87,7 +96,7 @@ def test_get_gradient_vector():
     gradient vector is approximately accurate using 1st order numerical
     differentiation TODO
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 12
     x = np.random.normal(size=[n.input_dim, N_D])
     t = np.random.normal(size=[n.output_dim, N_D])
@@ -105,7 +114,7 @@ def test_set_parameter_vector():
     network outputs are different when the parameters are changed
     """
     # Initialise network and input
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 10
     x = np.random.normal(size=[n.input_dim, N_D])
     # Get old network params and output
@@ -117,13 +126,13 @@ def test_set_parameter_vector():
     # Get new network output, and verify it is different to the old output
     y_new = n(x)
     assert not (y_old == y_new).all()
-    
+
 def test_mean_error():
     """
     Test calculating the mean error of a network with multi-dimensional inputs
     and outputs, and multiple data points
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 10
     x = np.random.normal(size=[n.input_dim, N_D])
     t = np.random.normal(size=[n.output_dim, N_D])
@@ -140,7 +149,7 @@ def test_print_weights():
     Test printing the weights of a neural network with multi-dimensional inputs
     and outputs, and multiple layers, both to stdout and to a text file
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     n.print_weights()
     with open(join(output_dir, "weights.txt"), "w") as f:
         n.print_weights(f)
@@ -150,7 +159,7 @@ def test_print_grads():
     Test printing the gradients of a neural network with multi-dimensional
     inputs and outputs, and multiple layers, both to stdout and to a text file
     """
-    n = NeuralNetwork(input_dim=4, output_dim=7, num_hidden_units=[3, 4, 5])
+    n = get_random_network()
     N_D = 10
     x = np.random.normal(size=[n.input_dim, N_D])
     t = np.random.normal(size=[n.output_dim, N_D])
