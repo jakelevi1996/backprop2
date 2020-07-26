@@ -97,7 +97,13 @@ class NeuralNetwork(Model):
         if filename is not None:
             self.load_model(filename)
         else:
-            self.gaussian_initialiser(act_funcs, weight_std, bias_std)
+            num_params = self.gaussian_initialiser(
+                act_funcs, weight_std, bias_std
+            )
+
+        # Initialise memory for the parameter and gradient vectors
+        self.param_vector = np.empty(num_params)
+        self.grad_vector = np.empty(num_params)
     
     def gaussian_initialiser(self, act_func_list, weight_std, bias_std):
         """
@@ -131,10 +137,7 @@ class NeuralNetwork(Model):
             self.layers.append(new_layer)
             num_params += (new_layer.num_weights + new_layer.num_bias)
         
-        
-        # Initialise memory for the parameter and gradient vectors
-        self.param_vector = np.empty(num_params)
-        self.grad_vector = np.empty(num_params)
+        return num_params
     
     def glorot_initialiser(self, act_funcs):
         # TODO: Should initialisers have their own classes?
