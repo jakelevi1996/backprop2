@@ -150,7 +150,9 @@ def test_print_weights():
     and outputs, and multiple layers, both to stdout and to a text file
     """
     n = get_random_network()
+    # Print weights to stdout
     n.print_weights()
+    # Print weights to file
     with open(join(output_dir, "weights.txt"), "w") as f:
         n.print_weights(f)
     
@@ -174,5 +176,37 @@ def test_call_method():
     # TODO
     pass
 
-def test_too_few_act_funcs(): pass
-def test_too_many_act_funcs(): pass
+def test_too_few_act_funcs():
+    """
+    Initialise a neural network with more hidden units than activation functions
+    in the input arguments, and make sure that there are the correct number of
+    layers, and that the activation function in each layer is set correctly
+    """
+    num_hidden_units = [3] * 10
+    act_funcs = [a.Gaussian(), a.Identity()]
+    n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
+
+    assert len(n.layers) == len(num_hidden_units) + 1
+    
+    for layer in n.layers[:-1]:
+        assert type(layer.act_func) is a.Gaussian
+    
+    assert type(n.layers[-1].act_func) is a.Identity
+    
+
+def test_too_many_act_funcs():
+    """
+    Initialise a neural network with more activation functions than hidden units
+    in the input arguments, and make sure that there are the correct number of
+    layers, and that the activation function in each layer is set correctly
+    """
+    num_hidden_units = [3, 3]
+    act_funcs = ([a.Gaussian()] * 10) + [a.Identity()]
+    n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
+
+    assert len(n.layers) == len(num_hidden_units) + 1
+    
+    for layer in n.layers[:-1]:
+        assert type(layer.act_func) is a.Gaussian
+    
+    assert type(n.layers[-1].act_func) is a.Identity
