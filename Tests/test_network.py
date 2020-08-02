@@ -1,5 +1,4 @@
-from os import makedirs
-from os.path import dirname, abspath, join, isdir
+import os
 import pytest
 import numpy as np
 from models import NeuralNetwork
@@ -7,10 +6,9 @@ import activations as a
 import errors as e
 from .util import get_random_network_inputs_targets, iterate_random_seeds
 
-# Get name of output directory, and create it if it doesn't already exist
-current_dir = dirname(abspath(__file__))
-output_dir = join(current_dir, "Outputs")
-if not isdir(output_dir): makedirs(output_dir)
+# Get name of output directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(current_dir, "Outputs")
 
 # Set numpy printing options
 np.set_printoptions(
@@ -44,9 +42,6 @@ def test_forward_propagation():
     Test forward propagation, with multi-dimensional inputs and outputs,
     multiple hidden layers, and multiple data points, and assert that the output
     is the correct shape
-
-    TODO: parameterise with different random seeds for different network shapes
-    and sizes
     """
     n, x, _, N_D = get_random_network_inputs_targets()
     y = n.forward_prop(x)
@@ -115,12 +110,15 @@ def test_set_parameter_vector():
     """
     # Initialise network and input
     n, x, _, N_D = get_random_network_inputs_targets()
-    # Get old network params and output
+    # Get a copy of the old network params and output
     y_old = n(x)
-    w_old = n.get_parameter_vector()
+    w_old = n.get_parameter_vector().copy()
     # Set new network params
     w_new = w_old + 0.1
     n.set_parameter_vector(w_new)
+    # Check that the new parameter vector is now in the network
+    assert (n.get_parameter_vector() == w_new).all()
+    assert (n.get_parameter_vector() != w_old).all()
     # Get new network output, and verify it is different to the old output
     y_new = n(x)
     assert not (y_old == y_new).all()
@@ -151,7 +149,7 @@ def test_print_weights():
     # Print weights to stdout
     n.print_weights()
     # Print weights to file
-    with open(join(output_dir, "weights.txt"), "w") as f:
+    with open(os.path.join(output_dir, "weights.txt"), "w") as f:
         n.print_weights(f)
 
 @iterate_random_seeds(7629, 8258, 4020)
@@ -165,7 +163,7 @@ def test_print_grads():
     # Print gradients to stdout
     n.print_grads()
     # Print gradients to file
-    with open(join(output_dir, "gradients.txt"), "w") as f:
+    with open(os.path.join(output_dir, "gradients.txt"), "w") as f:
         n.print_grads(f)
 
 @iterate_random_seeds(8658, 4807, 2199)
