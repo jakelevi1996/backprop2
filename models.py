@@ -33,29 +33,7 @@ import numpy as np
 import activations as a, errors as e
 from layer import NeuralLayer
 
-class Model():
-    """
-    Model: interface class for models that can be optimised by the optimiser
-    class.
-
-    TODO: update function arguments
-    """
-    def __call__(self, x):
-        raise NotImplementedError
-
-    def get_parameter_vector(self):
-        raise NotImplementedError
-
-    def get_gradient_vector(self):
-        raise NotImplementedError
-
-    def get_hessian(self):
-        raise NotImplementedError
-
-    def set_parameter_vector(self, new_parameters):
-        raise NotImplementedError
-
-class NeuralNetwork(Model):
+class NeuralNetwork():
     def __init__(
         self, input_dim=1, output_dim=1, num_hidden_units=[10],
         act_funcs=[a.Logistic(), a.Identity()], error_func=e.SumOfSquares(),
@@ -85,6 +63,10 @@ class NeuralNetwork(Model):
             to calculate gradients for the network parameters
 
         Outputs: initialised network
+
+        TODO: instead of having num_hidden_units and act_funcs arguments as
+        lists, should add layers one by one with an add_layer argument, and
+        initialise weights once all the layers have been added?
         """
         # Set network constants
         self.input_dim = input_dim
@@ -112,10 +94,10 @@ class NeuralNetwork(Model):
         all weights, and a single standard deviation for all biases. Also
         initialise the memory for the parameter and gradient vectors.
 
-        TODO: if this becomes an external function, it can accept as additional
-        arguments self._num_units_list (from which it can calculate the number
-        of layers) and self.input_dim, and return the list of layers the number
-        of parameters
+        TODO: if this becomes an external function/method, it can accept as
+        additional arguments self._num_units_list (from which it can calculate
+        the number of layers) and self.input_dim, and return the list of layers
+        the number of parameters
         """
         # Resize the list of activation functions
         act_func = lambda i: act_func_list[
@@ -187,6 +169,8 @@ class NeuralNetwork(Model):
             network are calculated and stored in self.layers[i].w_grad and
             self.layers[i].b_grad, ready to be extracted using the
             get_gradient_vector method
+
+        TODO: call forward prop separately (outside of this method)            
         """
         # Perform forward propagation to calculate activations
         self.forward_prop(x)
@@ -207,6 +191,9 @@ class NeuralNetwork(Model):
         pre-activations) for each layer in the network. Requires back_prop
         method has already been called, in order to calculate gradients and
         layer inputs and outputs.
+
+        TODO: call forward prop and back prop separately (outside of this
+        method)
         """
         # Perform forward propagation and back propagation to calculate 1st
         # order gradients
