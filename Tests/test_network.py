@@ -5,19 +5,19 @@ import numpy as np
 from models import NeuralNetwork
 import activations as a
 import errors as e
-from .util import get_random_network_inputs_targets
+from .util import get_random_network_inputs_targets, iterate_random_seeds
 
 # Get name of output directory, and create it if it doesn't already exist
 current_dir = dirname(abspath(__file__))
 output_dir = join(current_dir, "Outputs")
 if not isdir(output_dir): makedirs(output_dir)
 
-# Set numpy random seed and printing options
-np.random.seed(1812)
+# Set numpy printing options
 np.set_printoptions(
     precision=3, linewidth=10000, suppress=True, threshold=10000
 )
 
+@iterate_random_seeds(5920, 2788, 235)
 def test_network_init():
     """
     Test initialisation of a neural network, including multiple layers and
@@ -38,6 +38,7 @@ def test_network_init():
         weight_std, bias_std
     )
 
+@iterate_random_seeds(6588, 4626, 376)
 def test_forward_propagation():
     """
     Test forward propagation, with multi-dimensional inputs and outputs,
@@ -51,6 +52,7 @@ def test_forward_propagation():
     y = n.forward_prop(x)
     assert y.shape == (n.output_dim, N_D)
 
+@iterate_random_seeds(8262, 6319, 3490)
 def test_back_propagation():
     """
     Test back propagation, with multi-dimensional inputs and outputs, and
@@ -59,10 +61,12 @@ def test_back_propagation():
     n, x, t, _ = get_random_network_inputs_targets()
     n.back_prop(x, t)
 
+@iterate_random_seeds(2770, 9098, 8645)
 def test_backprop2():
     # TODO
     pass
 
+@iterate_random_seeds(3052, 4449, 5555)
 def test_get_parameter_vector():
     """ Test the public method for getting the gradient vector """
     n, _, _, _ = get_random_network_inputs_targets()
@@ -70,6 +74,7 @@ def test_get_parameter_vector():
     num_params = param_vector.size
     assert param_vector.shape == (num_params, )
 
+@iterate_random_seeds(6210, 9010, 9042)
 def test_get_gradient_vector():
     """
     Test the public method for getting the parameter vector, and check that the
@@ -97,10 +102,12 @@ def test_get_gradient_vector():
     # Check that the answer isn't completely distorted by precision
     assert abs(dE) > max(abs(gradient_vector * dw))
 
+@iterate_random_seeds(5792, 1560, 3658)
 def test_get_hessian():
     # TODO
     pass
 
+@iterate_random_seeds(6563, 5385, 4070)
 def test_set_parameter_vector():
     """
     Test the public method for setting the parameter vector, and assert that the
@@ -118,6 +125,7 @@ def test_set_parameter_vector():
     y_new = n(x)
     assert not (y_old == y_new).all()
 
+@iterate_random_seeds(6544, 6633, 54)
 def test_mean_error():
     """
     Test calculating the mean error of a network with multi-dimensional inputs
@@ -128,10 +136,12 @@ def test_mean_error():
     assert mean_error.shape == ()
     assert mean_error.size == 1
 
+@iterate_random_seeds(8585, 4350, 4503)
 def test_save_load():
     # TODO
     pass
 
+@iterate_random_seeds(2688, 3786, 6105)
 def test_print_weights():
     """
     Test printing the weights of a neural network with multi-dimensional inputs
@@ -143,7 +153,8 @@ def test_print_weights():
     # Print weights to file
     with open(join(output_dir, "weights.txt"), "w") as f:
         n.print_weights(f)
-    
+
+@iterate_random_seeds(7629, 8258, 4020)
 def test_print_grads():
     """
     Test printing the gradients of a neural network with multi-dimensional
@@ -157,10 +168,12 @@ def test_print_grads():
     with open(join(output_dir, "gradients.txt"), "w") as f:
         n.print_grads(f)
 
+@iterate_random_seeds(8658, 4807, 2199)
 def test_call_method():
     # TODO
     pass
 
+@iterate_random_seeds(8796, 238, 4789)
 def test_too_few_act_funcs():
     """
     Initialise a neural network with more hidden units than activation functions
@@ -178,7 +191,7 @@ def test_too_few_act_funcs():
     
     assert type(n.layers[-1].act_func) is a.Identity
     
-
+@iterate_random_seeds(6902, 8504, 1303)
 def test_too_many_act_funcs():
     """
     Initialise a neural network with more activation functions than hidden units

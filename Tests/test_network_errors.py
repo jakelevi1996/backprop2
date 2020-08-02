@@ -10,11 +10,9 @@ from models import NeuralNetwork
 import activations as a
 import errors as e
 from .util import get_random_network_inputs_targets, get_random_network, \
-    get_random_inputs, get_random_targets
+    get_random_inputs, get_random_targets, iterate_random_seeds
 
-# Set numpy random seed
-np.random.seed(1225)
-
+@iterate_random_seeds(3998, 3146, 9386)
 def test_set_vector_errors():
     """
     Test the errors raised by the NeuralNetwork.set_parameter_vector method when
@@ -35,6 +33,7 @@ def test_set_vector_errors():
         # Parameter vector is not a numpy array, so has no reshape method
         n.set_parameter_vector([0] * num_params)
 
+@iterate_random_seeds(9045, 8503, 1546)
 def test_invalid_act_function():
     """
     Test the errors raised by initialising an instance of the NeuralNetwork
@@ -65,6 +64,7 @@ def test_invalid_act_function():
         # Activation function abs has no dydx method, so backprop fails
         n.back_prop(x, t)
 
+@iterate_random_seeds(8137, 9241, 8754)
 def test_invalid_error_function():
     """
     Test the errors raised by initialising an instance of the NeuralNetwork
@@ -86,6 +86,7 @@ def test_invalid_error_function():
         # Error function sum has no dydx method, so backprop fails
         n.back_prop(x, t)
 
+@iterate_random_seeds(6808, 8234, 4376)
 def test_print_weights_grads_bad_file():
     """
     Test calling print_weights and print_grads methods with invalid file
@@ -99,6 +100,7 @@ def test_print_weights_grads_bad_file():
         # file argument should be a file object returned by the open function
         n.print_grads(file="filename")
 
+@iterate_random_seeds(6216, 6733, 8485)
 def test_print_grads_before_backprop_error():
     """
     Test that using the print_grads method before backpropagation raises an
@@ -108,11 +110,14 @@ def test_print_grads_before_backprop_error():
     with pytest.raises(AttributeError):
         n.print_grads()
 
+@iterate_random_seeds(6926, 1825, 4717)
 def test_forward_prop_bad_input_shape():
     pass
 
+@iterate_random_seeds(2171, 7087, 3292)
 def test_back_prop_bad_input_shape():
     pass
 
+@iterate_random_seeds(8078, 3421, 2461)
 def test_back_prop_bad_target_shape():
     pass
