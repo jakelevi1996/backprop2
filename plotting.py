@@ -199,7 +199,7 @@ def plot_speed_trials():
 
 def plot_act_func(act_func, dir_name, xlims, npoints):
     """
-    plot_act_func: plot an activation function and its derivatives
+    Plot an activation function and its derivatives
 
     TODO: second derivatives
     """
@@ -212,6 +212,27 @@ def plot_act_func(act_func, dir_name, xlims, npoints):
     plt.title(act_func.name)
     plt.grid(True)
     filename = os.path.join(dir_name, act_func.name) + ".png"
+    plt.savefig(filename)
+    plt.close()
+
+def plot_error_func(error_func, dir_name, xlims, npoints):
+    """
+    Plot an error function and its derivatives
+
+    TODO: second derivatives
+    """
+    y = np.linspace(*xlims, npoints).reshape(1, -1)
+    t = 0
+    E = error_func.E(y, 0)
+    dEdy = error_func.dEdy(y, 0)
+    plt.figure(figsize=[8, 6])
+    plt.plot(y.ravel(), E.ravel(), 'b', alpha=0.75)
+    plt.plot(y.ravel(), dEdy.ravel(), 'r', alpha=0.75)
+    plt.axvline(0, c="k", ls="--", alpha=0.75)
+    plt.legend([r"$E(y, t)$", r"$\frac{dE}{dy}(y, t)$", r"Target $t = 0.0$"])
+    plt.title(error_func.name)
+    plt.grid(True)
+    filename = os.path.join(dir_name, error_func.name) + ".png"
     plt.savefig(filename)
     plt.close()
 
