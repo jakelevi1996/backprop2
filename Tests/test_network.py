@@ -5,7 +5,7 @@ import numpy as np
 from models import NeuralNetwork
 import activations as a
 import errors as e
-from .util import get_random_network
+from .util import get_random_network_inputs_targets
 
 # Get name of output directory, and create it if it doesn't already exist
 current_dir = dirname(abspath(__file__))
@@ -47,9 +47,7 @@ def test_forward_propagation():
     TODO: parameterise with different random seeds for different network shapes
     and sizes
     """
-    n = get_random_network()
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
+    n, x, _, N_D = get_random_network_inputs_targets()
     y = n.forward_prop(x)
     assert y.shape == (n.output_dim, N_D)
 
@@ -58,10 +56,7 @@ def test_back_propagation():
     Test back propagation, with multi-dimensional inputs and outputs, and
     multiple data points
     """
-    n = get_random_network()
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
+    n, x, t, _ = get_random_network_inputs_targets()
     n.back_prop(x, t)
 
 def test_backprop2():
@@ -70,7 +65,7 @@ def test_backprop2():
 
 def test_get_parameter_vector():
     """ Test the public method for getting the gradient vector """
-    n = get_random_network()
+    n, _, _, _ = get_random_network_inputs_targets()
     param_vector = n.get_parameter_vector()
     num_params = param_vector.size
     assert param_vector.shape == (num_params, )
@@ -82,10 +77,7 @@ def test_get_gradient_vector():
     differentiation
     """
     # Initialise network, inputs and targets
-    n = get_random_network()
-    N_D = 12
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
+    n, x, t, _ = get_random_network_inputs_targets()
     # Get the gradient vector and check that it has the right shape
     gradient_vector = n.get_gradient_vector(x, t)
     num_params = gradient_vector.size
@@ -115,9 +107,7 @@ def test_set_parameter_vector():
     network outputs are different when the parameters are changed
     """
     # Initialise network and input
-    n = get_random_network()
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
+    n, x, _, N_D = get_random_network_inputs_targets()
     # Get old network params and output
     y_old = n(x)
     w_old = n.get_parameter_vector()
@@ -133,10 +123,7 @@ def test_mean_error():
     Test calculating the mean error of a network with multi-dimensional inputs
     and outputs, and multiple data points
     """
-    n = get_random_network()
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
+    n, x, t, _ = get_random_network_inputs_targets()
     mean_error = n.mean_error(t, x)
     assert mean_error.shape == ()
     assert mean_error.size == 1
@@ -150,7 +137,7 @@ def test_print_weights():
     Test printing the weights of a neural network with multi-dimensional inputs
     and outputs, and multiple layers, both to stdout and to a text file
     """
-    n = get_random_network()
+    n, _, _, _ = get_random_network_inputs_targets()
     # Print weights to stdout
     n.print_weights()
     # Print weights to file
@@ -162,10 +149,7 @@ def test_print_grads():
     Test printing the gradients of a neural network with multi-dimensional
     inputs and outputs, and multiple layers, both to stdout and to a text file
     """
-    n = get_random_network()
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
+    n, x, t, _ = get_random_network_inputs_targets()
     n.back_prop(x, t)
     # Print gradients to stdout
     n.print_grads()

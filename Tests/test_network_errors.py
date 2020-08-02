@@ -9,7 +9,8 @@ import pytest
 from models import NeuralNetwork
 import activations as a
 import errors as e
-from .util import get_random_network
+from .util import get_random_network_inputs_targets, get_random_network, \
+    get_random_inputs, get_random_targets
 
 # Set numpy random seed
 np.random.seed(1225)
@@ -44,27 +45,24 @@ def test_invalid_act_function():
         n = NeuralNetwork(act_funcs=a.Gaussian())
     
     n = NeuralNetwork(act_funcs=[a.Gaussian])
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
+    x, _ = get_random_inputs(n.input_dim)
     with pytest.raises(TypeError):
         # Network is initialised with the Gaussian class, not an instance
         n.forward_prop(x)
 
     n = NeuralNetwork(act_funcs=[None])
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
+    x, _ = get_random_inputs(n.input_dim)
     with pytest.raises(TypeError):
         # Activation function None is not callable
         n.forward_prop(x)
         
-    n = NeuralNetwork(act_funcs=[sum])
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
-    # Activation function sum is callable, so forward_prop is okay
+    n = NeuralNetwork(act_funcs=[abs])
+    x, N_D = get_random_inputs(n.input_dim)
+    t = get_random_targets(n.output_dim, N_D)
+    # Activation function abs is callable, so forward_prop is okay
     n.forward_prop(x)
     with pytest.raises(AttributeError):
-        # Activation function sum has no dydx method, so backprop fails
+        # Activation function abs has no dydx method, so backprop fails
         n.back_prop(x, t)
 
 def test_invalid_error_function():
@@ -73,34 +71,17 @@ def test_invalid_error_function():
     class when there is an invalid value for the error_func argument
     """
     n = NeuralNetwork(error_func=e.SumOfSquares)
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
+    x, N_D = get_random_inputs(n.input_dim)
+    t = get_random_targets(n.output_dim, N_D)
     with pytest.raises(TypeError):
         # Network is initialised with the SumOfSquares class, not an instance
         n.mean_error(t, x)
 
-    n = NeuralNetwork(error_func=None)
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
-    
-    with pytest.raises(TypeError):
-        # Error function None is not callable
-        n.mean_error(t, x)
-        
-    with pytest.raises(AttributeError):
-        # Error function None does not have a dydx method
-        n.back_prop(x, t)
-
     n = NeuralNetwork(error_func=sum)
-    N_D = 10
-    x = np.random.normal(size=[n.input_dim, N_D])
-    t = np.random.normal(size=[n.output_dim, N_D])
-    
+    x, N_D = get_random_inputs(n.input_dim)
+    t = get_random_targets(n.output_dim, N_D)
     # Error function sum is callable, so mean_error is okay
     n.mean_error(t, x)
-
     with pytest.raises(AttributeError):
         # Error function sum has no dydx method, so backprop fails
         n.back_prop(x, t)
