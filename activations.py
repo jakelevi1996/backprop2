@@ -48,11 +48,11 @@ class ActivationFunction():
         # Return the instance of the correct activation function
         return func_object
 
-    def plot(self, filename, xlims=[-5, 5], npoints=200):
+    def plot(self, dir_name=".", xlims=[-5, 5], npoints=200):
         """
         plot: plot an activation function and its derivative, and save to disk
         """
-        plotting.plot_act_func(filename, self, xlims, npoints)
+        plotting.plot_act_func(self, dir_name, xlims, npoints)
 
 class Identity(ActivationFunction):
     name = "Identity activation function"

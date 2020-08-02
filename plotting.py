@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -196,18 +197,21 @@ def plot_training_curves(
 def plot_speed_trials():
     pass
 
-def plot_act_func(filename, act_func, xlims, npoints):
+def plot_act_func(act_func, dir_name, xlims, npoints):
     """
     plot_act_func: plot an activation function and its derivatives
+
+    TODO: second derivatives
     """
     x = np.linspace(*xlims, npoints)
     y = act_func.y(x)
     dydx = act_func.dydx(x)
     plt.figure(figsize=[8, 6])
     plt.plot(x, y, 'b', x, dydx, 'r', alpha=0.75)
-    plt.legend(["Function", "Derivative"])
+    plt.legend([r"$y(x)$", r"$\frac{dy}{dx}(x)$"])
     plt.title(act_func.name)
     plt.grid(True)
+    filename = os.path.join(dir_name, act_func.name) + ".png"
     plt.savefig(filename)
     plt.close()
 
