@@ -35,8 +35,8 @@ from layer import NeuralLayer
 
 class NeuralNetwork():
     def __init__(
-        self, input_dim=1, output_dim=1, num_hidden_units=[10],
-        act_funcs=[a.Logistic(), a.Identity()], error_func=e.SumOfSquares(),
+        self, input_dim=1, output_dim=1, num_hidden_units=None,
+        act_funcs=None, error_func=None,
         weight_std=1.0, bias_std=1.0, filename=None
     ):
         """
@@ -55,10 +55,14 @@ class NeuralNetwork():
         -   bias_std: standard deviation for initialisation of biases
         -   act_funcs: list of activation functions for each layer in the
             network. The length of this list can be different to the number of
-            network layers; see the resize_list function for a description of
-            how the list is resized to match the number of network layers.
-            Default is [a.Logistic(), a.Identity()], IE output is identity
-            function, and all hidden layers have logistic activation functions
+            network layers: if this list is shorter than the number of layers,
+            then the first activation function in the list is used for multiple
+            layers; if this list is longer than the number of layers, then the
+            first activation functions in the list are ignored. In either case,
+            the final activation functions in this list will match the
+            activation functions used in the final layers. Default is
+            [a.Logistic(), a.Identity()], IE output is identity function, and
+            all hidden layers have logistic activation functions
         -   error_func: error function which (along with its gradients) is used
             to calculate gradients for the network parameters
 
@@ -68,6 +72,14 @@ class NeuralNetwork():
         lists, should add layers one by one with an add_layer argument, and
         initialise weights once all the layers have been added?
         """
+        # Set default number of hidden units and activation and error functions
+        if num_hidden_units is None:
+            num_hidden_units = [10]
+        if act_funcs is None:
+            act_funcs = [a.Logistic(), a.Identity()]
+        if error_func is None:
+            error_func = e.SumOfSquares()
+
         # Set network constants
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -373,38 +385,3 @@ class NeuralNetwork():
             else: return self.mean_error(t, x) # swap round t and x
         """
         return self.forward_prop(x)
-    
-class Dinosaur():
-    pass
-
-if __name__ == "__main__":
-    np.random.seed(0)
-    input_dim, output_dim, N_D = 2, 3, 4
-    n = NeuralNetwork(
-        # num_hidden_units=[], input_dim=input_dim, output_dim=output_dim, act_funcs=[a.Logistic()]
-        num_hidden_units=[3, 4, 5], input_dim=input_dim, output_dim=output_dim
-    )
-    n.print_weights()
-
-    x = np.random.normal(size=[input_dim, N_D])
-    t = np.random.normal(size=[output_dim, N_D])
-    y = n(x)
-    assert y.shape == (output_dim, N_D)
-    n.back_prop(x, t)
-    n.print_grads()
-    
-    e = n.mean_error(t, x)
-    print(x, y, t, "Mean error = {:.5f}".format(e), sep="\n")
-
-    w = n.get_parameter_vector()
-    dEdw = n.get_gradient_vector(x, t)
-    print(w.shape, dEdw.shape)
-
-    # # n.plot_evals("Data/evaluations")
-    # n.eval_gradient(0.4, 1.3)
-    # for m in [n.weights, n.biases, n.activations, n.layer_outputs, n.deltas, n.w_grad]:
-    #     print([i.shape for i in m])
-    # dataset = d.DataSet("Data/sinusoidal_data_set.npz")
-    # for _ in range(20):
-    #     n.gradient_descent(dataset, n_its=500)
-    #     n.plot_evals("Data/trained evaluations", xlims=[-0.5, 1.5])
