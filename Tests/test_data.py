@@ -29,8 +29,19 @@ def test_save_load(seed, dataset_subclass):
     for a in attr_list:
         assert np.all(getattr(dataset, a) == getattr(dataset_loaded, a))
 
-def test_print_data():
-    pass
+@pytest.mark.parametrize("seed", [1854, 7484, 5736])
+@pytest.mark.parametrize("dataset_subclass", dataset_list)
+def test_print_data(seed, dataset_subclass):
+    np.random.seed(seed)
+    dataset = dataset_subclass()
+    # Print data to stdout
+    dataset.print_data()
+    # Print data to file
+    filename = dataset_subclass.__name__ + "data.txt"
+    path = os.path.join(output_dir, filename)
+    with open(path, "w") as f:
+        dataset.print_data(file=f)
+    
 
 
 # # Generate 1D to 1D sinusoidal regression dataset
