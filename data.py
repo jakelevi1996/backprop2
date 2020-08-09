@@ -1,3 +1,12 @@
+"""
+Module for creating DataSet objects, with input and output data, training and
+test partitions, and methods for batching, saving, loading, and printing the
+data.
+
+TODO: implement DataSet classes for CircleDataSet, SumOfGaussianCurvesDataSet,
+GaussianCurveDataSet. One module per class, moved over to the data directory?
+"""
+import os
 import numpy as np
 
 class DataSet():
@@ -9,9 +18,10 @@ class DataSet():
     TODO: implement get_train_batch and get_test_batch and incorporate into
     optimisers module
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, dir_name="."):
         # If a filename is specified, then load from file
-        if filename is not None: self.load(filename)
+        if filename is not None:
+            self.load(filename, dir_name)
         else:
             self.input_dim  , self.output_dim   = None, None
             self.n_train    , self.n_test       = None, None
@@ -22,17 +32,19 @@ class DataSet():
     
     def get_test_batch(self, batch_size):   raise NotImplementedError
     
-    def save(self, filename):
+    def save(self, filename, dir_name="."):
+        path = os.path.join(dir_name, filename + ".npz")
         np.savez(
-            filename, input_dim=self.input_dim, output_dim=self.output_dim,
+            path, input_dim=self.input_dim, output_dim=self.output_dim,
             n_train=self.n_train, n_test=self.n_test,
             x_train=self.x_train, x_test=self.x_test,
             y_train=self.y_train, y_test=self.y_test
         )
 
-    def load(self, filename):
+    def load(self, filename, dir_name="."):
+        path = os.path.join(dir_name, filename + ".npz")
         # Load data from file
-        with np.load(filename) as data:
+        with np.load(path) as data:
             self.input_dim              = data['input_dim']
             self.output_dim             = data['output_dim']
             self.n_train, self.n_test   = data['n_train'],  data['n_test']
@@ -157,20 +169,3 @@ class SumOfGaussianCurvesDataSet(DataSet):
 class GaussianCurveDataSet(DataSet):
     # Wrapper for SumOfGaussianCurvesDataSet
     pass
-
-if __name__ == "__main__":
-    np.random.seed(0)
-
-    # Generate 1D to 1D sinusoidal regression dataset
-    s11 = SinusoidalDataSet1D1D(n_train=100, n_test=50, xlim=[0, 1])
-    filename = "Data/sin_dataset_11.npz"
-    s11.save(filename)
-    s_load = DataSet(filename)
-    s_load.print_data()
-
-    # Test 2D to 3D sinusoidal regression dataset
-    s23 = SinusoidalDataSet2DnD(nx0=23, nx1=56, output_dim=3)
-    filename = "Data/sin_dataset_23.npz"
-    s23.save(filename)
-    sl = DataSet(filename)
-    sl.print_data()
