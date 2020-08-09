@@ -56,12 +56,14 @@ class DataSet():
         assert self.x_test.shape  == (self.input_dim    ,   self.n_test )
         assert self.y_test.shape  == (self.output_dim   ,   self.n_test )
     
-    def print_data(self, first_n=10):
+    def print_data(self, first_n=10, file=None):
         print(
             "x_train.T:",   self.x_train.T[:first_n],
             "y_train.T:",   self.y_train.T[:first_n],
             "x_test.T:",    self.x_test.T[:first_n],
-            "y_test.T:",    self.y_test.T[:first_n], sep="\n")
+            "y_test.T:",    self.y_test.T[:first_n],
+            sep="\n", file=file
+        )
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     """
