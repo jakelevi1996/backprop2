@@ -38,6 +38,7 @@ def get_random_targets(output_dim, N_D):
     return t
 
 def get_random_network_inputs_targets(
+    seed,
     low=3,
     high=6,
     N_D_low=5,
@@ -46,9 +47,10 @@ def get_random_network_inputs_targets(
     error_func=None
 ):
     """
-    Wrapper for the following functions: get_random_network, get_random_inputs,
-    get_random_targets
+    Wrapper for the following functions: np.random.seed, get_random_network,
+    get_random_inputs, get_random_targets. Return the outputs in a tuple
     """
+    np.random.seed(seed)
     n = get_random_network(low, high, act_funcs, error_func)
     x, N_D = get_random_inputs(n.input_dim, N_D_low, N_D_high)
     t = get_random_targets(n.output_dim, N_D)
@@ -68,6 +70,9 @@ def iterate_random_seeds(*seeds):
     def function_name():
         do_function_body()
     ```
+
+    TODO: remove this decorator and replace with pytest.mark.parametrize in
+    test_network and test_network_errors
     """
     # decorator_func is the decorator which is returned, given the seeds
     def decorator_func(func):
@@ -88,6 +93,8 @@ def generate_decorator_expression(num_expressions=10):
     """
     This function can be used to print multiple decorator expressions for the
     decorator above, with different input random seeds
+
+    TODO: remove this function
     """
     for _ in range(num_expressions):
         print("@iterate_random_seeds({}, {}, {})".format(

@@ -1,5 +1,5 @@
 """
-Module containing unit tests for the activations module.
+Module containing unit tests for the errors module.
 
 TODO: write decorator in util module to parameterise unit tests with different
 error functions, instead of repeated for-loops?
@@ -10,7 +10,7 @@ import numpy as np
 import errors as e
 from .util import get_random_network_inputs_targets, iterate_random_seeds
 
-# Define list of activation functions to be tested
+# Define list of error functions to be tested
 error_func_list = [e.SumOfSquares()]
 
 # Get name of output directory
@@ -21,13 +21,12 @@ output_dir = os.path.join(current_dir, "Outputs")
 @pytest.mark.parametrize("error_func", error_func_list)
 def test_shapes(seed, error_func):
     """
-    Test that the output from each activation function and its derivatives are
+    Test that the output from each error function and its derivatives are
     the correct shapes
 
     TODO: second derivatives
     """
-    np.random.seed(seed)
-    n, x, t, N_D = get_random_network_inputs_targets()
+    n, x, t, N_D = get_random_network_inputs_targets(seed)
     y = n.forward_prop(x)
     assert error_func(y, t).shape == (1, N_D)
     assert error_func.dEdy(y, t).shape == (n.output_dim, N_D)
@@ -39,8 +38,7 @@ def test_propagation(seed, error_func):
     Test that the error function can be used for back propagation and
     calculating the mean error in a neural network model
     """
-    np.random.seed(seed)
-    n, x, t, _ = get_random_network_inputs_targets(error_func=error_func)
+    n, x, t, _ = get_random_network_inputs_targets(seed, error_func=error_func)
     n.back_prop(x, t)
     n.mean_error(t, x)
 

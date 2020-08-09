@@ -25,8 +25,7 @@ def test_shapes(seed, act_func):
 
     TODO: second derivatives
     """
-    np.random.seed(seed)
-    _, x, _, _ = get_random_network_inputs_targets()
+    _, x, _, _ = get_random_network_inputs_targets(seed)
     assert act_func(x).shape == x.shape
     assert act_func.dydx(x).shape == x.shape
 
@@ -37,8 +36,7 @@ def test_propagation(seed, act_func):
     Test that the activation function can be used for forward and back
     propagation in a neural network model
     """
-    np.random.seed(seed)
-    n, x, t, _ = get_random_network_inputs_targets(act_funcs=[act_func])
+    n, x, t, _ = get_random_network_inputs_targets(seed, act_funcs=[act_func])
     n.forward_prop(x)
     n.back_prop(x, t)
 
