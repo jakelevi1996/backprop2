@@ -40,15 +40,20 @@ def test_propagation(seed, act_func):
     n.forward_prop(x)
     n.back_prop(x, t)
 
+@pytest.mark.parametrize("seed", [7279, 674, 4258])
 @pytest.mark.parametrize("act_func", act_func_list)
-def test_act_func_id(act_func):
+def test_act_func_id(seed, act_func):
     """
     Test that the activation function IDs are self-consistent, IE that the
     correct activation function is returned from its id
     """
     act_func_id = act_func.get_id_from_func()
     act_func_from_id = a.get_func_from_id(act_func_id)
+    # Check that the types are consisitent
     assert type(act_func_from_id) is type(act_func)
+    # Check that the outputs are consisitent
+    _, x, _, _ = get_random_network_inputs_targets(seed)
+    assert np.all(act_func_from_id(x) == act_func(x))
 
 def test_act_func_ids_unique():
     """ Check that all of the activation function IDs are unique """

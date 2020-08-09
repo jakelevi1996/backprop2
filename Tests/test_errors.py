@@ -42,8 +42,9 @@ def test_propagation(seed, error_func):
     n.back_prop(x, t)
     n.mean_error(t, x)
 
+@pytest.mark.parametrize("seed", [5331, 3475, 9941])
 @pytest.mark.parametrize("error_func", error_func_list)
-def test_error_func_id(error_func):
+def test_error_func_id(seed, error_func):
     """
     Test that the error function IDs are self-consistent, IE that the correct
     error function is returned from its id
@@ -52,6 +53,9 @@ def test_error_func_id(error_func):
     error_func_id = error_func.get_id_from_func()
     error_func_from_id = e.ErrorFunction().get_func_from_id(error_func_id)
     assert type(error_func_from_id) is type(error_func)
+    # Check that the outputs are consisitent
+    _, x, t, _ = get_random_network_inputs_targets(seed)
+    assert np.all(error_func_from_id(x, x + 1) == error_func(x, x + 1))
     
 def test_error_func_ids_unique():
     """ Check that all of the error function IDs are unique """
