@@ -1,3 +1,10 @@
+"""
+Module to contain activation functions, used in hidden and output layers of a
+neural network. TODO: Subclasses of ActivationFunction in this module should be
+private, and this module should expose public instantiations of those classes.
+Subclasses of ActivationFunction could even be in a separate module in a
+separate directory, _activations
+"""
 import numpy as np
 import plotting
 
@@ -31,28 +38,29 @@ class ActivationFunction():
         # Return a unique integer ID for the activation function
         return subclass_type_list.index(this_type)
     
-    def get_func_from_id(self, func_id):
-        """
-        get_func_from_id: given an integer ID (EG generated using
-        get_id_from_func), return an instance of the activation function which
-        has the same unique integer ID. This method is used when loading models
-        (after the activation functions are saved using their integer IDs), to
-        restore the correct activation function for each layer in the network 
-        """
-        # Get the list of subclasses of the ActivationFunction class
-        subclass_type_list = ActivationFunction.__subclasses__()
-        # Get the class of the activation function corresponding to id
-        func_class = subclass_type_list[func_id]
-        # Get an instance of the class
-        func_object = func_class()
-        # Return the instance of the correct activation function
-        return func_object
-
     def plot(self, dir_name=".", xlims=[-5, 5], npoints=200):
         """
         plot: plot an activation function and its derivative, and save to disk
         """
         plotting.plot_act_func(self, dir_name, xlims, npoints)
+
+def get_func_from_id(func_id):
+    """
+    Given an integer ID (EG generated using
+    ActivationFunction.get_id_from_func), return an instance of the activation
+    function which has the same unique integer ID. This function is used when
+    loading models (after the activation functions are saved using their integer
+    IDs), to restore the correct activation function for each layer in the
+    network.
+    """
+    # Get the list of subclasses of the ActivationFunction class
+    subclass_type_list = ActivationFunction.__subclasses__()
+    # Get the class of the activation function corresponding to id
+    func_class = subclass_type_list[func_id]
+    # Get an instance of the class
+    func_object = func_class()
+    # Return the instance of the correct activation function
+    return func_object
 
 class Identity(ActivationFunction):
     name = "Identity activation function"
@@ -84,7 +92,7 @@ class SoftMax(ActivationFunction):
 if __name__ == "__main__":
     a = Logistic()
     id = a.get_id_from_func()
-    b = ActivationFunction().get_func_from_id(id)
+    b = get_func_from_id(id)
     print(a, b, a(3), b(3), sep="\n")    
 
     Identity().plot("Data/Identity activation function")
