@@ -88,14 +88,3 @@ class Gaussian(ActivationFunction):
 
 class SoftMax(ActivationFunction):
     pass
-
-if __name__ == "__main__":
-    a = Logistic()
-    id = a.get_id_from_func()
-    b = get_func_from_id(id)
-    print(a, b, a(3), b(3), sep="\n")    
-
-    Identity().plot("Data/Identity activation function")
-    Logistic().plot("Data/Logistic activation function")
-    Gaussian().plot("Data/Gaussian activation function")
-    Relu().plot("Data/ReLU activation function")
