@@ -10,31 +10,7 @@ from .util import get_random_network_inputs_targets, iterate_random_seeds
 current_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(current_dir, "Outputs")
 
-# Set numpy printing options
-np.set_printoptions(
-    precision=3, linewidth=10000, suppress=True, threshold=10000
-)
 
-# @pytest.mark.parametrize("seed", [5920, 2788, 235])
-# def test_network_init():
-#     """
-#     Test initialisation of a neural network, including multiple layers and
-#     different activation functions
-#     """
-#     # Set network parameters
-#     input_dim = 3
-#     output_dim = 2
-#     num_hidden_units = [4, 3, 2]
-#     act_funcs = [a.Relu(), a.Gaussian(), a.Logistic(), a.Identity()]
-#     error_func = e.SumOfSquares()
-#     weight_std = 2.3
-#     bias_std = 3.4
-    
-#     # Initialise network
-#     n = NeuralNetwork(
-#         input_dim, output_dim, num_hidden_units, act_funcs, error_func,
-#         weight_std, bias_std
-#     )
 
 @pytest.mark.parametrize("seed", [6588, 4626, 376])
 def test_forward_propagation(seed):
