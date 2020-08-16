@@ -22,6 +22,7 @@ This repository contains the following modules:
 2020-07-19:
 
 - Add full unit testing coverage (and remove `if __name__ == "__main__"` blocks)
+- Allocate numpy arrays in `NeuralNetwork` and `NeuralLayer` class during initialisation, and use numpy `out` argument, to improve performance... actually, is this a sensible thing to do for all arrays? For ones which depend on the number of data points, this will vary depending on the batch size
 - Store number of weights and biases in layer attribute, instead of calculating from input dimension and output dimension
 - Implement back-propagation of 2nd order gradients
 - Implement block-generalised-Newton optimisation

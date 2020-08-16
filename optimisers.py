@@ -36,7 +36,10 @@ def check_bad_step_size(s):
     else: return False
 
 def line_search(model, x, y, w, s, delta, dEdw, alpha, beta, final_backstep):
-    """ ... TODO: use batches """
+    """
+    ... TODO: use batches, and implement maximum number of steps of line search,
+    using a for-loop with an `if condition: break` statement
+    """
     # Calculate initial parameters
     E_0 = model.mean_error(y, x)
     E_old = E_0
@@ -95,7 +98,7 @@ def minimise(
     Inputs:
     -   ...
 
-    TODO: use batches
+    TODO: use batches, and make this function private?
     """
     # Set initial parameters, step size and iteration counter
     w, s, i = model.get_parameter_vector(), s0, 0
@@ -276,30 +279,7 @@ def particle_swarm_optimiser(): raise NotImplementedError
 
 def warmup(n_its=1000):
     """ Perform warmup routine """
-    np.random.seed(0)
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     n = m.NeuralNetwork(1, 1, [20])
     stochastic_gradient_descent(n, sin_data, n_its, n_its//10, verbose=True,
         name="Warmup")
-
-if __name__ == "__main__":
-    # warmup()
-    np.random.seed(0)
-    sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    n = m.NeuralNetwork(1, 1, [20])
-    w = n.get_parameter_vector().copy()
-    
-    # stochastic_gradient_descent(n, sin_data, 100, 10)
-    # n.set_parameter_vector(w)
-    # sgd_2way_tracking(n, sin_data, 100, 10)
-    
-    stochastic_gradient_descent(n, sin_data, 10000, 1000)
-    n.set_parameter_vector(w)
-    gradient_descent(n, sin_data, n_iters=10000, eval_every=1000, verbose=True,
-        name="New SGD")
-    n.set_parameter_vector(w)
-    sgd_2way_tracking(n, sin_data, 10000, 1000)
-    n.set_parameter_vector(w)
-    gradient_descent(n, sin_data, n_iters=10000, eval_every=1000, verbose=True,
-        line_search_flag=True, name="New SGD + LS", learning_rate=1.0,
-        alpha=0.8, beta=0.5, t_lim=10)

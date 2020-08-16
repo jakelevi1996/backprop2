@@ -1,8 +1,5 @@
 """
 Module containing unit tests for the errors module.
-
-TODO: write decorator in util module to parameterise unit tests with different
-error functions, instead of repeated for-loops?
 """
 import os
 import pytest
@@ -54,8 +51,8 @@ def test_error_func_id(seed, error_func):
     error_func_from_id = e.ErrorFunction().get_func_from_id(error_func_id)
     assert type(error_func_from_id) is type(error_func)
     # Check that the outputs are consisitent
-    _, x, t, _ = get_random_network_inputs_targets(seed)
-    assert np.all(error_func_from_id(x, x + 1) == error_func(x, x + 1))
+    _, x, _, _ = get_random_network_inputs_targets(seed)
+    assert np.all(error_func_from_id(x, 0) == error_func(x, 0))
     
 def test_error_func_ids_unique():
     """ Check that all of the error function IDs are unique """

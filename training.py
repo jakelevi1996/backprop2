@@ -2,6 +2,8 @@
 Module to contain network training experiments.
 
 TODO: some of these experiments could probably be removed.
+
+TODO: move each experiment into a separate script in the Scripts directory
 """
 
 import numpy as np
