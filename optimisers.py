@@ -3,10 +3,8 @@ Module to contain optimisation procedures and inner loop functions (EG HNGD,
 backtracking, forward-tracking, etc.), agnostic to all models and objective
 functions
 
-TODO: replace t and t0 (step size) with s and s0, and start_time with t0
-
 TODO: make model evaluation and end of outer loop dependent on time, not on
-iteration number
+iteration number?
 """
 import numpy as np
 from time import perf_counter
@@ -35,18 +33,7 @@ def check_bad_step_size(s):
         return True
     else: return False
 
-def line_search(
-    model,
-    x,
-    y,
-    w,
-    s,
-    delta,
-    dEdw,
-    alpha,
-    beta,
-    final_backstep
-):
+def line_search(model, x, y, w, s, delta, dEdw, alpha, beta):
     """
     ... TODO: use batches, and implement maximum number of steps of line search,
     using a for-loop with an `if condition: break` statement
@@ -54,8 +41,6 @@ def line_search(
     # Calculate initial parameters
     E_0 = model.mean_error(y, x)
     E_old = E_0
-    # s_old = s
-    # w = model.get_parameter_vector()
     model.set_parameter_vector(w + s * delta)
     E_new = model.mean_error(y, x)
     
@@ -71,15 +56,12 @@ def line_search(
         E_new = model.mean_error(y, x)
 
         while backtrack_condition(s, E_new, *bt_params) or E_new < E_old:
-        # while backtrack_condition(s, E_new, *bt_params):
             s *= beta
-            # if check_bad_step_size(s): return s_old * beta
             E_old = E_new
             model.set_parameter_vector(w + s * delta)
             E_new = model.mean_error(y, x)
         if E_new > E_old:
             s /= beta
-            model.set_parameter_vector(w + s * delta)
     else:
         # Track forwards until objective function stops decreasing
         s /= beta
@@ -87,15 +69,12 @@ def line_search(
         model.set_parameter_vector(w + s * delta)
         E_new = model.mean_error(y, x)
         while E_new < E_old:
-        # while not backtrack_condition(s, E_new, *bt_params):
             s /= beta
-            # if check_bad_step_size(s): return s_old / beta
             E_old = E_new
             model.set_parameter_vector(w + s * delta)
             E_new = model.mean_error(y, x)
         if E_new > E_old:
             s *= beta
-            model.set_parameter_vector(w + s * delta)
 
     return s
 
@@ -111,7 +90,6 @@ def minimise(
     s0=1.0,
     alpha=0.5,
     beta=0.5,
-    final_backstep=False,
     name=None,
     verbose=False
 ):
@@ -124,12 +102,20 @@ def minimise(
     Inputs:
     -   ...
 
-    TODO: use batches, and make this function private?
+    TODO:
+    -   Use batches
+    -   Make this function private with a leading underscore
+    -   Add `break_condition` method to Result class, and `while` loop here
+        instead of `for` loop, so iteration can end based on one of several
+        criteria EG iteration number, error function, time taken, DBS, etc
+    -   Evaluate the model every fixed time period, instead of every fixed
+        iteration period? Could make this configurable with an input argument
     """
     # Set initial parameters, step size and iteration counter
     w = model.get_parameter_vector()
     s = s0
     i = 0
+    next_eval = 0
     # Initialise result object, including start time of iteration
     result = Result(name, verbose)
 
@@ -137,13 +123,11 @@ def minimise(
     for i in range(n_iters):
         # Get gradient and initial step
         delta, dEdw = get_step(model, dataset)
-        
-        # # Check if delta is zero; if so, minimisation can't continue, so exit
-        # if not np.any(delta): break
 
         # Evaluate the model
-        if i % eval_every == 0: # TODO: make this condition time-based
+        if i >= next_eval:
             result.update(model, dataset, i, s)
+            next_eval += eval_every
         
         # Update parameters
         if line_search_flag:
@@ -157,20 +141,13 @@ def minimise(
                 dEdw,
                 alpha,
                 beta,
-                final_backstep
             )
             w += s * delta
         else:
             w += delta
-            model.set_parameter_vector(w)
-        # model.set_parameter_vector(w)
-        
-        # # Increment loop counter and check loop condition
-        # i += 1
-        # if any([i >= n_iters,
-        #     result.train_errors[-1] <= E_lim,
-        #     result.time_elapsed() >= t_lim]): break
 
+        model.set_parameter_vector(w)
+        
     # Evaluate final performance
     result.update(model, dataset, i, s)
     if verbose:
@@ -188,15 +165,17 @@ def get_gradient_descent_step(model, dataset, learning_rate):
     return -learning_rate * dEdw, dEdw
 
 def gradient_descent(
-    model, dataset, learning_rate=1e-1, name="Gradient descent",
-    final_backstep=False, **kwargs
+    model,
+    dataset,
+    learning_rate=1e-1,
+    name="Gradient descent",
+    **kwargs
 ):
     """ TODO: why is this ~10% slower than the old SGD function? """
     get_step = lambda model, dataset: get_gradient_descent_step(
         model, dataset, learning_rate)
 
-    result = minimise(model, dataset, get_step, name=name,
-        final_backstep=final_backstep, **kwargs)
+    result = minimise(model, dataset, get_step, name=name, **kwargs)
 
     return result
 
