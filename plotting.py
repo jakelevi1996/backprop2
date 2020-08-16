@@ -255,4 +255,9 @@ def plot_error_func(error_func, dir_name, xlims, npoints):
     plt.savefig(filename)
     plt.close()
 
-def plot_result_attribute(): pass
+def plot_result_attribute():
+    """
+    Function to plot a specific attribute stored in the Result class, for
+    example the step size, or the DBS, during each iteration
+    """
+    raise NotImplementedError
