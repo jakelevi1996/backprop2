@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 import optimisers as o
 import models as m
+import activations as a
 import data as d
 import plotting
 from .util import get_random_network
@@ -13,26 +14,30 @@ output_dir = os.path.join(current_dir, "Outputs")
 
 @pytest.mark.parametrize("seed", [7090, 2225])
 def test_gradient_descent(seed):
+    """
+    TODO: only a few iterations here, with random network. For real comparison,
+    use a script.
+    """
     # Set the random seed
     np.random.seed(seed)
     # Generate random network, data, and number of iterations
-    n = get_random_network(input_dim=1, output_dim=1)
+    n = m.NeuralNetwork(1, 1, [10], [a.Gaussian(), a.Identity()])
+    w0 = n.get_parameter_vector().copy()
     sin_data = d.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    n_iters = np.random.randint(10, 20)
-    n_iters = 1000
+    n_iters = 500
     # Call gradient descent function
-    result = o.gradient_descent(
+    result_ls = o.gradient_descent(
         n,
         sin_data,
         n_iters=n_iters,
-        eval_every=1,
+        eval_every=10,
         verbose=True,
-        name="New SGD",
+        name="New SGD with line search",
         line_search_flag=True
     )
-    # Make sure each iteration reduce the training error
-    for i in range(n_iters - 1):
-        assert result.train_errors[i + 1] < result.train_errors[i]
+    # Make sure each iteration reduces the training error
+    for i in range(len(result_ls.train_errors) - 1):
+        assert result_ls.train_errors[i + 1] < result_ls.train_errors[i]
     # Plot predictions
     x_pred = np.linspace(-2, 2).reshape(1, -1)
     y_pred = n.forward_prop(x_pred)
@@ -44,9 +49,26 @@ def test_gradient_descent(seed):
         y_pred
     )
     # Try again without line search
+    n.set_parameter_vector(w0)
+    result_no_ls = o.gradient_descent(
+        n,
+        sin_data,
+        n_iters=n_iters,
+        eval_every=10,
+        verbose=True,
+        name="New SGD without line search",
+        line_search_flag=False
+    )
     # Compare training curves
+    plotting.plot_training_curves(
+        [result_ls, result_no_ls],
+        "Learning curves",
+        output_dir
+    )
 
-
+def test_old_sgd_function():
+    # TODO
+    pass
 
 # # warmup()
 # np.random.seed(0)
