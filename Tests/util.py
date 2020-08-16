@@ -7,14 +7,18 @@ def get_random_network(
     low=3,
     high=6,
     act_funcs=None,
-    error_func=None
+    error_func=None,
+    input_dim=None,
+    output_dim=None
 ):
     """
     Generate a neural network with a random number of inputs, outputs, hidden
     layers, and number of units in each hidden layer
     """
-    input_dim = np.random.randint(low, high)
-    output_dim = np.random.randint(low, high)
+    if input_dim is None:
+        input_dim = np.random.randint(low, high)
+    if output_dim is None:
+        output_dim = np.random.randint(low, high)
     num_hidden_layers = np.random.randint(low, high)
     num_hidden_units = np.random.randint(low, high, num_hidden_layers)
     n = NeuralNetwork(

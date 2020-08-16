@@ -35,9 +35,15 @@ from layer import NeuralLayer
 
 class NeuralNetwork():
     def __init__(
-        self, input_dim=1, output_dim=1, num_hidden_units=None,
-        act_funcs=None, error_func=None,
-        weight_std=1.0, bias_std=1.0, filename=None
+        self,
+        input_dim=1,
+        output_dim=1,
+        num_hidden_units=None,
+        act_funcs=None,
+        error_func=None,
+        weight_std=1.0,
+        bias_std=1.0,
+        filename=None
     ):
         """
         __init__: initialise the network-constants and the weights, biases and

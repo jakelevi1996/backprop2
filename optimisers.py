@@ -35,7 +35,18 @@ def check_bad_step_size(s):
         return True
     else: return False
 
-def line_search(model, x, y, w, s, delta, dEdw, alpha, beta, final_backstep):
+def line_search(
+    model,
+    x,
+    y,
+    w,
+    s,
+    delta,
+    dEdw,
+    alpha,
+    beta,
+    final_backstep
+):
     """
     ... TODO: use batches, and implement maximum number of steps of line search,
     using a for-loop with an `if condition: break` statement
@@ -59,35 +70,50 @@ def line_search(model, x, y, w, s, delta, dEdw, alpha, beta, final_backstep):
         model.set_parameter_vector(w + s * delta)
         E_new = model.mean_error(y, x)
 
-        # while backtrack_condition(s, E_new, *bt_params) or E_new < E_old:
-        while backtrack_condition(s, E_new, *bt_params):
+        while backtrack_condition(s, E_new, *bt_params) or E_new < E_old:
+        # while backtrack_condition(s, E_new, *bt_params):
             s *= beta
             # if check_bad_step_size(s): return s_old * beta
             E_old = E_new
             model.set_parameter_vector(w + s * delta)
             E_new = model.mean_error(y, x)
-        # if final_backstep or E_new > E_old: s /= beta
+        if E_new > E_old:
+            s /= beta
+            model.set_parameter_vector(w + s * delta)
     else:
         # Track forwards until objective function stops decreasing
         s /= beta
         E_old = E_new
         model.set_parameter_vector(w + s * delta)
         E_new = model.mean_error(y, x)
-        # while E_new < E_old:
-        while not backtrack_condition(s, E_new, *bt_params):
+        while E_new < E_old:
+        # while not backtrack_condition(s, E_new, *bt_params):
             s /= beta
             # if check_bad_step_size(s): return s_old / beta
             E_old = E_new
             model.set_parameter_vector(w + s * delta)
             E_new = model.mean_error(y, x)
-        # if final_backstep or E_new > E_old: s *= beta
+        if E_new > E_old:
+            s *= beta
+            model.set_parameter_vector(w + s * delta)
 
     return s
 
 def minimise(
-    model, dataset, get_step, n_iters=1000, t_lim=5, E_lim=-np.inf,
-    eval_every=100, line_search_flag=False, s0=1.0, alpha=0.5, beta=0.5,
-    final_backstep=False, name=None, verbose=False
+    model,
+    dataset,
+    get_step,
+    n_iters=1000,
+    t_lim=5,
+    E_lim=-np.inf,
+    eval_every=100,
+    line_search_flag=False,
+    s0=1.0,
+    alpha=0.5,
+    beta=0.5,
+    final_backstep=False,
+    name=None,
+    verbose=False
 ):
     """
     Abstract minimisation function, containing code which is common to all
@@ -101,7 +127,9 @@ def minimise(
     TODO: use batches, and make this function private?
     """
     # Set initial parameters, step size and iteration counter
-    w, s, i = model.get_parameter_vector(), s0, 0
+    w = model.get_parameter_vector()
+    s = s0
+    i = 0
     # Initialise result object, including start time of iteration
     result = Result(name, verbose)
 
@@ -119,8 +147,18 @@ def minimise(
         
         # Update parameters
         if line_search_flag:
-            s = line_search(model, dataset.x_train, dataset.y_train, w, s,
-                delta, dEdw, alpha, beta, final_backstep)
+            s = line_search(
+                model,
+                dataset.x_train,
+                dataset.y_train,
+                w,
+                s,
+                delta,
+                dEdw,
+                alpha,
+                beta,
+                final_backstep
+            )
             w += s * delta
         else:
             w += delta
@@ -135,7 +173,8 @@ def minimise(
 
     # Evaluate final performance
     result.update(model, dataset, i, s)
-    if verbose: result.display_summary(i)
+    if verbose:
+        result.display_summary(i)
 
     return result
 
@@ -156,10 +195,10 @@ def gradient_descent(
     get_step = lambda model, dataset: get_gradient_descent_step(
         model, dataset, learning_rate)
 
-    return minimise(model, dataset, get_step, name=name,
+    result = minimise(model, dataset, get_step, name=name,
         final_backstep=final_backstep, **kwargs)
 
-
+    return result
 
 def stochastic_gradient_descent(
     model, dataset, n_iters=4000, eval_every=500, verbose=True,
