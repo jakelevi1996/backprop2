@@ -14,9 +14,16 @@ def min_and_max(*input_arrays):
     return min_elem, max_elem
 
 def plot_1D_regression(
-    filename, dataset, x_pred=None, y_pred=None, train_marker="bo",
-    test_marker="ro", pred_marker="g-", tp=0.75, figsize=[8, 6],
-    fig_title="1D regression data", fig_title_append=None
+    plot_name,
+    dir_name,
+    dataset,
+    x_pred=None,
+    y_pred=None,
+    train_marker="bo",
+    test_marker="ro",
+    pred_marker="g-",
+    tp=0.75,
+    figsize=[8, 6],
 ):
     """
     plot_1D_regression: plot the training data, test data, and optionally also
@@ -32,26 +39,28 @@ def plot_1D_regression(
     plt.plot(
         dataset.x_test.ravel(), dataset.y_test.ravel(), test_marker, alpha=tp
     )
-    plot_preds = False if ((x_pred is None) or (y_pred is None)) else True
-    if plot_preds:
+    if (x_pred is not None) and (y_pred is not None):
         # Plot predictions
         plt.plot(x_pred.ravel(), y_pred.ravel(), pred_marker, alpha=tp)
         plt.legend(["Training data", "Test data", "Predictions"])
     else:
         plt.legend(["Training data", "Test data"])
-    if fig_title_append is not None:
-        fig_title += fig_title_append
     # Format, save and close
-    plt.title(fig_title)
+    plt.title(plot_name)
     plt.xlabel("x")
     plt.ylabel("y")
     plt.grid(True)
-    plt.savefig(filename)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    plt.savefig("{}/{}.png".format(dir_name, plot_name))
     plt.close()
 
 def plot_2D_nD_regression(
-    filename, n_output_dims, dataset, y_pred, fig_title=None,
-    fig_title_append=None
+    plot_name,
+    dir_name,
+    n_output_dims,
+    dataset,
+    y_pred
 ):
     """
     plot_2D_nD_regression: plot the training data, test data, and model
@@ -59,8 +68,9 @@ def plot_2D_nD_regression(
     n_output_dims output dimensions.
 
     Inputs:
-    -   filename: string containing the filename that the plot should be saved
-        to
+    -   plot_name: title of the plot; will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
     -   n_output_dims: number of output dimensions to plot
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes. It is assumed that
@@ -71,6 +81,8 @@ def plot_2D_nD_regression(
     # Create subplots and set figure size
     fig, axes = plt.subplots(3, n_output_dims, sharex=True, sharey=True)
     fig.set_size_inches(4 * n_output_dims, 10)
+    if axes.ndim == 1:
+        axes = np.expand_dims(axes, 1)
     # Reshape test and evaluation data back into grids
     nx0 = np.unique(dataset.x_test[0]).size
     nx1 = np.unique(dataset.x_test[1]).size
@@ -81,10 +93,6 @@ def plot_2D_nD_regression(
         dataset.x_test.T.reshape(1, -1, 2),
         dataset.x_train.T.reshape(-1, 1, 2)
     ).all(axis=2).any(axis=0)
-    # try: train_inds = dataset.train_inds
-    # except AttributeError:
-    #   raise AttributeError("Dataset must have train inds")
-    # How to re-raise the same error with the same stack trace?
     # Plot test set, training set, and evaluations
     for i in range(n_output_dims):
         axes[0][i].pcolormesh(
@@ -106,16 +114,18 @@ def plot_2D_nD_regression(
     axes[0][0].set_ylabel("Test data")
     axes[1][0].set_ylabel("Training data")
     axes[2][0].set_ylabel("Predictions")
-    if fig_title is None:
-        fig_title = "2D to {}D regression data".format(n_output_dims)
-    if fig_title_append is not None:
-        fig_title += fig_title_append
-    fig.suptitle(fig_title, fontsize=16)
+    fig.suptitle(plot_name, fontsize=16)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    plt.savefig(filename)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    plt.savefig("{}/{}.png".format(dir_name, plot_name))
     plt.close()
 
 def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
+    """
+    Function to plot the activations of each hidden and output unit in a neural
+    network, with a 1-dimensional input
+    """
     raise NotImplementedError
 
 def plot_2D_classification(self, filename, figsize=[8, 6]):
@@ -123,9 +133,16 @@ def plot_2D_classification(self, filename, figsize=[8, 6]):
     # TODO: add plotting method for binary/discrete data
 
 def plot_training_curves(
-    result_list, name="Learning curves", dir="Results/Learning curves",
-    file_ext="png", figsize=[15, 6], e_lims=[0, 0.5], t_lims=None,
-    i_lims=None, tp=0.75, error_log_axis=False, time_log_axis=False,
+    result_list,
+    plot_name="Learning curves",
+    dir_name="Results/Learning curves",
+    figsize=[15, 6],
+    e_lims=[0, 0.5],
+    t_lims=None,
+    i_lims=None,
+    tp=0.75,
+    error_log_axis=False,
+    time_log_axis=False,
     iter_log_axis=False
 ):
     """
@@ -189,9 +206,11 @@ def plot_training_curves(
         Line2D([], [], c="k", ls="-", alpha=tp, label="Test error"),
         Line2D([], [], c="k", ls="--", alpha=tp, label="Train error")]
     axes[2].legend(handles=handles)
-    fig.suptitle(name)
+    fig.suptitle(plot_name)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    plt.savefig("{}/{}.{}".format(dir, name, file_ext))
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    plt.savefig("{}/{}.png".format(dir_name, plot_name))
     plt.close()
 
 def plot_speed_trials():
@@ -236,33 +255,4 @@ def plot_error_func(error_func, dir_name, xlims, npoints):
     plt.savefig(filename)
     plt.close()
 
-def plot_step_sizes(): pass
-
-if __name__ == "__main__":
-    np.random.seed(0)
-    # Generate training and test sets for 1D to 1D regression
-    s11 = data.SinusoidalDataSet1D1D(n_train=100, n_test=50, xlim=[0, 1])
-    # Generate random predictions
-    min_elem, max_elem = min_and_max(s11.x_train, s11.x_test)
-    N_D = 200
-    x_pred = np.linspace(min_elem, max_elem, N_D).reshape(1, -1)
-    y_pred = np.random.normal(size=[1, N_D])
-    # Plot
-    plot_1D_regression(
-        "Results/Random predictions 1D sinusoid", s11,
-        x_pred.ravel(), y_pred.ravel(), pred_marker="go"
-    )
-
-    # Generate training and test sets for 2D to 3D regression
-    output_dim = 4
-    s23 = data.SinusoidalDataSet2DnD(
-        nx0=100, nx1=100, train_ratio=0.9, output_dim=output_dim
-    )
-    # Generate random predictions
-    y_pred = np.random.normal(size=[output_dim, s23.x_test.shape[1]])
-    # Plot
-    plot_2D_nD_regression(
-        "Results/Random predictions 2D sinusoid", n_output_dims=4,
-        dataset=s23, y_pred=y_pred
-    )
-    # print(s23.x_test.T)
+def plot_result_attribute(): pass
