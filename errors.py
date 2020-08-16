@@ -100,31 +100,31 @@ class ErrorFunction():
             raise RuntimeError("Invalid activation function")
         # Return a unique integer ID for the activation function
         return subclass_type_list.index(this_type)
-    
-    def get_func_from_id(self, func_id):
-        """
-        get_func_from_id: given an integer ID (EG generated using
-        get_id_from_func), return an instance of the activation function which
-        has the same unique integer ID. This method is used when loading models
-        (after the activation functions are saved using their integer IDs), to
-        restore the correct activation function for each layer in the network.
-
-        TODO: should this be a class method? How do I use a class method?
-        """
-        # Get the list of subclasses of the ErrorFunction class
-        subclass_type_list = ErrorFunction.__subclasses__()
-        # Get the class of the activation function corresponding to id
-        func_class = subclass_type_list[func_id]
-        # Get an instance of the class
-        func_object = func_class()
-        # Return the instance of the correct activation function
-        return func_object
 
     def plot(self, dir_name=".", xlims=[-5, 5], npoints=200):
         """
         plot: plot an activation function and its derivative, and save to disk
         """
         plotting.plot_error_func(self, dir_name, xlims, npoints)
+    
+def get_func_from_id(func_id):
+    """
+    get_func_from_id: given an integer ID (EG generated using
+    get_id_from_func), return an instance of the activation function which
+    has the same unique integer ID. This method is used when loading models
+    (after the activation functions are saved using their integer IDs), to
+    restore the correct activation function for each layer in the network.
+
+    TODO: should this be a class method? How do I use a class method?
+    """
+    # Get the list of subclasses of the ErrorFunction class
+    subclass_type_list = ErrorFunction.__subclasses__()
+    # Get the class of the activation function corresponding to id
+    func_class = subclass_type_list[func_id]
+    # Get an instance of the class
+    func_object = func_class()
+    # Return the instance of the correct activation function
+    return func_object
 
 class SumOfSquares(ErrorFunction):
     """

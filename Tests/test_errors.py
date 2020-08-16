@@ -48,7 +48,7 @@ def test_error_func_id(seed, error_func):
     """
     # Check that you get the correct error function back from its id
     error_func_id = error_func.get_id_from_func()
-    error_func_from_id = e.ErrorFunction().get_func_from_id(error_func_id)
+    error_func_from_id = e.get_func_from_id(error_func_id)
     assert type(error_func_from_id) is type(error_func)
     # Check that the outputs are consisitent
     _, x, _, _ = get_random_network_inputs_targets(seed)
