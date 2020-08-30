@@ -71,6 +71,10 @@ class Result():
         print(" | ".join("-" * i for i in [9, 8, 11, 11, 10]))
 
     def display_last(self):
+        """
+        Display the results of the last time the update method was called.
+        Raises IndexError if update has not been called on this object before 
+        """
         print("{:9d} | {:8.3f} | {:11.5f} | {:11.5f} | {:10.4f}".format(
             self.iters[-1],
             self.times[-1],

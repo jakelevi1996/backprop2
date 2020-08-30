@@ -40,8 +40,6 @@ def test_update(seed):
     return result
 
 # Create an empty result, and get an updated result, for testing other methods
-# TODO: can make these fixtures, so they're defined when running test functions,
-# instead of when importing/discovering modules?
 empty_result = results.Result()
 updated_result = test_update(8946)
 
@@ -61,3 +59,15 @@ def test_save_load(result):
     assert result.iters         == loaded_result.iters
     assert result.step_size     == loaded_result.step_size
     assert result.start_time    == loaded_result.start_time
+
+@pytest.mark.parametrize("result", [empty_result, updated_result])
+def test_display_headers(result):
+    result.display_headers()
+
+@pytest.mark.parametrize("result", [updated_result])
+def test_display_last(result):
+    result.display_last()
+
+@pytest.mark.parametrize("result", [empty_result, updated_result])
+def test_display_summary(result):
+    result.display_summary(10)
