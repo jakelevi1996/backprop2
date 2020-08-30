@@ -7,7 +7,8 @@ training curves is tested in the test module for the optimiser module.
 import os
 import numpy as np
 import pytest
-import plotting, data
+import plotting, data, results
+from .util import get_random_network
 
 # Get name of output directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,8 +48,8 @@ def test_plot_2D_nD_regression(seed, output_dim):
     np.random.seed(seed)
     # Generate training and test sets for 2D to ND regression
     s23 = data.SinusoidalDataSet2DnD(
-        nx0=100,
-        nx1=100,
+        nx0=10,
+        nx1=12,
         train_ratio=0.9,
         output_dim=output_dim
     )
@@ -61,4 +62,33 @@ def test_plot_2D_nD_regression(seed, output_dim):
         n_output_dims=output_dim,
         dataset=s23,
         y_pred=y_pred
+    )
+
+def test_plot_training_curves():
+    np.random.seed(79)
+    n_models = np.random.randint(2, 5)
+    results_list = []
+
+    for j in range(n_models):
+        n_iters = np.random.randint(10, 20)
+        output_dim = np.random.randint(2, 5)
+        n = get_random_network(input_dim=2, output_dim=output_dim)
+        d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
+        w = n.get_parameter_vector()
+        result = results.Result(name="Network {}".format(j))
+        
+        # Call the result.update method a few times
+        for i in range(n_iters):
+            s = np.random.normal()
+            n.set_parameter_vector(w + i)
+            result.update(n, d, i, s)
+        
+        results_list.append(result)
+    
+    
+    plotting.plot_training_curves(
+        results_list,
+        "Test plot_training_curves",
+        output_dir,
+        e_lims=None
     )

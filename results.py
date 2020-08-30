@@ -136,6 +136,9 @@ class Result():
                 a_type = type(getattr(self, a))
                 a_val = data[a]
                 setattr(self, a, a_type(a_val))
+    
+    def __repr__(self):
+        return "Result({})".format(repr(self.name))
 
 def load(filename, dir_name="."):
     """ Load a results file. Wrapper for the Result.load method """

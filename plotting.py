@@ -161,7 +161,7 @@ def plot_training_curves(
     plot_name="Learning curves",
     dir_name="Results/Learning curves",
     figsize=[15, 6],
-    e_lims=[0, 0.5],
+    e_lims=None,
     t_lims=None,
     i_lims=None,
     tp=0.75,
@@ -181,7 +181,7 @@ def plot_training_curves(
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    unique_names_list = list(set([result.name for result in result_list]))
+    unique_names_list = list(set(result.name for result in result_list))
     num_tests = len(unique_names_list)
     colour_list = plt.get_cmap("hsv")(
         np.linspace(0, 1, num_tests, endpoint=False))
