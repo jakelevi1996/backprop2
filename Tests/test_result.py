@@ -14,17 +14,19 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(current_dir, "Outputs")
 
 @pytest.mark.parametrize("seed", [3681, 7269, 2084])
-def test_update(seed):
+def test_update(seed, result=None):
     """
     Test the update method of the Result class. Also return the result, which
-    can be used as an input to other test functions
+    can be used as an input to other test functions. Can accept a pre-existing
+    Result object, EG if it has been initialised with a specific output file
     """
     np.random.seed(seed)
     output_dim = np.random.randint(2, 5)
     n = get_random_network(input_dim=2, output_dim=output_dim)
     d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
     w = n.get_parameter_vector()
-    result = results.Result()
+    if result is None:
+        result = results.Result()
     
     # Call the result.update method a few times
     for i in range(5):
@@ -45,7 +47,7 @@ updated_result = test_update(8946)
 
 @pytest.mark.parametrize("result", [empty_result, updated_result])
 def test_save_load(result):
-    """ Test saving and loading results """
+    """ Test saving and loading a Result object """
     filename = "Saved result.npz"
     result.save(filename, output_dir)
     loaded_result = results.load(filename, output_dir)
@@ -62,12 +64,30 @@ def test_save_load(result):
 
 @pytest.mark.parametrize("result", [empty_result, updated_result])
 def test_display_headers(result):
+    """ Test the display_headers method of the Result class """
     result.display_headers()
 
 @pytest.mark.parametrize("result", [updated_result])
 def test_display_last(result):
+    """ Test the display_last method of the Result class """
     result.display_last()
 
 @pytest.mark.parametrize("result", [empty_result, updated_result])
 def test_display_summary(result):
+    """ Test the display_summary method of the Result class """
     result.display_summary(10)
+
+def test_output_file():
+    """
+    Test the methods of a Result object, writing the outputs to a text file
+    """
+    seed = 8151
+    np.random.seed(seed)
+    filename = "Result tests output.txt"
+    path = os.path.join(output_dir, filename)
+    with open(path, "w") as f:
+        result = results.Result("Test result", True, f)
+        test_update(seed=seed, result=result)
+        result.display_headers()
+        result.display_last()
+        result.display_summary(10)
