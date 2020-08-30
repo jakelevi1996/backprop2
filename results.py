@@ -1,4 +1,16 @@
+import os
 from time import perf_counter
+import numpy as np
+
+# Define list of attributes which are saved and loaded by the Result class
+attr_name_list = [
+    "train_errors",
+    "test_errors",
+    "times",
+    "iters",
+    "step_size",
+    "start_time",
+]
 
 class Result():
     """
@@ -10,7 +22,6 @@ class Result():
     - Make this class configurable, so columns such as step-size and |x| are
     optional, and the column width and format spec for each column is
     configurable
-    - Implement saving and loading of results
     """
     def __init__(self, name=None, verbose=True):
         """
@@ -23,7 +34,8 @@ class Result():
         to print function
         """
         self.name = name if (name is not None) else "Unnamed experiment"
-        if verbose: self.display_headers()
+        if verbose:
+            self.display_headers()
         self.verbose = verbose
 
         self.train_errors   = []
@@ -34,7 +46,8 @@ class Result():
         self.start_time     = perf_counter()
         # TODO: DBS criterion
     
-    def time_elapsed(self): return perf_counter() - self.start_time
+    def time_elapsed(self):
+        return perf_counter() - self.start_time
     
     def update(self, model, dataset, i, s):
         t = self.time_elapsed()
@@ -45,32 +58,69 @@ class Result():
         self.times.append(t)
         self.iters.append(i)
         self.step_size.append(s)
-        if self.verbose: self.display_last()
+
+        if self.verbose:
+            self.display_last()
     
     def display_headers(self):
         # num_fields, field_width = 3, 10
         print("\nPerforming test \"{}\"...".format(self.name))
         print("{:9} | {:8} | {:11} | {:11} | {:10}".format(
-            "Iteration", "Time (s)", "Train error", "Test error", "Step size"))
+            "Iteration", "Time (s)", "Train error", "Test error", "Step size"
+        ))
         print(" | ".join("-" * i for i in [9, 8, 11, 11, 10]))
 
     def display_last(self):
         print("{:9d} | {:8.3f} | {:11.5f} | {:11.5f} | {:10.4f}".format(
-            self.iters[-1], self.times[-1], self.train_errors[-1],
-            self.test_errors[-1], self.step_size[-1]))
+            self.iters[-1],
+            self.times[-1],
+            self.train_errors[-1],
+            self.test_errors[-1],
+            self.step_size[-1]
+        ))
 
     def display_summary(self, n_iters):
         t_total = self.time_elapsed()
         t_mean = t_total / n_iters
-        print("-" * 50,
+        print(
+            "-" * 50,
             "{:30} = {}".format("Test name", self.name),
             "{:30} = {:,.4f} s".format("Total time", t_total),
             "{:30} = {:,}".format("Total iterations", n_iters),
             "{:30} = {:.4f} ms".format("Average time per iteration",
-                1e3 * t_mean),
+                1e3 * t_mean
+            ),
             "{:30} = {:,.1f}".format("Average iterations per second",
-                1 / t_mean),
-            sep="\n", end="\n\n")
+                1 / t_mean
+            ),
+            sep="\n",
+            end="\n\n"
+        )
     
-    def save(self, filename): raise NotImplementedError
-    def load(self, filename): raise NotImplementedError
+    def save(self, filename, dir_name="."):
+        """
+        Save all of the relevant attributes of the Result object in a numpy file
+        """
+        path = os.path.abspath(os.path.join(dir_name, filename))
+        np.savez(
+            path, **{a: getattr(self, a) for a in attr_name_list}
+        )
+
+    def load(self, filename, dir_name="."):
+        """
+        Load the result attributes from the specified filename, replacing the
+        values of the attributes in the object which is calling this method, and
+        making sure that each attribute has the correct type
+        """
+        path = os.path.abspath(os.path.join(dir_name, filename))
+        with np.load(path) as data:
+            for a in attr_name_list:
+                a_type = type(getattr(self, a))
+                a_val = data[a]
+                setattr(self, a, a_type(a_val))
+
+def load(filename, dir_name="."):
+    """ Load a results file. Wrapper for the Result.load method """
+    r = Result()
+    r.load(filename, dir_name)
+    return r
