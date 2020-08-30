@@ -60,12 +60,14 @@ def plot_2D_nD_regression(
     dir_name,
     n_output_dims,
     dataset,
-    y_pred
+    y_pred,
+    tight_layout=False
 ):
     """
     plot_2D_nD_regression: plot the training data, test data, and model
     predictions for a regression data set with 2 input dimensions and
-    n_output_dims output dimensions.
+    n_output_dims output dimensions. NB this function is not expected to work if
+    the training data has been shuffled.
 
     Inputs:
     -   plot_name: title of the plot; will also be used as the filename
@@ -76,7 +78,11 @@ def plot_2D_nD_regression(
         x_train, y_train, x_test, and y_test attributes. It is assumed that
         x_test is a uniform 2D grid created using np.meshgrid, and x_train is a
         subset of the points contained in x_test
-    -   y_pred: 
+    -   y_pred: predictions for the data, EG from a NeuralNetwork object,
+        evaluated on the training data inputs
+    -   tight_layout: Boolean flag indicating whether or not to use a
+        tight-layout for saving the plots, which (for some reason) makes this
+        function about 50% slower for certain inputs. Default is False.
     """
     # Create subplots and set figure size
     fig, axes = plt.subplots(3, n_output_dims, sharex=True, sharey=True)
@@ -89,33 +95,51 @@ def plot_2D_nD_regression(
     x_test0 = dataset.x_test[0].reshape(nx1, nx0)
     x_test1 = dataset.x_test[1].reshape(nx1, nx0)
     y_min, y_max = dataset.y_test.min(), dataset.y_test.max()
-    train_inds = np.equal(
-        dataset.x_test.T.reshape(1, -1, 2),
-        dataset.x_train.T.reshape(-1, 1, 2)
-    ).all(axis=2).any(axis=0)
-    # Plot test set, training set, and evaluations
+    # Check if the Dataset object has a train_inds attribute
+    if hasattr(dataset, "train_inds"):
+        train_inds_bool = np.full(dataset.n_test, False)
+        train_inds_bool[dataset.train_inds] = True
+    else:
+        train_inds_bool = np.equal(
+            dataset.x_test.T.reshape(1, -1, 2),
+            dataset.x_train.T.reshape(-1, 1, 2)
+        ).all(axis=2).any(axis=0)
+    # Iterate through each output dimension
     for i in range(n_output_dims):
+        # Plot test data
         axes[0][i].pcolormesh(
-            x_test0, x_test1, dataset.y_test[i].reshape(nx1, nx0),
-            vmin=y_min, vmax=y_max
+            x_test0,
+            x_test1,
+            dataset.y_test[i].reshape(nx1, nx0),
+            vmin=y_min,
+            vmax=y_max
         )
-        y_train = np.where(train_inds, dataset.y_test[i], np.nan)
+        # Plot training data
+        y_train = np.where(train_inds_bool, dataset.y_test[i], np.nan)
         axes[1][i].pcolormesh(
-            x_test0, x_test1, np.reshape(y_train, [nx1, nx0]),
-            vmin=y_min, vmax=y_max
+            x_test0,
+            x_test1,
+            np.reshape(y_train, [nx1, nx0]),
+            vmin=y_min,
+            vmax=y_max
         )
+        # Plot predictions
         axes[2][i].pcolormesh(
-            x_test0, x_test1, y_pred[i].reshape(nx1, nx0),
-            vmin=y_min, vmax=y_max
+            x_test0,
+            x_test1,
+            y_pred[i].reshape(nx1, nx0),
+            vmin=y_min,
+            vmax=y_max
         )
-        axes[2][i].set_xlabel("y[{}]".format(i))
+        axes[2][i].set_xlabel(r"$y_{}$".format(i))
     # Format, save and close
     plt.get_cmap().set_bad("k")
     axes[0][0].set_ylabel("Test data")
     axes[1][0].set_ylabel("Training data")
     axes[2][0].set_ylabel("Predictions")
     fig.suptitle(plot_name, fontsize=16)
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    if tight_layout:
+        fig.tight_layout(rect=[0, 0, 1, 0.95])
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
     plt.savefig("{}/{}.png".format(dir_name, plot_name))
