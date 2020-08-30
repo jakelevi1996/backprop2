@@ -108,9 +108,12 @@ def minimise(
     -   Make this function private with a leading underscore
     -   Add `break_condition` method to Result class, and `while` loop here
         instead of `for` loop, so iteration can end based on one of several
-        criteria EG iteration number, error function, time taken, DBS, etc
+        criteria EG iteration number, error function, time taken, DBS, etc.
+        Breaking out of the optimisation loop could be handled by a Terminator
+        class
     -   Evaluate the model every fixed time period, instead of every fixed
-        iteration period? Could make this configurable with an input argument
+        iteration period? Could make this configurable with an input argument,
+        and handled by an Evaluator class
     """
     # Set initial parameters, step size and iteration counter
     w = model.get_parameter_vector()
@@ -150,9 +153,9 @@ def minimise(
         model.set_parameter_vector(w)
         
     # Evaluate final performance
-    result.update(model, dataset, i, s)
+    result.update(model, dataset, n_iters, s)
     if verbose:
-        result.display_summary(i)
+        result.display_summary(n_iters)
 
     return result
 

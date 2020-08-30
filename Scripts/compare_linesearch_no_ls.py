@@ -31,16 +31,6 @@ for seed in [7090, 2225]:
         name="SGD with line search",
         line_search_flag=True
     )
-    # Plot predictions
-    x_pred = np.linspace(-2, 2).reshape(1, -1)
-    y_pred = n.forward_prop(x_pred)
-    plotting.plot_1D_regression(
-        "Test gradient descent predictions",
-        output_dir,
-        sin_data,
-        x_pred,
-        y_pred
-    )
     # Try again without line search
     n.set_parameter_vector(w0)
     result_no_ls = optimisers.gradient_descent(
