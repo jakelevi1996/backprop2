@@ -36,6 +36,7 @@ def test_propagation(seed, error_func):
     """
     n, x, t, _ = get_random_network_inputs_targets(seed, error_func=error_func)
     n.back_prop(x, t)
+    n.back_prop2(x, t)
     n.mean_error(t, x)
 
 @pytest.mark.parametrize("seed", [5331, 3475, 9941])
