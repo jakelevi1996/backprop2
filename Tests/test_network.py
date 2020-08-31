@@ -27,7 +27,8 @@ def test_forward_propagation(seed):
 def test_back_propagation(seed):
     """
     Test back propagation, with multi-dimensional inputs and outputs, and
-    multiple data points
+    multiple data points, and assert that the appropriate attributes of each of
+    the network layers have the correct shape
     """
     n, x, t, N_D = get_random_network_inputs_targets(seed)
     n.back_prop(x, t)
@@ -41,8 +42,17 @@ def test_back_propagation(seed):
 
 @pytest.mark.parametrize("seed", [2770, 9098, 8645])
 def test_backprop2(seed):
-    # TODO
-    pass
+    """
+    Test 2nd order back propagation, with multi-dimensional inputs and outputs,
+    and multiple data points, and assert that the epsilons in each network
+    layer have the correct shape
+    """
+    n, x, t, N_D = get_random_network_inputs_targets(seed)
+    n.back_prop2(x, t)
+    # Iterate through each layer
+    for layer in n.layers:
+        # Assert that the gradients in each layer have the correct shape
+        assert layer.epsilon.shape == (layer.output_dim, layer.output_dim, N_D)
 
 @pytest.mark.parametrize("seed", [3052, 4449, 5555])
 def test_get_parameter_vector(seed):

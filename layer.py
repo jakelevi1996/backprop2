@@ -66,10 +66,22 @@ class NeuralLayer():
         Inputs:
         -   next_layer: the next layer in the network, as an instance of
             NeuralLayer. Must have pre-calculated epsilon and delta for that
-            layer, and its delta and weights must be the correct shape
+            layer, and its epsilon, delta and weights must be the correct shape.
         """
-
-        self.epsilon = np.einsum()
+        self.epsilon = np.einsum(
+            "kmd,ki,id,mj,jd->ijd",
+            next_layer.epsilon,
+            next_layer.weights,
+            self.act_func.dydx(self.pre_activation),
+            next_layer.weights,
+            self.act_func.dydx(self.pre_activation)
+        )
+        self.epsilon[self.diag_indices] += np.einsum(
+            "jk,ji,ik->ik",
+            next_layer.delta,
+            next_layer.weights,
+            self.act_func.d2ydx2(self.pre_activation)
+        )
     
     def calc_gradients(self):
         """

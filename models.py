@@ -216,7 +216,7 @@ class NeuralNetwork():
         # Perform forward propagation and back propagation to calculate 1st
         # order gradients
         self.back_prop(x, target)
-        # Calculate the output layer epsilon and gradients
+        # Calculate the output layer epsilon
         final_layer = self.layers[-1]
         final_layer.epsilon = np.einsum(
             "ijk,ik,jk->ijk",
@@ -228,10 +228,9 @@ class NeuralNetwork():
             self._error_func.dEdy(self.y, target),
             final_layer.act_func.d2ydx2(final_layer.pre_activation)
         )
-        
-        # Calculate deltas and gradients for hidden layers
+        # Calculate epsilons for hidden layers
         for i in reversed(range(self._num_layers - 1)):
-            self.layers[i].backprop(self.layers[i + 1])
+            self.layers[i].backprop2(self.layers[i + 1])
 
     def get_parameter_vector(self):
         """
