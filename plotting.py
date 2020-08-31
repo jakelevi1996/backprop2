@@ -170,14 +170,14 @@ def plot_training_curves(
     iter_log_axis=False
 ):
     """
-    plot_training_curves: ...
+    Given a list of Result objects, create a plot containing the training and
+    test errors for each Result, both against time and against number of
+    iterations, and also plot the number of iterations against time. The plot is
+    saved in the specified file and directory
 
-    TODO: add legend entry to explain dotted lines = training set performance;
-    update docstring; 2*2 subplots with legend in its own subplot?
-
-    TODO: logarithmic axes
-
-    Are t_lims and i_lims necessary?
+    TODO:
+    -   2*2 subplots with legend in its own subplot?
+    -   Logarithmic axes
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
