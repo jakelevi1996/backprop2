@@ -12,18 +12,22 @@ import plotting
 class ActivationFunction():
     name = None
 
-    def y(self, x):         raise NotImplementedError
-    def dydx(self, x):      raise NotImplementedError
-    def d2ydx2(self, x):    raise NotImplementedError
-    def __call__(self, x):  return self.y(x)
+    def y(self, x):
+        raise NotImplementedError
+    def dydx(self, x):
+        raise NotImplementedError
+    def d2ydx2(self, x):
+        raise NotImplementedError
+    def __call__(self, x):
+        return self.y(x)
 
     def get_id_from_func(self):
         """
-        get_id_from_func: given any child of the ActivationFunction class, this
-        method returns a unique integer ID for that child's class. This integer
-        is used when saving models, to represent the activation function for a
-        given layer in the model, and later used to restore the activation
-        function using the get_func_from_id method
+        Given any child of the ActivationFunction class, this method returns a
+        unique integer ID for that child's class. This integer is used when
+        saving models, to represent the activation function for a given layer in
+        the model, and later used to restore the activation function using the
+        get_func_from_id method
         """
         # Check this method is being called by a child of ActivationFunction
         err_str = "Method must be called by a child of ActivationFunction"
@@ -64,27 +68,46 @@ def get_func_from_id(func_id):
 
 class Identity(ActivationFunction):
     name = "Identity activation function"
-    def y(self, x): return x
-    def dydx(self, x): return np.ones(x.shape)
+    def y(self, x):
+        return x
+    def dydx(self, x):
+        return np.ones(x.shape)
+    def d2ydx2(self, x):
+        return np.zeros(x.shape)
 
 class Logistic(ActivationFunction):
     name = "Logistic activation function"
-    def y(self, x): return 1.0 / (1.0 + np.exp(-x))
+    def y(self, x):
+        return 1.0 / (1.0 + np.exp(-x))
     def dydx(self, x, y=None):
-        if y is None: y = self.y(x)
+        if y is None:
+            y = self.y(x)
         return y * (1.0 - y)
+    def d2ydx2(self, x):
+        y = self.y(x)
+        return y * (1 - y) * (1 - 2 * y)
 
 class Relu(ActivationFunction):
     name = "ReLU activation function"
-    def y(self, x): return np.where(x < 0.0, 0.0, x)
-    def dydx(self, x): return np.where(x < 0.0, 0.0, 1.0)
+    def y(self, x):
+        return np.where(x < 0.0, 0.0, x)
+    def dydx(self, x):
+        return np.where(x < 0.0, 0.0, 1.0)
+    def d2ydx2(self, x):
+        return np.where(x == 0.0, np.inf, 0.0)
+        # return np.zeros(x.shape)
 
 class Gaussian(ActivationFunction):
     name = "Gaussian activation function"
-    def y(self, x): return np.exp(-(x ** 2))
+    def y(self, x):
+        return np.exp(-(x ** 2))
     def dydx(self, x, y=None):
-        if y is None: y = self.y(x)
+        if y is None:
+            y = self.y(x)
         return -2.0 * x * y
+    def d2ydx2(self, x):
+        y = self.y(x)
+        return 2.0 * y * ((2.0 * x * x) - 1)
 
 class SoftMax(ActivationFunction):
     pass

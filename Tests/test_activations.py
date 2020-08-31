@@ -28,6 +28,7 @@ def test_shapes(seed, act_func):
     _, x, _, _ = get_random_network_inputs_targets(seed)
     assert act_func(x).shape == x.shape
     assert act_func.dydx(x).shape == x.shape
+    assert act_func.d2ydx2(x).shape == x.shape
 
 @pytest.mark.parametrize("seed", [3995, 1218, 589])
 @pytest.mark.parametrize("act_func", act_func_list)
@@ -35,6 +36,8 @@ def test_propagation(seed, act_func):
     """
     Test that the activation function can be used for forward and back
     propagation in a neural network model
+
+    TODO: backprop2
     """
     n, x, t, _ = get_random_network_inputs_targets(seed, act_funcs=[act_func])
     n.forward_prop(x)
