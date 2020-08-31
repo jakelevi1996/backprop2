@@ -173,7 +173,9 @@ def plot_training_curves(
     Given a list of Result objects, create a plot containing the training and
     test errors for each Result, both against time and against number of
     iterations, and also plot the number of iterations against time. The plot is
-    saved in the specified file and directory
+    saved in the specified file and directory. Multiple repeats of Result
+    objects with the same name attribute are supported, and plotted in the same
+    colour, and with a single legend entry, for easy comparison.
 
     TODO:
     -   2*2 subplots with legend in its own subplot?
