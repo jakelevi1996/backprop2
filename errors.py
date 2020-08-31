@@ -138,8 +138,16 @@ class SumOfSquares(ErrorFunction):
         return y - target
     
     def d2Edy2(self, y, target):
-        # NB: for sum-of-squares, this is just the identity matrix
-        raise NotImplementedError
+        # Get the output dimension and number of data points
+        output_dim, N_D = y.shape
+        # Create identity matrix with the correct rank
+        result = np.identity(output_dim)
+        # Expand dimensions to have a 3rd axis
+        result = np.expand_dims(result, axis=2)
+        # Repeat for each data point and return
+        return np.repeat(result, N_D, axis=2)
+        # TODO: will this work if returning a scalar 1, due to broadcasting?
+
 
 class BinaryCrossEntropy(ErrorFunction):
     # TODO: this is not written for multi-dimensional inputs and outputs, or for
@@ -149,3 +157,7 @@ class BinaryCrossEntropy(ErrorFunction):
 
     def dEdy(self, y, target):
         return ((y - target) / (y * (1.0 - y))).sum()
+
+class Softmax(ErrorFunction):
+    # TODO
+    pass

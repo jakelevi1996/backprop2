@@ -20,13 +20,12 @@ def test_shapes(seed, error_func):
     """
     Test that the output from each error function and its derivatives are
     the correct shapes
-
-    TODO: second derivatives
     """
     n, x, t, N_D = get_random_network_inputs_targets(seed)
     y = n.forward_prop(x)
     assert error_func(y, t).shape == (1, N_D)
     assert error_func.dEdy(y, t).shape == (n.output_dim, N_D)
+    assert error_func.d2Edy2(y, t).shape == (n.output_dim, n.output_dim, N_D)
 
 @pytest.mark.parametrize("seed", [3995, 1218, 589])
 @pytest.mark.parametrize("error_func", error_func_list)
