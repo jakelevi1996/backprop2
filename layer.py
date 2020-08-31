@@ -3,8 +3,8 @@ import numpy as np
 class NeuralLayer():
     def __init__(self, num_units, num_inputs, act_func, weight_std, bias_std):
         """
-        __init__: initialise the constants and parameters for a neural network
-        layer. This method is called during NeuralNetwork.__init__()
+        Initialise the constants and parameters for a neural network layer. This
+        method is called during NeuralNetwork.__init__()
         """
         # Randomly initialise parameters
         self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
@@ -19,9 +19,8 @@ class NeuralLayer():
     
     def activate(self, layer_input):
         """
-        activate: calculate the pre-activation and output of this layer as a
-        function of the input, and store the input for subsequent gradient
-        calculations.
+        Calculate the pre-activation and output of this layer as a function of
+        the input, and store the input for subsequent gradient calculations.
 
         Inputs:
         -   layer_input: input to the layer. Should be a numpy array with shape
@@ -41,9 +40,9 @@ class NeuralLayer():
     
     def backprop(self, next_layer):
         """
-        backprop: calculate delta (gradient of the error function with respect
-        to the pre-activations) for the current layer of the network, using the
-        delta and weights of the next layer in the network.
+        Calculate delta (gradient of the error function with respect to the
+        pre-activations) for the current layer of the network, using the delta
+        and weights of the next layer in the network.
 
         Inputs:
         -   next_layer: the next layer in the network, as an instance of
@@ -51,16 +50,31 @@ class NeuralLayer():
             delta and weights must be the correct shape
         """
         self.delta = np.einsum(
-            "jk,ji,ik->ik", next_layer.delta, next_layer.weights,
+            "jk,ji,ik->ik",
+            next_layer.delta,
+            next_layer.weights,
             self.act_func.dydx(self.pre_activation)
         )
     
+    def backprop2(self, next_layer):
+        """
+        Calculate epsilon (2nd derivative of the error function with respect to
+        the pre-activations) for the current layer of the network, using the
+        delta and weights of the next layer in the network.
+
+        Inputs:
+        -   next_layer: the next layer in the network, as an instance of
+            NeuralLayer. Must have pre-calculated epsilon and delta for that
+            layer, and its delta and weights must be the correct shape
+        """
+
+        self.epsilon = np.einsum()
+    
     def calc_gradients(self):
         """
-        calc_gradients: calculate the gradients of the error function with
-        respect to the bias and weights in this layer, using the delta for this
-        layer, which must have already been calculated using
-        self.backprop(next_layer).
+        Calculate the gradients of the error function with respect to the bias
+        and weights in this layer, using the delta for this layer, which must
+        have already been calculated using self.backprop(next_layer).
 
         TODO: test whether optimising the path gives a speed-up, and if so then
         calculate path in advance using np.einsum_path during initialisation.
