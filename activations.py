@@ -109,5 +109,16 @@ class Gaussian(ActivationFunction):
         y = self.y(x)
         return 2.0 * y * ((2.0 * x * x) - 1)
 
+class Cauchy(ActivationFunction):
+    name = "Cauchy activation function"
+    def y(self, x):
+        return 1.0 / (1.0 + x*x)
+    def dydx(self, x):
+        y = self.y(x)
+        return -2.0 * x * y * y
+    def d2ydx2(self, x):
+        y = self.y(x)
+        return 2.0 * y * y * ((4.0 * x * x * y) - 1)
+
 class SoftMax(ActivationFunction):
     pass

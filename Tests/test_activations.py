@@ -9,7 +9,11 @@ from .util import get_random_network_inputs_targets
 
 # Define list of activation functions to be tested
 act_func_list = [
-    a.Identity(), a.Logistic(), a.Relu(), a.Gaussian()
+    a.Identity(),
+    a.Logistic(),
+    a.Relu(),
+    a.Gaussian(),
+    a.Cauchy()
 ]
 
 # Get name of output directory
