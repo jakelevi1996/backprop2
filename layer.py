@@ -16,6 +16,7 @@ class NeuralLayer():
         self.act_func = act_func
         self.num_weights = self.weights.size
         self.num_bias = self.bias.size
+        self.diag_indices = np.diag_indices(num_units)
     
     def activate(self, layer_input):
         """

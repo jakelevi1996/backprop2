@@ -168,11 +168,10 @@ class NeuralNetwork():
 
     def back_prop(self, x, target):
         """
-        back_prop: propogate an input forward through the network to form a
-        prediction, and then propogate the derivatives of the error between the
-        predictions and the target backwards, in order to calculate the
-        derivative of the error function with respect to the parameters of the
-        network.
+        Propogate an input forward through the network to form a prediction, and
+        then propogate the derivatives of the error between the predictions and
+        the target backwards, in order to calculate the derivative of the error
+        function with respect to the parameters of the network.
 
         Inputs:
         -   x: input to the neural network. Should be a numpy array with shape
@@ -210,19 +209,26 @@ class NeuralNetwork():
         method has already been called, in order to calculate gradients and
         layer inputs and outputs.
 
-        TODO: call forward prop and back prop separately (outside of this
-        method)
+        TODO:
+        -   call forward prop and back prop separately (outside of this method)
+        -   Reuse self._error_func.dEdy(self.y, target) instead of recalculating
         """
         # Perform forward propagation and back propagation to calculate 1st
         # order gradients
         self.back_prop(x, target)
-        # Propogate epsilons (second-order derivatives)
-        self.layers[-1].epsilon = np.einsum(
+        # Calculate the output layer epsilon and gradients
+        final_layer = self.layers[-1]
+        final_layer.epsilon = np.einsum(
             "ijk,ik,jk->ijk",
             self._error_func.d2Edy2(self.y, target),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation),
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
-        ) # + diagonal term
+        )
+        final_layer.epsilon[final_layer.diag_indices] += np.multiply(
+            self._error_func.dEdy(self.y, target),
+            final_layer.act_func.d2ydx2(final_layer.pre_activation)
+        )
+        
         # Calculate deltas and gradients for hidden layers
         for i in reversed(range(self._num_layers - 1)):
             self.layers[i].backprop(self.layers[i + 1])
