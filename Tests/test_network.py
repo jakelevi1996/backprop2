@@ -29,8 +29,15 @@ def test_back_propagation(seed):
     Test back propagation, with multi-dimensional inputs and outputs, and
     multiple data points
     """
-    n, x, t, _ = get_random_network_inputs_targets(seed)
+    n, x, t, N_D = get_random_network_inputs_targets(seed)
     n.back_prop(x, t)
+    # Iterate through each layer
+    for layer in n.layers:
+        # Assert that the gradients in each layer have the correct shape
+        assert layer.delta.shape == (layer.output_dim, N_D)
+        assert layer.w_grad.shape == (layer.output_dim, layer.input_dim, N_D)
+        assert layer.b_grad.shape == (layer.output_dim, N_D)
+
 
 @pytest.mark.parametrize("seed", [2770, 9098, 8645])
 def test_backprop2(seed):
