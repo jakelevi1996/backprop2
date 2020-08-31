@@ -19,17 +19,29 @@ This repository contains the following modules:
 
 ## TODO
 
-2020-07-19:
+### 2020-08-31
+
+- Finish separating functions from the `training` module into scripts, and remove `if __name__ == "__main__"` block from `training` module
+- Add generic training function to the `training` module, including a CLI to configure training runs
+- Add function to `plotting` module to plot an arbitrary `Result` attribute against iteration number (for example step size, number of line-search steps per iteration, etc), and compare against different experiments
+- Make `Result` class configurable with different columns and column widths
+- Add script to plot results (learning curves and predictions) for 2D-to-ND sinusoidal regression
+- Support different batch-sizes (but also maintain support for not using the full-training set for each batch; could maybe implement a new BatchSizer parent class and subclasses in a batchsizer module to make this configurable)
+- Finish script to compare different parameters for gradient descent with line-search
+- Implement saving and loading of NeuralNetwork class
+- Backprop2
+- DBS
+
+### 2020-07-19
 
 - Add full unit testing coverage (and remove `if __name__ == "__main__"` blocks)
 - Allocate numpy arrays in `NeuralNetwork` and `NeuralLayer` class during initialisation, and use numpy `out` argument, to improve performance... actually, is this a sensible thing to do for all arrays? For ones which depend on the number of data points, this will vary depending on the batch size
-- Store number of weights and biases in layer attribute, instead of calculating from input dimension and output dimension
 - Implement back-propagation of 2nd order gradients
 - Implement block-generalised-Newton optimisation
 - General tidying up of code and comments
 - Implement DBS + convergence metric
 
-2020-05-01 and before:
+### 2020-05-01 and before
 
 - Add datasets for Gaussians and sum-of-Gaussians, binary circles, binary multiple circles
 - Get binary cross entropy working for classification data-sets, train classification, and add plotting function for 2D binary classification
