@@ -299,7 +299,39 @@ class NeuralNetwork():
 
     def get_hessian_blocks(self, x, target, weight_ind_list, bias_ind_list):
         """
-        For each layer, ...
+        Return the mean (across data points) of a block-diagonal approximation
+        of the Hessian matrix of second derivatives of the error between the
+        targets and the network's predictions based on x with respect to all of
+        the parameters in the network, as a list of 2D matrices. Also return a
+        list of the indices in the corresponding gradient vector (returned by
+        the get_gradient_vector method) that each Hessian block corresponds to.
+
+        Inputs:
+        -   x: input to the neural network. Should be a numpy array with shape
+            (input_dim, N_D)
+        -   target: targets that the neural network is trying to predict. Should
+            be a numpy array with shape (output_dim, N_D)
+        -   weight_ind_list: 3D iterable. The outermost dimension refers to a
+            layer in the network, and the number of elements in the outermost
+            dimension should match the number of layers in the network. The next
+            dimension refers to each block within the block-diagonal
+            approximation of the Hessian, and the number of elements is equal to
+            the number of blocks used to represent that layer. In the next
+            (innermost) dimension, each element should be a non-negative
+            integer, referring to which weight parameter corresponds to that
+            index in that block of the Hessian approximation
+        -   bias_ind_list: same as for weight_ind_list, but for bias parameters,
+            instead of weights
+
+        Outputs:
+        -   hess_block_list: list of 2D matrices, containing blocks of the
+            Hessian of the error function according to the specified input
+            indices. The convention for the order of layers, weights and biases
+            is consistent with that of the get_gradient_vector method
+        -   hess_inds_list: list of 1D vectors of non-negative integers, each of
+            which refers to an index in the gradient vector referred to by this
+            element in the corresponding Hessian block (this is easier to
+            explain and understand using an example; see the optimisers module)
         """
         raise NotImplementedError
 
