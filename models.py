@@ -97,13 +97,13 @@ class NeuralNetwork():
         if filename is not None:
             self.load_model(filename)
         else:
-            num_params = self.gaussian_initialiser(
+            self.num_params = self.gaussian_initialiser(
                 act_funcs, weight_std, bias_std
             )
 
         # Initialise memory for the parameter and gradient vectors
-        self.param_vector = np.empty(num_params)
-        self.grad_vector = np.empty(num_params)
+        self.param_vector = np.empty(self.num_params)
+        self.grad_vector = np.empty(self.num_params)
     
     def gaussian_initialiser(self, act_func_list, weight_std, bias_std):
         """
@@ -289,7 +289,7 @@ class NeuralNetwork():
                 layer.w_grad.mean(axis=-1).ravel()
             )
             i += layer.num_weights
-            # Set the biase gradients and update the pointer
+            # Set the bias gradients and update the pointer
             self.grad_vector[i:i+layer.num_bias] = (
                 layer.b_grad.mean(axis=-1).ravel()
             )
@@ -297,7 +297,18 @@ class NeuralNetwork():
         
         return self.grad_vector
 
-    def get_hessian(self, block_list): raise NotImplementedError
+    def get_hessian_blocks(self, x, target, weight_ind_list, bias_ind_list):
+        """
+        For each layer, ...
+        """
+        raise NotImplementedError
+
+        # offset = 0
+        # for i, layer in enumerate(model.layers):
+        #     self.weight_inds[i] += offset
+        #     offset += layer.num_weights
+        #     self.bias_inds[i] += offset
+        #     offset += layer.num_bias
 
     def set_parameter_vector(self, new_parameters):
         """
@@ -350,8 +361,10 @@ class NeuralNetwork():
         Outputs:
         -   e: mean error across all data points, as a numpy float64 scalar
         """
-        if x is not None: self.forward_prop(x)
-        else: assert self.y.shape[1] == t.shape[1]
+        if x is not None:
+            self.forward_prop(x)
+        else:
+            assert self.y.shape[1] == t.shape[1]
 
         return self._error_func(self.y, t).mean()
 
