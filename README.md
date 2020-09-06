@@ -19,6 +19,12 @@ This repository contains the following modules:
 
 ## TODO
 
+### 2020-09-06
+
+- Add plotting function to visualise activations in each layer for a given input
+- Add plotting function to visualise distribution of gradient values in each layer
+- Make minimisation functions re-entrant (EG need to allow Result object to be an optional argument, and not re-initialise it if it is given)?
+
 ### 2020-08-31
 
 - Finish separating functions from the `training` module into scripts, and remove `if __name__ == "__main__"` block from `training` module
