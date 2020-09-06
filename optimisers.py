@@ -231,7 +231,26 @@ class NewtonStepCalculator():
         return self.delta, dEdw
 
 
-def generalised_newton(): raise NotImplementedError
+def generalised_newton(
+    model,
+    dataset,
+    learning_rate=1e-1,
+    max_block_size=7,
+    max_step=1,
+    name="Gradient descent",
+    **kwargs
+):
+    newton_step_calculator = NewtonStepCalculator(
+        model, max_block_size, max_step, learning_rate
+    )
+
+    get_step = lambda model, dataset: newton_step_calculator.get_step(
+        model, dataset
+    )
+
+    result = minimise(model, dataset, get_step, name=name, **kwargs)
+
+    return result
 
 def adam_optimiser(): raise NotImplementedError
 
