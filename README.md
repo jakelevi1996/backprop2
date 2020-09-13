@@ -25,8 +25,9 @@ This repository contains the following modules:
 - Plot training curves of GD vs PBGN, LS vs no LS, and compare
 - Plot predictions for PBGN 1D and 2D sinusoids
 - Refactor LS as a class
-- Implement evaluator and terminator classes
 - Plot script to compare parameters for PBGN, and another equivalent script for GD
+- Add unit tests for Terminator and Evaluator classes
+- Why is PBGN doing badly without line-search? Is it possible to test when max_step is being exceeded?
 
 ### 2020-09-06
 

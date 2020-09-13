@@ -10,6 +10,8 @@ import numpy as np
 from time import perf_counter
 import models as m, data as d
 from results import Result
+from evaluator import Evaluator
+from terminator import Terminator
 
 def backtrack_condition(s, E_new, E_0, delta_dot_dEdw, alpha):
     """
@@ -82,10 +84,8 @@ def minimise(
     model,
     dataset,
     get_step,
-    n_iters=1000,
-    t_lim=5,
-    E_lim=-np.inf,
-    eval_every=100,
+    evaluator=None,
+    terminator=None,
     line_search_flag=False,
     s0=1.0,
     alpha=0.5,
@@ -115,23 +115,28 @@ def minimise(
         iteration period? Could make this configurable with an input argument,
         and handled by an Evaluator class
     """
+    if terminator is None:
+        terminator = Terminator(i_lim=1000)
+    if evaluator is None:
+        evaluator = Evaluator(i_interval=100)
+
     # Set initial parameters, step size and iteration counter
     w = model.get_parameter_vector()
     s = s0
     i = 0
-    next_eval = 0
     # Initialise result object, including start time of iteration
     result = Result(name, verbose, result_file)
 
-    # while True:
-    for i in range(n_iters):
+    evaluator.begin()
+    terminator.begin()
+
+    while True:
         # Get gradient and initial step
         delta, dEdw = get_step(model, dataset)
 
         # Evaluate the model
-        if i >= next_eval:
+        if evaluator.ready_to_evaluate(i):
             result.update(model, dataset, i, s)
-            next_eval += eval_every
         
         # Update parameters
         if line_search_flag:
@@ -151,11 +156,17 @@ def minimise(
             w += delta
 
         model.set_parameter_vector(w)
+
+        i += 1
+        
+        # Check if ready to terminate minimisation
+        if terminator.ready_to_terminate(i):
+            break
         
     # Evaluate final performance
-    result.update(model, dataset, n_iters, s)
+    result.update(model, dataset, i, s)
     if verbose:
-        result.display_summary(n_iters)
+        result.display_summary(i)
 
     return result
 

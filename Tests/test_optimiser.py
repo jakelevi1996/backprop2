@@ -34,8 +34,8 @@ def test_gradient_descent_line_search(seed):
     result_ls = optimisers.gradient_descent(
         n,
         sin_data,
-        n_iters=n_iters,
-        eval_every=1,
+        terminator=optimisers.Terminator(i_lim=n_iters),
+        evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
         name="SGD with line search",
         line_search_flag=True,
@@ -68,8 +68,8 @@ def test_gradient_descent_no_line_search(seed):
     result_ls = optimisers.gradient_descent(
         n,
         sin_data,
-        n_iters=n_iters,
-        eval_every=1,
+        terminator=optimisers.Terminator(i_lim=n_iters),
+        evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
         name="SGD without line search",
         line_search_flag=False,
@@ -107,8 +107,8 @@ def test_pbgn_line_search(seed):
     result_ls = optimisers.generalised_newton(
         n,
         sin_data,
-        n_iters=n_iters,
-        eval_every=1,
+        terminator=optimisers.Terminator(i_lim=n_iters),
+        evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
         name="SGD with line search",
         line_search_flag=True,
