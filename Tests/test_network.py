@@ -95,19 +95,8 @@ def test_get_gradient_vector(seed):
 
 @pytest.mark.parametrize("seed", [5792, 1560, 3658])
 def test_get_hessian_blocks(seed):
-    # Set random seed
-    np.random.seed(seed)
-    # Set constants for data
-    input_dim = 1
-    output_dim = 1
-    N_D = 3
-    # Initialise network and data
-    n = NeuralNetwork(input_dim, output_dim, [3])
-    x = np.random.normal(size=[input_dim, N_D])
-    t = np.random.normal(size=[output_dim, N_D])
-    # Get Hessian blocks
-    n.forward_prop(x)
-    n.back_prop(x, t)
+    # Initialise network, inputs and targets
+    n, x, t, _ = get_random_network_inputs_targets(seed)
     # Set block inds for get_hessian_blocks method
     array_list = lambda list_list: [np.array(elem) for elem in list_list]
     layer_1_weight_inds = [[1], [0, 2]]
@@ -123,6 +112,8 @@ def test_get_hessian_blocks(seed):
         array_list(layer_2_bias_inds)
     ]
     # Get Hessian blocks
+    n.forward_prop(x)
+    n.back_prop(x, t)
     hess_block_list, hess_inds_list = n.get_hessian_blocks(
         x,
         t,
