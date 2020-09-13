@@ -97,7 +97,7 @@ def test_pbgn_line_search(seed):
     # Generate random number of iterations, network, data, and results file
     n_iters = np.random.randint(10, 20)
     n = NeuralNetwork(
-        1, 1, [10], [activations.Gaussian(), activations.Identity()]
+        1, 1, [4, 8, 6], [activations.Gaussian(), activations.Identity()]
     )
     sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     results_filename = "Test PBGN with line-search.txt"
