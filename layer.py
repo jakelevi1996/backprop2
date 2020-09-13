@@ -126,3 +126,10 @@ class NeuralLayer():
             axis=0
         )
         return hessian_block
+
+    def __repr__(self):
+        return "NeuralLayer(num_units={}, num_inputs={}, act_func={})".format(
+            self.output_dim,
+            self.input_dim,
+            repr(self.act_func.name)
+        )
