@@ -98,18 +98,18 @@ def test_get_hessian_blocks(seed):
     # Initialise network, inputs and targets
     n, x, t, _ = get_random_network_inputs_targets(seed)
     # Set block inds for get_hessian_blocks method
-    array_list = lambda list_list: [np.array(elem) for elem in list_list]
-    layer_1_weight_inds = [[1], [0, 2]]
-    layer_2_weight_inds = [[2, 1, 0]]
+    max_block_size = np.random.randint(3, 6)
     weight_inds_list = [
-        array_list(layer_1_weight_inds),
-        array_list(layer_2_weight_inds)
+        np.array_split(
+            np.random.permutation(layer.num_weights),
+            np.ceil(layer.num_weights / max_block_size)
+        ) for layer in n.layers
     ]
-    layer_1_bias_inds = [[2], [1], [0]]
-    layer_2_bias_inds = [[0]]
     bias_inds_list = [
-        array_list(layer_1_bias_inds),
-        array_list(layer_2_bias_inds)
+        np.array_split(
+            np.random.permutation(layer.num_bias),
+            np.ceil(layer.num_bias / max_block_size)
+        ) for layer in n.layers
     ]
     # Get Hessian blocks
     n.forward_prop(x)
@@ -120,15 +120,21 @@ def test_get_hessian_blocks(seed):
         weight_inds_list,
         bias_inds_list
     )
-    # Assert that the shapes are as expected
+    # Calculate expected shapes
     expected_shapes = []
     for layer_w_inds, layer_b_inds in zip(weight_inds_list, bias_inds_list):
         expected_shapes += [(block.size, block.size) for block in layer_w_inds]
         expected_shapes += [(block.size, block.size) for block in layer_b_inds]
+    # Iterate through each block and expected shape
     for block, shape in zip(hess_block_list, expected_shapes):
+        # Check the shape is as expected
         assert block.shape == shape
     # Check that Hessian inds are all unique
-    unpacked_hess_inds_list = [j for i in hess_inds_list for j in i]
+    unpacked_hess_inds_list = [
+        ind
+        for block_inds_list in hess_inds_list
+        for ind in block_inds_list
+    ]
     assert len(set(unpacked_hess_inds_list)) == len(unpacked_hess_inds_list)
 
 @pytest.mark.parametrize("seed", [6563, 5385, 4070])
