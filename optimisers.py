@@ -192,6 +192,11 @@ class NewtonStepCalculator():
         # Get random indices for block-diagonalisation of weights in each layer
         self.weight_inds = [
             np.array_split(
+                # np.random.permutation(
+                #     np.stack(np.indices(layer.weights.shape), -1).reshape(
+                #         layer.num_weights, 2
+                #     )
+                # ),
                 np.random.permutation(layer.num_weights),
                 np.ceil(layer.num_weights / max_block_size)
             ) for layer in model.layers
@@ -212,11 +217,12 @@ class NewtonStepCalculator():
     
     def get_step(self, model, dataset):
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
+
         (hess_block_list, hess_inds_list) = model.get_hessian_blocks(
             dataset.x_train, dataset.y_train, self.weight_inds, self.bias_inds
         )
         
-        for hess_block, hess_inds in (hess_block_list, hess_inds_list):
+        for hess_block, hess_inds in zip(hess_block_list, hess_inds_list):
             # Rotate gradient into eigenbasis of Hessian
             evals, evecs = np.linalg.eigh(hess_block)
             grad_rot = np.matmul(evecs.T, dEdw[hess_inds])
@@ -228,6 +234,7 @@ class NewtonStepCalculator():
             )
             # Rotate gradient back into original coordinate system and return
             self.delta[hess_inds] = np.matmul(evecs, step_rot)
+        
         return self.delta, dEdw
 
 
