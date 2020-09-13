@@ -107,7 +107,7 @@ class NeuralLayer():
         ...
         """
         block_size = len(block_inds)
-        hessian_block = np.multiply(
+        hessian_block = np.prod(
             [
                 self.epsilon[
                     self.eps_inds[block_inds].reshape(block_size, 1),
@@ -125,6 +125,18 @@ class NeuralLayer():
             ],
             axis=0
         )
+        return hessian_block
+
+    def calc_bias_gradients2(self, block_inds, N_D):
+        """
+        ...
+        """
+        block_size = len(block_inds)
+        hessian_block = self.epsilon[
+            block_inds.reshape(block_size, 1),
+            block_inds.reshape(1, block_size),
+            :
+        ]
         return hessian_block
 
     def __repr__(self):
