@@ -130,16 +130,10 @@ def test_get_hessian_blocks(seed):
         bias_inds_list
     )
     # Assert that the shapes are as expected
-    # expected_shapes = []
-    expected_shapes = [
-        (1, 1),
-        (2, 2),
-        (1, 1),
-        (1, 1),
-        (1, 1),
-        (3, 3),
-        (1, 1),
-    ]
+    expected_shapes = []
+    for layer_w_inds, layer_b_inds in zip(weight_inds_list, bias_inds_list):
+        expected_shapes += [(block.size, block.size) for block in layer_w_inds]
+        expected_shapes += [(block.size, block.size) for block in layer_b_inds]
     for block, shape in zip(hess_block_list, expected_shapes):
         assert block.shape == shape
     # Check that Hessian inds are all unique
