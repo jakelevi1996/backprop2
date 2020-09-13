@@ -19,6 +19,15 @@ This repository contains the following modules:
 
 ## TODO
 
+### 2020-09-13
+
+- Add docstrings to all modules, functions and methods
+- Plot training curves of GD vs PBGN, LS vs no LS, and compare
+- Plot predictions for PBGN 1D and 2D sinusoids
+- Refactor LS as a class
+- Implement evaluator and terminator classes
+- Plot script to compare parameters for PBGN, and another equivalent script for GD
+
 ### 2020-09-06
 
 - Add plotting function to visualise activations in each layer for a given input
@@ -35,15 +44,12 @@ This repository contains the following modules:
 - Support different batch-sizes (but also maintain support for not using the full-training set for each batch; could maybe implement a new BatchSizer parent class and subclasses in a batchsizer module to make this configurable)
 - Finish script to compare different parameters for gradient descent with line-search
 - Implement saving and loading of NeuralNetwork class
-- Backprop2
 - DBS
 
 ### 2020-07-19
 
 - Add full unit testing coverage (and remove `if __name__ == "__main__"` blocks)
 - Allocate numpy arrays in `NeuralNetwork` and `NeuralLayer` class during initialisation, and use numpy `out` argument, to improve performance... actually, is this a sensible thing to do for all arrays? For ones which depend on the number of data points, this will vary depending on the batch size
-- Implement back-propagation of 2nd order gradients
-- Implement block-generalised-Newton optimisation
 - General tidying up of code and comments
 - Implement DBS + convergence metric
 
