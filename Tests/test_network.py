@@ -142,6 +142,9 @@ def test_get_hessian_blocks(seed):
     ]
     for block, shape in zip(hess_block_list, expected_shapes):
         assert block.shape == shape
+    # Check that Hessian inds are all unique
+    unpacked_hess_inds_list = [j for i in hess_inds_list for j in i]
+    assert len(set(unpacked_hess_inds_list)) == len(unpacked_hess_inds_list)
 
 @pytest.mark.parametrize("seed", [6563, 5385, 4070])
 def test_set_parameter_vector(seed):
