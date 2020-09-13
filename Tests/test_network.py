@@ -94,9 +94,54 @@ def test_get_gradient_vector(seed):
     assert abs(dE) > max(abs(gradient_vector * dw))
 
 @pytest.mark.parametrize("seed", [5792, 1560, 3658])
-def test_get_hessian(seed):
-    # TODO
-    pass
+def test_get_hessian_blocks(seed):
+    # Set random seed
+    np.random.seed(seed)
+    # Set constants for data
+    input_dim = 1
+    output_dim = 1
+    N_D = 3
+    # Initialise network and data
+    n = NeuralNetwork(input_dim, output_dim, [3])
+    x = np.random.normal(size=[input_dim, N_D])
+    t = np.random.normal(size=[output_dim, N_D])
+    # Get Hessian blocks
+    n.forward_prop(x)
+    n.back_prop(x, t)
+    # Set block inds for get_hessian_blocks method
+    array_list = lambda list_list: [np.array(elem) for elem in list_list]
+    layer_1_weight_inds = [[1], [0, 2]]
+    layer_2_weight_inds = [[2, 1, 0]]
+    weight_inds_list = [
+        array_list(layer_1_weight_inds),
+        array_list(layer_2_weight_inds)
+    ]
+    layer_1_bias_inds = [[2], [1], [0]]
+    layer_2_bias_inds = [[0]]
+    bias_inds_list = [
+        array_list(layer_1_bias_inds),
+        array_list(layer_2_bias_inds)
+    ]
+    # Get Hessian blocks
+    hess_block_list, hess_inds_list = n.get_hessian_blocks(
+        x,
+        t,
+        weight_inds_list,
+        bias_inds_list
+    )
+    # Assert that the shapes are as expected
+    # expected_shapes = []
+    expected_shapes = [
+        (1, 1),
+        (2, 2),
+        (1, 1),
+        (1, 1),
+        (1, 1),
+        (3, 3),
+        (1, 1),
+    ]
+    for block, shape in zip(hess_block_list, expected_shapes):
+        assert block.shape == shape
 
 @pytest.mark.parametrize("seed", [6563, 5385, 4070])
 def test_set_parameter_vector(seed):
