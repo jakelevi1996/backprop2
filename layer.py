@@ -11,12 +11,16 @@ class NeuralLayer():
         self.bias = np.random.normal(0, bias_std, [num_units, 1])
         
         # Set layer constants
-        self.input_dim = num_inputs
-        self.output_dim = num_units
-        self.act_func = act_func
-        self.num_weights = self.weights.size
-        self.num_bias = self.bias.size
-        self.diag_indices = np.diag_indices(num_units)
+        self.input_dim      = num_inputs
+        self.output_dim     = num_units
+        self.act_func       = act_func
+        self.num_weights    = self.weights.size
+        self.num_bias       = self.bias.size
+        self.diag_indices   = np.diag_indices(num_units)
+
+        x, y = np.indices([num_units, num_inputs])
+        self.eps_inds       = x.ravel()
+        self.z_inds         = y.ravel()
     
     def activate(self, layer_input):
         """
@@ -97,3 +101,28 @@ class NeuralLayer():
         """
         self.b_grad = self.delta
         self.w_grad = np.einsum("ik,jk->ijk", self.delta, self.input)
+    
+    def calc_weight_gradients2(self, block_inds, N_D):
+        """
+        ...
+        """
+        block_size = len(block_inds)
+        hessian_block = np.multiply(
+            [
+                self.epsilon[
+                    self.eps_inds[block_inds].reshape(block_size, 1),
+                    self.eps_inds[block_inds].reshape(1, block_size),
+                    :
+                ],
+                self.input[
+                    self.z_inds[block_inds],
+                    :
+                ].reshape(block_size, 1, N_D),
+                self.input[
+                    self.z_inds[block_inds],
+                    :
+                ].reshape(1, block_size, N_D)
+            ],
+            axis=0
+        )
+        return hessian_block
