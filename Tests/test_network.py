@@ -95,8 +95,15 @@ def test_get_gradient_vector(seed):
 
 @pytest.mark.parametrize("seed", [5792, 1560, 3658])
 def test_get_hessian_blocks(seed):
+    """
+    Check that get_hessian_blocks returns symmetric Hessian blocks with the
+    correct shape, and that the corresponding list of inds for each block has
+    the correct number of elements, and that each element is unique
+    """
+
     # Initialise network, inputs and targets
     n, x, t, _ = get_random_network_inputs_targets(seed)
+    
     # Set block inds for get_hessian_blocks method
     max_block_size = np.random.randint(3, 6)
     weight_inds_list = [
@@ -111,6 +118,7 @@ def test_get_hessian_blocks(seed):
             np.ceil(layer.num_bias / max_block_size)
         ) for layer in n.layers
     ]
+    
     # Get Hessian blocks
     n.forward_prop(x)
     n.back_prop(x, t)
@@ -120,22 +128,28 @@ def test_get_hessian_blocks(seed):
         weight_inds_list,
         bias_inds_list
     )
+    
     # Calculate expected shapes
     expected_shapes = []
     for layer_w_inds, layer_b_inds in zip(weight_inds_list, bias_inds_list):
         expected_shapes += [(block.size, block.size) for block in layer_w_inds]
         expected_shapes += [(block.size, block.size) for block in layer_b_inds]
+    
     # Iterate through each block and expected shape
     for block, shape in zip(hess_block_list, expected_shapes):
         # Check the shape is as expected
         assert block.shape == shape
-    # Check that Hessian inds are all unique
+        # Check that the Hessian block is symmetric
+        assert np.allclose(block, block.T)
+    
+    # Check that Hessian inds are all unique and the right length
     unpacked_hess_inds_list = [
         ind
         for block_inds_list in hess_inds_list
         for ind in block_inds_list
     ]
-    assert len(set(unpacked_hess_inds_list)) == len(unpacked_hess_inds_list)
+    assert len(unpacked_hess_inds_list) == len(set(unpacked_hess_inds_list))
+    assert len(unpacked_hess_inds_list) == n.num_params
 
 @pytest.mark.parametrize("seed", [6563, 5385, 4070])
 def test_set_parameter_vector(seed):
