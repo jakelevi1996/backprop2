@@ -315,10 +315,11 @@ class NeuralNetwork():
             dimension should match the number of layers in the network. The next
             dimension refers to each block within the block-diagonal
             approximation of the Hessian, and the number of elements is equal to
-            the number of blocks used to represent that layer. In the next
-            (innermost) dimension, each element should be a non-negative
-            integer, referring to which weight parameter corresponds to that
-            index in that block of the Hessian approximation
+            the number of blocks used to represent that layer. This iterable
+            should be a np.ndarray. In the next (innermost) dimension, each
+            element should be a non-negative integer, referring to which weight
+            parameter corresponds to that index in that block of the Hessian
+            approximation
         -   bias_ind_list: same as for weight_ind_list, but for bias parameters,
             instead of weights
 
@@ -332,76 +333,48 @@ class NeuralNetwork():
             element in the corresponding Hessian block (this is easier to
             explain and understand using an example; see the optimisers module)
 
-        Assumes that forward_prop and backprop have already been called?
+        NOTE: it is assumed that the forward_prop and back_prop methods have
+        been called with the same arguments prior to calling this method (EG by
+        the get_gradient_vector method)
+
+        TODO: could improve efficiency by calculating sum instead of mean, if
+        the same was done with the first order gradients
         """
-
-        # offset = 0
-        # for i, layer in enumerate(model.layers):
-        #     self.weight_inds[i] += offset
-        #     offset += layer.num_weights
-        #     self.bias_inds[i] += offset
-        #     offset += layer.num_bias
-
+        # Calculate epsilons for each layer in the network
         self.back_prop2(x, target)
-        offset = 0
+
+        # Initialise output lists and offset
         hess_block_list = []
         hess_inds_list = []
+        offset = 0
 
+        # Iterate through each layer in the network
         for i, layer in enumerate(self.layers):
-            
-            # epsilon = layer.epsilon
-            # z = layer.input
-            
-            # Calculate the Hessian block for each block of weights in this
-            # layer
+
+            # Iterate through each block of weights in this layer
             for block_weight_inds in weight_ind_list[i]:
-                # num_weights = len(block_weight_inds)
-                # hess_inds = block_weight_inds + offset
-
-
-                # hess_block = None   # !!!
-
-                # # This is wrong; the hess_inds refers to an unravelled weight
-                # # matrix. Need to convert unravelled inds to matrix coord inds;
-                # # OR just generate matrix coord inds in the first place
-                # hess_block = np.einsum(
-                #     "ikd,jd,md->ijkmd",
-                #     epsilon[
-                #         block_weight_inds[:, 0].reshape(-1, 1),
-                #         block_weight_inds[:, 0].reshape(1, -1),
-                #         :
-                #     ],
-                #     z[block_weight_inds[:, 1], :],
-                #     z[block_weight_inds[:, 1], :]
-                # ).reshape(num_weights, num_weights, N_D).mean(axis=-1)
-
+                # Calculate the Hessian block and update output lists
                 hess_block = layer.calc_weight_gradients2(
                     block_weight_inds,
                     self.N_D
                 )
-                # TODO: could do sum instead of mean, if the same was done with
-                # the gradients
                 hess_block_list.append(hess_block.mean(axis=-1))
-                # TODO: check in debugger if block_weight_inds is a np.ndarray?
-                # If not then will need to convert?
                 hess_inds_list.append(block_weight_inds + offset)
-            
+                
+            # Update the offset for hess_inds_list 
             offset += layer.num_weights
-
             
+            # Iterate through each block of biases in this layer
             for block_bias_inds in bias_ind_list[i]:
-
+                # Calculate the Hessian block and update output lists
                 hess_block = layer.calc_bias_gradients2(
                     block_bias_inds,
                     self.N_D
                 )
-                # TODO: could do sum instead of mean, if the same was done with
-                # the gradients
                 hess_block_list.append(hess_block.mean(axis=-1))
-                # TODO: check in debugger if block_weight_inds is a np.ndarray?
-                # If not then will need to convert?
                 hess_inds_list.append(block_bias_inds + offset)
-            # ...
+            
+            # Update the offset for hess_inds_list 
             offset += layer.num_bias
         
         return hess_block_list, hess_inds_list
