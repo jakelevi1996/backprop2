@@ -192,9 +192,11 @@ class NeuralNetwork():
         """
         # Perform forward propagation to calculate activations
         self.forward_prop(x)
+        # Calculate error (can be reused in back_prop2 method)
+        self._error = self._error_func.dEdy(self.y, target)
         # Calculate the output layer delta and gradients
         self.layers[-1].delta = np.multiply(
-            self._error_func.dEdy(self.y, target),
+            self._error,
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
         )
         self.layers[-1].calc_gradients()
@@ -212,7 +214,6 @@ class NeuralNetwork():
 
         TODO:
         -   call forward prop and back prop separately (outside of this method)
-        -   Reuse self._error_func.dEdy(self.y, target) instead of recalculating
         """
         # # Perform forward propagation and back propagation to calculate 1st
         # # order gradients
@@ -226,7 +227,7 @@ class NeuralNetwork():
             self.layers[-1].act_func.dydx(self.layers[-1].pre_activation)
         )
         final_layer.epsilon[final_layer.diag_indices] += np.multiply(
-            self._error_func.dEdy(self.y, target),
+            self._error,
             final_layer.act_func.d2ydx2(final_layer.pre_activation)
         )
         # Calculate epsilons for hidden layers
