@@ -106,7 +106,7 @@ class NeuralLayer():
         """
         ...
         """
-        block_size = len(block_inds)
+        block_size = block_inds.size
         hessian_block = np.prod(
             [
                 self.epsilon[
@@ -131,7 +131,7 @@ class NeuralLayer():
         """
         ...
         """
-        block_size = len(block_inds)
+        block_size = block_inds.size
         hessian_block = self.epsilon[
             block_inds.reshape(block_size, 1),
             block_inds.reshape(1, block_size),
