@@ -35,6 +35,7 @@ def test_propagation(seed, error_func):
     calculating the mean error in a neural network model
     """
     n, x, t, _ = get_random_network_inputs_targets(seed, error_func=error_func)
+    n.forward_prop(x)
     n.back_prop(x, t)
     n.back_prop2(x, t)
     n.mean_error(t, x)

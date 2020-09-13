@@ -31,6 +31,7 @@ def test_back_propagation(seed):
     the network layers have the correct shape
     """
     n, x, t, N_D = get_random_network_inputs_targets(seed)
+    n.forward_prop(x)
     n.back_prop(x, t)
     # Iterate through each layer
     for layer in n.layers:
@@ -48,6 +49,8 @@ def test_backprop2(seed):
     layer have the correct shape
     """
     n, x, t, N_D = get_random_network_inputs_targets(seed)
+    n.forward_prop(x)
+    n.back_prop(x, t)
     n.back_prop2(x, t)
     # Iterate through each layer
     for layer in n.layers:
@@ -152,6 +155,7 @@ def test_print_grads(seed):
     inputs and outputs, and multiple layers, both to stdout and to a text file
     """
     n, x, t, _ = get_random_network_inputs_targets(seed)
+    n.forward_prop(x)
     n.back_prop(x, t)
     # Print gradients to stdout
     n.print_grads()

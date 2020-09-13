@@ -157,6 +157,7 @@ class NeuralNetwork():
             network output. Should be in a numpy array with shape (output_dim,
             N_D)
         """
+        # Store the number of data points for use in other methods
         self.N_D = x.shape[1]
         # Calculate output from the first layer
         layer_output = self.layers[0].activate(x)
@@ -187,11 +188,7 @@ class NeuralNetwork():
             network are calculated and stored in self.layers[i].w_grad and
             self.layers[i].b_grad, ready to be extracted using the
             get_gradient_vector method
-
-        TODO: call forward prop separately (outside of this method)            
         """
-        # Perform forward propagation to calculate activations
-        self.forward_prop(x)
         # Calculate error (can be reused in back_prop2 method)
         self._error = self._error_func.dEdy(self.y, target)
         # Calculate the output layer delta and gradients
@@ -212,12 +209,10 @@ class NeuralNetwork():
         method has already been called, in order to calculate gradients and
         layer inputs and outputs.
 
-        TODO:
-        -   call forward prop and back prop separately (outside of this method)
+        NOTE: it is assumed that the forward_prop and back_prop methods have
+        been called with the same arguments prior to calling this method (EG by
+        the get_gradient_vector method)
         """
-        # # Perform forward propagation and back propagation to calculate 1st
-        # # order gradients
-        # self.back_prop(x, target)
         # Calculate the output layer epsilon
         final_layer = self.layers[-1]
         final_layer.epsilon = np.einsum(
@@ -282,6 +277,8 @@ class NeuralNetwork():
             bias, layer 1 weights, layer 1 bias, ..., final layer weights, final
             layer bias (same convention as the get_parameter_vector method)
         """
+        # Propagate data through the network to get gradients
+        self.forward_prop(x)
         self.back_prop(x, target)
         # Initialise the pointer and iterate through the layers
         i = 0
@@ -349,7 +346,6 @@ class NeuralNetwork():
         offset = 0
         hess_block_list = []
         hess_inds_list = []
-        N_D = self.y.shape[-1]  # this could be an input to the function?
 
         for i, layer in enumerate(self.layers):
             
