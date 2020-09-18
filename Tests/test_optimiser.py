@@ -12,54 +12,17 @@ from .util import get_random_network
 current_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(current_dir, "Outputs")
 
-@pytest.mark.parametrize("seed", [3217, 3132, 3523])
-def test_gradient_descent_line_search(seed):
-    """
-    Test gradient descent, using a line-search. A line-search should guarantee
-    that each iteration reduces the error function, so this is tested as
-    asserted after calling the gradient_descent function.
-    """
-    # Set the random seed
-    np.random.seed(seed)
-    # Generate random number of iterations, network, data, and results file
-    n_iters = np.random.randint(10, 20)
-    n = NeuralNetwork(
-        1, 1, [10], [activations.Gaussian(), activations.Identity()]
-    )
-    sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    results_filename = "Test gradient descent with line-search.txt"
-    results_path = os.path.join(output_dir, results_filename)
-    results_file = open(results_path, "w")
-    # Call gradient descent function
-    result_ls = optimisers.gradient_descent(
-        n,
-        sin_data,
-        terminator=optimisers.Terminator(i_lim=n_iters),
-        evaluator=optimisers.Evaluator(i_interval=1),
-        verbose=True,
-        name="SGD with line search",
-        line_search_flag=True,
-        result_file=results_file
-    )
-    # Make sure each iteration reduces the training error
-    for i in range(len(result_ls.train_errors) - 1):
-        assert result_ls.train_errors[i + 1] < result_ls.train_errors[i]
-    
-    results_file.close()
-
 @pytest.mark.parametrize("seed", [5653, 9869, 2702])
-def test_gradient_descent_no_line_search(seed):
+def test_gradient_descent(seed):
     """
-    Test gradient descent, without using a line-search, so there is no guarantee
-    that each iteration reduces the error function.
+    Test gradient descent (no line-search is used, so there is no guarantee that
+    each iteration reduces the error function).
     """
     # Set the random seed
     np.random.seed(seed)
     # Generate random number of iterations, network, data, and results file
     n_iters = np.random.randint(10, 20)
-    n = NeuralNetwork(
-        1, 1, [10], [activations.Gaussian(), activations.Identity()]
-    )
+    n = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     results_filename = "Test gradient descent without line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
@@ -82,15 +45,13 @@ def test_gradient_descent_no_line_search(seed):
     results_file.close()
 
 @pytest.mark.parametrize("seed", [183, 3275, 9643])
-def test_pbgn_line_search(seed):
+def test_pbgn(seed):
     """
     Test the Generalised Newton's method for optimisation, using parallel
-    block-diagonal approximations and a line-search. A line-search should
-    guarantee that each iteration reduces the error function, so this is tested
-    as asserted after calling the gradient_descent function.
+    block-diagonal approximations.
 
-    TODO: combine this with the gradient descent with line-search test (and the
-    no line search tests?) in to a single parametrised test
+    TODO: combine this and the gradient descent test (and any optimisers
+    implemented in future, EG adam, PSO) in to a single parametrised test
     """
     # Set the random seed
     np.random.seed(seed)
@@ -111,12 +72,9 @@ def test_pbgn_line_search(seed):
         evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
         name="SGD with line search",
-        line_search_flag=True,
+        line_search_flag=False,
         result_file=results_file
     )
-    # Make sure each iteration reduces the training error
-    for i in range(len(result_ls.train_errors) - 1):
-        assert result_ls.train_errors[i + 1] < result_ls.train_errors[i]
     
     results_file.close()
     
