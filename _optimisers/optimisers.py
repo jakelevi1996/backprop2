@@ -17,9 +17,7 @@ def minimise(
     evaluator=None,
     terminator=None,
     line_search=None,
-    name=None,
-    verbose=False,
-    result_file=None
+    result=None,
 ):
     """
     Abstract minimisation function, containing code which is common to all
@@ -46,19 +44,20 @@ def minimise(
         terminator = Terminator(i_lim=1000)
     if evaluator is None:
         evaluator = Evaluator(i_interval=100)
+    if result is None:
+        result = Result()
     if line_search is not None:
         s = line_search.s
     else:
         s = 1
 
-    # Set initial parameters, step size and iteration counter
+    # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
     i = 0
-    # Initialise result object, including start time of iteration
-    result = Result(name, verbose, result_file)
 
     evaluator.begin()
     terminator.begin()
+    result.begin()
 
     while True:
         # Get gradient and initial step
@@ -92,7 +91,7 @@ def minimise(
         
     # Evaluate final performance
     result.update(model, dataset, i, s)
-    if verbose:
+    if result.verbose:
         result.display_summary(i)
 
     return result

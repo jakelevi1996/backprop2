@@ -27,15 +27,18 @@ def test_gradient_descent(seed):
     results_filename = "Test gradient descent without line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
+    result = optimisers.Result(
+        name="SGD without line search", 
+        verbose=True,
+        file=results_file
+    )
     # Call gradient descent function
     result_ls = optimisers.gradient_descent(
         n,
         sin_data,
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
-        verbose=True,
-        name="SGD without line search",
-        result_file=results_file
+        result=result
     )
     # Make sure each iteration reduces the training error
     for i in range(len(result_ls.train_errors) - 1):
@@ -60,18 +63,21 @@ def test_pbgn(seed):
         1, 1, [4, 8, 6], [activations.Gaussian(), activations.Identity()]
     )
     sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    results_filename = "Test PBGN with line-search.txt"
+    results_filename = "Test PBGN without line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
+    result = optimisers.Result(
+        name="PGN without line search", 
+        verbose=True,
+        file=results_file
+    )
     # Call gradient descent function
     result_ls = optimisers.generalised_newton(
         n,
         sin_data,
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
-        verbose=True,
-        name="PGN without line search",
-        result_file=results_file
+        result=result
     )
     
     results_file.close()

@@ -27,6 +27,11 @@ def test_gradient_descent_line_search(seed):
     results_filename = "Test gradient descent with line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
+    result = optimisers.Result(
+        name="SGD with line search", 
+        verbose=True,
+        file=results_file
+    )
     # Call gradient descent function
     result_ls = optimisers.gradient_descent(
         n,
@@ -34,9 +39,7 @@ def test_gradient_descent_line_search(seed):
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
         line_search=optimisers.LineSearch(),
-        verbose=True,
-        name="SGD with line search",
-        result_file=results_file
+        result=result
     )
     # Make sure each iteration reduces the training error
     for i in range(len(result_ls.train_errors) - 1):

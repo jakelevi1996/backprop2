@@ -1,4 +1,4 @@
-from _optimisers.optimisers import minimise
+from _optimisers.optimisers import minimise, Result
 
 def get_gradient_descent_step(model, dataset, learning_rate):
     """
@@ -13,13 +13,19 @@ def gradient_descent(
     model,
     dataset,
     learning_rate=1e-1,
-    name="Gradient descent",
+    result=None,
     **kwargs
 ):
     """ TODO: why is this ~10% slower than the old SGD function? """
     get_step = lambda model, dataset: get_gradient_descent_step(
-        model, dataset, learning_rate)
+        model,
+        dataset,
+        learning_rate
+    )
+    
+    if result is None:
+        result = Result("Gradient descent")
 
-    result = minimise(model, dataset, get_step, name=name, **kwargs)
+    result = minimise(model, dataset, get_step, result=result, **kwargs)
 
     return result

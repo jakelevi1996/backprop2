@@ -44,8 +44,11 @@ class Result():
         self.times          = []
         self.iters          = []
         self.step_size      = []
-        self.start_time     = perf_counter()
         # TODO: DBS criterion
+        self.begin()
+    
+    def begin(self):
+        self.start_time = perf_counter()
     
     def time_elapsed(self):
         return perf_counter() - self.start_time
@@ -121,7 +124,8 @@ class Result():
         """
         path = os.path.abspath(os.path.join(dir_name, filename))
         np.savez(
-            path, **{a: getattr(self, a) for a in attr_name_list}
+            path,
+            **{a: getattr(self, a) for a in attr_name_list}
         )
 
     def load(self, filename, dir_name="."):

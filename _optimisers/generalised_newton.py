@@ -1,5 +1,5 @@
 import numpy as np
-from _optimisers.optimisers import minimise
+from _optimisers.optimisers import minimise, Result
 
 class NewtonStepCalculator():
     # TODO: make it possible to specify that the block indices should be
@@ -58,7 +58,7 @@ def generalised_newton(
     learning_rate=1e-1,
     max_block_size=7,
     max_step=1,
-    name="Gradient descent",
+    result=None,
     **kwargs
 ):
     newton_step_calculator = NewtonStepCalculator(
@@ -73,6 +73,9 @@ def generalised_newton(
         dataset
     )
 
-    result = minimise(model, dataset, get_step, name=name, **kwargs)
+    if result is None:
+        result = Result("Generalised Newton")
+
+    result = minimise(model, dataset, get_step, result=result, **kwargs)
 
     return result
