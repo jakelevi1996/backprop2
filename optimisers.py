@@ -6,6 +6,7 @@ from _optimisers.gradient_descent import gradient_descent
 from _optimisers.generalised_newton import generalised_newton
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
+from _optimisers.linesearch import LineSearch
 from _optimisers import results
 from _optimisers.results import Result
 import data, models

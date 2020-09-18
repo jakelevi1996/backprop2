@@ -33,9 +33,9 @@ def test_gradient_descent_line_search(seed):
         sin_data,
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
+        line_search=optimisers.LineSearch(),
         verbose=True,
         name="SGD with line search",
-        line_search_flag=True,
         result_file=results_file
     )
     # Make sure each iteration reduces the training error

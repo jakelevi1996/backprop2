@@ -6,7 +6,6 @@ functions
 import numpy as np
 from time import perf_counter
 import models as m, data as d
-from _optimisers.linesearch import line_search
 from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
@@ -17,10 +16,7 @@ def minimise(
     get_step,
     evaluator=None,
     terminator=None,
-    line_search_flag=False,
-    s0=1.0,
-    alpha=0.5,
-    beta=0.5,
+    line_search=None,
     name=None,
     verbose=False,
     result_file=None
@@ -50,10 +46,13 @@ def minimise(
         terminator = Terminator(i_lim=1000)
     if evaluator is None:
         evaluator = Evaluator(i_interval=100)
+    if line_search is not None:
+        s = line_search.s
+    else:
+        s = 1
 
     # Set initial parameters, step size and iteration counter
     w = model.get_parameter_vector()
-    s = s0
     i = 0
     # Initialise result object, including start time of iteration
     result = Result(name, verbose, result_file)
@@ -70,17 +69,14 @@ def minimise(
             result.update(model, dataset, i, s)
         
         # Update parameters
-        if line_search_flag:
-            s = line_search(
+        if line_search is not None:
+            s = line_search.get_step_size(
                 model,
                 dataset.x_train,
                 dataset.y_train,
                 w,
-                s,
                 delta,
                 dEdw,
-                alpha,
-                beta,
             )
             w += s * delta
         else:

@@ -35,7 +35,6 @@ def test_gradient_descent(seed):
         evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
         name="SGD without line search",
-        line_search_flag=False,
         result_file=results_file
     )
     # Make sure each iteration reduces the training error
@@ -71,8 +70,7 @@ def test_pbgn(seed):
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
         verbose=True,
-        name="SGD with line search",
-        line_search_flag=False,
+        name="PGN without line search",
         result_file=results_file
     )
     
