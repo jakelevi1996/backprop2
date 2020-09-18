@@ -1,5 +1,5 @@
 import numpy as np
-from _optimisers.optimisers import minimise, Result
+from _optimisers.minimise import minimise, Result
 
 class NewtonStepCalculator():
     # TODO: make it possible to specify that the block indices should be

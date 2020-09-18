@@ -1,4 +1,4 @@
-from _optimisers.optimisers import minimise, Result
+from _optimisers.minimise import minimise, Result
 
 def get_gradient_descent_step(model, dataset, learning_rate):
     """
