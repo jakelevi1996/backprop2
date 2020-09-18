@@ -4,7 +4,7 @@ Module containing unit tests for the Result class in the results module.
 import os
 import pytest
 import numpy as np
-import results
+from optimisers import results
 from .util import get_random_network
 import data
 

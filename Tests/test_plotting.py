@@ -7,7 +7,8 @@ training curves is tested in the test module for the optimiser module.
 import os
 import numpy as np
 import pytest
-import plotting, data, results
+import plotting, data
+from optimisers import Result
 from .util import get_random_network
 
 # Get name of output directory
@@ -75,7 +76,7 @@ def test_plot_training_curves():
         n = get_random_network(input_dim=2, output_dim=output_dim)
         d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
         w = n.get_parameter_vector()
-        result = results.Result(name="Network {}".format(j))
+        result = Result(name="Network {}".format(j))
         
         # Call the result.update method a few times
         for i in range(n_iters):

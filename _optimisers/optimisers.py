@@ -9,9 +9,9 @@ iteration number?
 import numpy as np
 from time import perf_counter
 import models as m, data as d
-from results import Result
-from evaluator import Evaluator
-from terminator import Terminator
+from _optimisers.results import Result
+from _optimisers.evaluator import Evaluator
+from _optimisers.terminator import Terminator
 
 def backtrack_condition(s, E_new, E_0, delta_dot_dEdw, alpha):
     """
