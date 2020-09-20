@@ -93,7 +93,7 @@ def test_get_gradient_vector(seed):
     # Check that the answer isn't completely distorted by precision
     assert abs(dE) > max(abs(gradient_vector * dw))
 
-@pytest.mark.parametrize("seed", [5792, 1560, 3658])
+@pytest.mark.parametrize("seed", [5792, 1560, 3658, 0, 1, 2, 3, 4, 5, 6, 7])
 def test_get_hessian_blocks(seed):
     """
     Check that get_hessian_blocks returns symmetric Hessian blocks with the
@@ -150,6 +150,29 @@ def test_get_hessian_blocks(seed):
     ]
     assert len(unpacked_hess_inds_list) == len(set(unpacked_hess_inds_list))
     assert len(unpacked_hess_inds_list) == n.num_params
+
+    # Get initial parameters for numerical test of Hessian blocks accuracy
+    dw_max = 1e-7
+    tol = 1e-4
+    w_0 = n.get_parameter_vector().copy()
+    grad_0 = n.get_gradient_vector(x, t).copy()
+    # Iterate through each block
+    for hess_block, hess_inds in zip(hess_block_list, hess_inds_list):
+        # Reset to original parameters
+        n.set_parameter_vector(w_0)
+        # Add perturbation to the block parameters
+        dw = np.random.uniform(-dw_max, dw_max, len(hess_inds))
+        w = n.get_parameter_vector()
+        w[hess_inds] += dw
+        n.set_parameter_vector(w)
+        # Calculate change in gradients of block parameters
+        grad_1 = n.get_gradient_vector(x, t)
+        d_grad = (grad_1 - grad_0)[hess_inds]
+        # Calculate relative error based on approximate Taylor series
+        relative_error = (d_grad - np.matmul(hess_block, dw)) / d_grad
+        # Check error is within tollerance
+        assert np.max(np.abs(relative_error)) < tol
+
 
 @pytest.mark.parametrize("seed", [6563, 5385, 4070])
 def test_set_parameter_vector(seed):
