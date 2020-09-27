@@ -41,8 +41,15 @@ for dw_max_exp in range(-20, 0):
     E_1 = n.mean_error(t, x)
     dE = E_1 - E_0
 
+    if use_mean_gradient:
+        grad_1 = n.get_gradient_vector(x, t)
+        grad_mean = (grad_0 + grad_1) / 2
+
     # Calculate the error in the approximation of the error-function and print
-    error = abs(dE - np.dot(grad_0, dw))
+    if use_mean_gradient:
+        error = abs(dE - np.dot(grad_mean, dw))
+    else:
+        error = abs(dE - np.dot(grad_0, dw))
     error_relative = abs(error / dE)
     print_variable("|E_0|", abs(E_0))
     print_variable("|dE|", abs(dE))
@@ -105,7 +112,7 @@ for dw_max_exp in range(-20, 0):
 # Format, save and close the plot
 name = "Relative errors as a function of maximum change in parameters"
 plt.title(name)
-plt.xlabel("$dw_{max}$")
+plt.xlabel("dw_max")
 plt.ylabel("Relative error in approximating the error function")
 plt.legend(handles=[
     Line2D([], [], c="b", marker="o", ls="", label="Relative gradient error"),
