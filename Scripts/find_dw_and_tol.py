@@ -1,10 +1,31 @@
 """
-... 
+This script is used to find good parameters to use for the unit tests in
+Tests/test_network.py, specifically for numerically verifying the
+implementations of first-order gradients and Hessian blocks using a first-order
+Taylor series.
 
-TODO:
-- Docstring
-- Plotting
-- Option for mean gradient
+The two parameters which need to be determined are the maximum change in the
+parameters, and the tolerance (upper threshold) for the absolute error in the
+approximated change in the error function (or its gradient for the case of
+verifying the Hessian implementation).
+
+Naturally, when the change in the parameters is large (on the order of 1e-3 in
+this case), there is a much more significant contribution to the Taylor series
+from higher order terms, which leads to an inaccurate first-order approximation
+and requires a high tolerance.
+
+At the other end of the scale, when the change in parameters is very small (on
+the order of 1e-15), the change in the error function is so small that
+calculating the difference between the error function values for different
+parameter vectors becomes very innacurate due to the fixed number of bits in the
+mantissa of the floating point representation of these values, and this
+innacuracy also requires a high tolerance.
+
+At a certain scale of the change in parameters there is an optimal trade-off
+between these two effects. Results from this script suggest that this trade-off
+is found when the change in parameters is approximately 1e-7, allowing a
+tolerance in the relative error in the approximate change in error function of
+1e-5.
 """
 
 import os
@@ -110,6 +131,8 @@ for dw_max_exp in range(-20, 0):
     plt.loglog(dw_max, error_relative_hessian, "ro", alpha=0.5)
 
 # Format, save and close the plot
+plt.axhline(1e-5, c="k", ls="--")
+plt.axvline(1e-7, c="k", ls="--")
 name = "Relative errors as a function of maximum change in parameters"
 plt.title(name)
 plt.xlabel("dw_max")
