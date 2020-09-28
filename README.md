@@ -19,15 +19,28 @@ This repository contains the following modules:
 
 ## TODO
 
+## 2020-09-27
+
+- Implement Taylor-Newton method
+- Allow PBGN to generate new indices on every iteration
+- Implement SBGN (serial instead of parallel)
+- Include section in this README about what questions are answered by this repository
+
+### 2020-09-20
+
+- Finish script to make plots of different parameter combinations
+- Implement batch-sizing
+- Plot training curves for PBGN and SGD on 2D sinusoidal data with batches
+- Plot 2D sinusoidal predictions for different optimisers
+
 ### 2020-09-13
 
 - Add docstrings to all modules, functions and methods
 - Plot training curves of GD vs PBGN, LS vs no LS, and compare
 - Plot predictions for PBGN 1D and 2D sinusoids
-- Refactor LS as a class
 - Plot script to compare parameters for PBGN, and another equivalent script for GD
 - Add unit tests for Terminator and Evaluator classes
-- Why is PBGN doing badly without line-search? Is it possible to test when max_step is being exceeded?
+- Why is PBGN doing badly without line-search? **Is it possible to test when max_step is being exceeded?**
 
 ### 2020-09-06
 
@@ -60,8 +73,9 @@ This repository contains the following modules:
 - Get binary cross entropy working for classification data-sets, train classification, and add plotting function for 2D binary classification
 - Add multi-class classification error function, data-sets, training, and plotting
 - (Low priority) investigate how number of layers and units per layer affects success/failure for learning different data sets, EG AND, XOR, circle, multiple circles, etc
-- Add PSO optimisation routine and compare to SGD with 2-way tracking
+- Add **PSO** optimisation routine and compare to SGD with 2-way tracking
   - Add PSO with 2-way tracking for each particle?
+- Add **adam** optimisation
 - Add timeout option to optimisation routines, and replace `eval_every` with `eval_every_n_s` based on time instead of iteration (including `while next_eval < perf_counter(): next_eval += eval_every_n_s` to make sure evaluations don't play catch-up)
 - Add plotting function for step sizes
 - Add plotting function which creates a movie (or gif) showing model predictions evolving over time as the network trains, and compare for different optimisation methods (this may recycle pre-existing plotting functions, and just combine plots into a movie)
