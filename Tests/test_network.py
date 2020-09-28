@@ -70,35 +70,45 @@ def test_get_gradient_vector(seed):
     """
     Test the public method for getting the parameter vector, and check that the
     gradient vector is approximately accurate using 1st order numerical
-    differentiation
+    differentiation (see Scripts/find_dw_and_tol.py for how the parameters for
+    this are determined)
     """
     # Initialise network, inputs and targets
     n, x, t, _ = get_random_network_inputs_targets(seed)
     # Get the gradient vector and check that it has the right shape
-    gradient_vector = n.get_gradient_vector(x, t)
-    num_params = gradient_vector.size
-    assert gradient_vector.shape == (num_params, )
+    grad_0 = n.get_gradient_vector(x, t)
+    num_params = grad_0.size
+    assert grad_0.shape == (num_params, )
 
     # Change the weights and calculate the change in error
-    dw_max = 1e-5
-    tol = 1e-9
-    E = n.mean_error(t, x)
+    dw_max = 1e-7
+    tol = 1e-5
+    E_0 = n.mean_error(t, x)
     w = n.get_parameter_vector()
-    dw = np.random.uniform(-dw_max, dw_max, gradient_vector.shape)
+    dw = np.random.uniform(-dw_max, dw_max, grad_0.shape)
     n.set_parameter_vector(w + dw)
-    E_new = n.mean_error(t, x)
-    dE = E_new - E
-    # Check that the gradient is consistent with numerical approximation
-    assert abs(dE - np.dot(gradient_vector, dw)) < tol
+    E_1 = n.mean_error(t, x)
+    dE = E_1 - E_0
+
+    # Calculate relative error based on approximate Taylor series
+    relative_error = (dE - np.dot(grad_0, dw)) / dE
+    # Check that gradient is consistent with numerical approximation
+    assert abs(relative_error) < tol
     # Check that the answer isn't completely distorted by precision
-    assert abs(dE) > max(abs(gradient_vector * dw))
+    assert abs(dE) > max(abs(grad_0 * dw))
 
 @pytest.mark.parametrize("seed", [5792, 1560, 3658, 0, 1, 2, 3, 4, 5, 6, 7])
 def test_get_hessian_blocks(seed):
     """
     Check that get_hessian_blocks returns symmetric Hessian blocks with the
     correct shape, and that the corresponding list of inds for each block has
-    the correct number of elements, and that each element is unique
+    the correct number of elements, and that each element is unique.
+
+    Also perform a numerical test on values of the 2nd order gradients in the
+    Hessian blocks, based on a 1st order Taylor expansion of the change in the
+    gradient vector with respect to a change in the parameters (the Hessian
+    matrix is also the Jacobian in this context) (see Scripts/find_dw_and_tol.py
+    for how the parameters for this test are determined)
     """
 
     # Initialise network, inputs and targets
@@ -170,7 +180,7 @@ def test_get_hessian_blocks(seed):
         d_grad = (grad_1 - grad_0)[hess_inds]
         # Calculate relative error based on approximate Taylor series
         relative_error = (d_grad - np.matmul(hess_block, dw)) / d_grad
-        # Check error is within tollerance
+        # Check error is within tolerance
         assert np.max(np.abs(relative_error)) < tol
 
 
