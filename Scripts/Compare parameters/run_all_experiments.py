@@ -3,12 +3,32 @@ Module containing the test-neutral run_all_experiments function for comparing
 parameters. This function should be called by wrapper scripts for particular
 optimisers and sets of parameters to test.
 """
+import os
+import sys
+from datetime import datetime
+from traceback import print_exception
 from time import perf_counter
 import numpy as np
 if __name__ == "__main__":
     import __init__
 import plotting
 
+def print_error_details(experiment_dict):
+    """
+    Print details of an error both to STDOUT and to a time-stamped error log
+    file
+    """
+    t = datetime.now()
+    error_filename = "{} Error log.txt".format(t).replace(":", ".")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    error_file_path = os.path.join(current_dir, error_filename)
+    with open(error_file_path, "w") as error_file:
+        for f in [error_file, None]:
+            print("Parameter details:")
+            for key, value in experiment_dict.items():
+                print("{}: {}".format(repr(key), value), file=f)
+            print("\nError details:")
+            print_exception(*sys.exc_info(), file=f)
 
 def run_all_experiments(
     all_experiments_dict,
@@ -66,9 +86,12 @@ def run_all_experiments(
             # Run experiment and store the results
             for i in range(n_repeats):
                 np.random.seed(i)
-                result = run_experiment(dataset, **this_experiment_dict)
-                results_param_val_list.append(var_param_value)
-                results_min_error_list.append(min(result.test_errors))
+                try:
+                    result = run_experiment(dataset, **this_experiment_dict)
+                    results_param_val_list.append(var_param_value)
+                    results_min_error_list.append(min(result.test_errors))
+                except:
+                    print_error_details(this_experiment_dict)
 
         # Plot results for experiment with this parameter
         if verbose:
