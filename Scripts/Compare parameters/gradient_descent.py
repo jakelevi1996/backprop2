@@ -17,7 +17,21 @@ TODO:
 -   Add argparse wrapper for this class, so experiments can be configured from
     the command line
 """
+import os
+from time import perf_counter
 import numpy as np
+if __name__ == "__main__":
+    import __init__
+from models import NeuralNetwork
+import activations, data, optimisers, plotting
+
+t_0 = perf_counter()
+
+# Get name of output directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(current_dir, "Outputs", "Gradient descent")
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
 
 # Initialise dictionary of parameter names, default values, and values to test
 # TODO: activation functions (need to allow non-numerical parameters, which plot
@@ -32,10 +46,41 @@ all_experiments_dict = {
 }
 
 # Initialise data set
-pass
+sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
 
-# Set number of repeats
+# Set number of repeats and alpha
 n_repeats = 3
+alpha = 0.5
+
+# Define function to be run as the experiment
+def run_experiment(
+    dataset,
+    num_units,
+    num_layers,
+    log10_learning_rate,
+    log10_s0,
+    alpha,
+    beta
+):
+    n = NeuralNetwork(
+        input_dim=1,
+        output_dim=1,
+        num_hidden_units=[num_units for _ in range(num_layers)],
+        act_funcs=[activations.Gaussian(), activations.Identity()]
+    )
+    result = optimisers.gradient_descent(
+        n,
+        dataset,
+        learning_rate=pow(10, log10_learning_rate),
+        terminator=optimisers.Terminator(t_lim=3),
+        evaluator=optimisers.Evaluator(t_interval=0.1),
+        line_search=optimisers.LineSearch(
+            s0=pow(10, log10_s0), 
+            alpha=alpha, 
+            beta=beta
+        )
+    )
+    return result
 
 
 # Iterate through each experiment (one parameter is varied per experiment)
@@ -62,4 +107,21 @@ for var_param_name, var_param_dict in all_experiments_dict.items():
             results_min_error_list.append(min(result.test_errors))
 
     # Plot results for experiment with this parameter
-    pass
+    h_line = "*" * 50
+    msg = "Plotting result for {}".format(var_param_name)
+    print("", h_line, msg, h_line, "", sep="\n")
+    plotting.simple_plot(
+        results_param_val_list,
+        results_min_error_list,
+        var_param_name,
+        "Minimum test error",
+        "Varying parameter {}".format(var_param_name),
+        output_dir,
+        alpha
+    )
+
+time_taken = perf_counter() - t_0
+print("All experiments performed in {:.2f} s ({:.2f} minutes)".format(
+    time_taken,
+    time_taken / 60
+))
