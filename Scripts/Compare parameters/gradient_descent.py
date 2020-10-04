@@ -20,13 +20,15 @@ TODO:
 import numpy as np
 
 # Initialise dictionary of parameter names, default values, and values to test
-param_default_and_list_dict = {
-    "num_units":        [10,    [5, 10, 15, 20]],
-    "num_layers":       [1,     [1, 2, 3]],
-    "learning_rate":    [0.1,   np.logspace(-3, 1, 5)],
-    "s0":               [1,     np.logspace(-1, 3, 5)],
-    "alpha":            [0.5,   np.arange(0.5, 1, 0.1)],
-    "beta":             [0.5,   np.arange(0.5, 1, 0.1)],
+# TODO: activation functions (need to allow non-numerical parameters, which plot
+# as bar plots)
+all_experiments_dict = {
+    "num_units":            {"default": 10,    "range": [5, 10, 15, 20]},
+    "num_layers":           {"default": 1,     "range": [1, 2, 3]},
+    "log10_learning_rate":  {"default": -1,    "range": np.linspace(-3, 1, 5)},
+    "log10_s0":             {"default": 0,     "range": np.linspace(-1, 3, 5)},
+    "alpha":                {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
+    "beta":                 {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
 }
 
 # Initialise data set
@@ -35,23 +37,29 @@ pass
 # Set number of repeats
 n_repeats = 3
 
+
 # Iterate through each experiment (one parameter is varied per experiment)
-for var_param_name, (_, var_param_list) in param_default_and_list_dict.items():
+for var_param_name, var_param_dict in all_experiments_dict.items():
     # Initialise dictionary of parameters for this experiment, using defaults
-    experiment_params_dict = {
-        name: default_val
-        for name, (default_val, _)
-        in param_default_and_list_dict.items()
+    this_experiment_dict = {
+        param_name: param_dict["default"]
+        for param_name, param_dict
+        in all_experiments_dict.items()
     }
     # Initialise results list
-    results_list = []
+    results_param_val_list = []
+    results_min_error_list = []
 
     # Iterate through each value for the parameter under test
-    for var_param in var_param_list:
+    for var_param_value in var_param_dict["range"]:
         # Set the value of the parameter under test for this experiment
-        experiment_params_dict[var_param_name] = var_param
+        this_experiment_dict[var_param_name] = var_param_value
         # Run experiment, store results
-        pass
+        for i in range(n_repeats):
+            np.random.seed(i)
+            result = run_experiment(sin_data, **this_experiment_dict)
+            results_param_val_list.append(var_param_value)
+            results_min_error_list.append(min(result.test_errors))
 
     # Plot results for experiment with this parameter
     pass
