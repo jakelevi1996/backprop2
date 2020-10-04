@@ -4,8 +4,9 @@ import numpy as np
 # Get name of current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Add source directory to system path
+# Add current directory and source directory to system path
 source_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+sys.path.append(current_dir)
 sys.path.append(source_dir)
 
 # Create output directory if it doesn't already exist
