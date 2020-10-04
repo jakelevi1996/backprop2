@@ -19,11 +19,24 @@ This repository contains the following modules:
 
 ## TODO
 
+## 2020-10-04
+
+- Why is PBGN doing bad without line-search?
+  - How frequently is max-step being exceeded?
+  - What about if max-step is increased/learning rate is decreased?
+- Implement scripts to compare parameters for gradient descent and for PBGN
+- Plot 2D sinusoidal learning curves and predictions
+  - Implement batch-sizing
+    - Compare performance for different batch-sizes
+
 ## 2020-09-27
 
 - Implement Taylor-Newton method
 - Implement SBGN (serial instead of parallel)
 - Include section in this README about what questions are answered by this repository
+- Allow optimisers to be passed to an `optimise` method of the `NeuralNetwork` class, possibly refactoring all optimisers into a class
+- Refactor class in `activations` and `errors` modules to be private, and expose public instantiations of those classes
+- Update Scripts/compare_gd_pbgn.py to use refactored classes
 
 ### 2020-09-20
 
@@ -39,7 +52,7 @@ This repository contains the following modules:
 - Plot predictions for PBGN 1D and 2D sinusoids
 - Plot script to compare parameters for PBGN, and another equivalent script for GD
 - Add unit tests for Terminator and Evaluator classes
-- Why is PBGN doing badly without line-search? **Is it possible to test when max_step is being exceeded?**
+- ***Why is PBGN doing badly without line-search? **Is it possible to test when max_step is being exceeded?**
 
 ### 2020-09-06
 
