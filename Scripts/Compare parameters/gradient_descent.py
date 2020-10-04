@@ -66,6 +66,9 @@ def run_experiment(
     )
     return result
 
+# Call warmup function
+optimisers.warmup()
+
 # Call function to run all experiments
 run_all_experiments(
     all_experiments_dict,
