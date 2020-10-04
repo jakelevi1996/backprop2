@@ -1,21 +1,7 @@
 """
-Find best parameters for gradient descent with line-search, by trying different
-combinations and plotting the results. The different parameters that are
-compared are:
--   number of units
--   number of layers
--   learning_rate
--   s0 (initial step size)
--   alpha (threshold for backtracking)
--   beta (ratio of changes in step size)
-
-Results are compared by plotting final performance after a fixed length of time
-allowed for optimisation.
-
-TODO:
--   Need to add Terminator classes, so optimisation can run until time runs out
--   Add argparse wrapper for this class, so experiments can be configured from
-    the command line
+Module containing the test-neutral run_all_experiments function for comparing
+parameters. This function should be called by wrapper scripts for particular
+optimisers and sets of parameters to test.
 """
 from time import perf_counter
 import numpy as np
@@ -33,21 +19,47 @@ def run_all_experiments(
     verbose=True,
     alpha_plotting=0.5
 ):
+    """
+    Run experiments for each parameter specified in all_experiments_dict, and
+    save plots for each parameter under test to disk.
+
+    Inputs:
+    -   all_experiments_dict: dictionary in which each key is the name of a
+        parameter that will be passed to run_experiment, and each value is a
+        dictionary containing a "default" key and a "range" key, for the default
+        value to use when testing other parameters, and the list of values to
+        try when testing this parameter
+    -   run_experiment: a callable that should accept a Dataset object as the
+        first positional argument and all of the keys in all_experiments_dict as
+        keyword arguments, run the corresponding experiment, and return a Result
+        object
+    -   dataset: a Dataset object to pass to run_experiment
+    -   output_dir: directory in which to save plots for each parameter under
+        test
+    -   n_repeats: number of repeats for each parameter combination
+    -   verbose: whether to print out each time a plot is being made, and total
+        time taken
+    -   alpha_plotting: transparency value for markers in the output plots
+
+    Outputs:
+    -   None
+    -   (plots for each parameter under test are saved to disk)
+    """
     t_0 = perf_counter()
 
     # Iterate through each experiment (one parameter is varied per experiment)
     for var_param_name, var_param_dict in all_experiments_dict.items():
-        # Initialise dictionary of parameters for this experiment, using defaults
+        # Initialise dictionary for this experiment using default parameters
         this_experiment_dict = {
             param_name: param_dict["default"]
             for param_name, param_dict
             in all_experiments_dict.items()
         }
-        # Initialise results list
+        # Initialise results lists
         results_param_val_list = []
         results_min_error_list = []
 
-        # Iterate through each value for the parameter under test
+        # Iterate through each value of the parameter under test
         for var_param_value in var_param_dict["range"]:
             # Set the value of the parameter under test for this experiment
             this_experiment_dict[var_param_name] = var_param_value

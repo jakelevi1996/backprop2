@@ -1,3 +1,22 @@
+"""
+Find best parameters for gradient descent with line-search, by trying different
+combinations and plotting the results. The different parameters that are
+compared are:
+-   number of units
+-   number of layers
+-   learning_rate
+-   s0 (initial step size)
+-   alpha (threshold for backtracking)
+-   beta (ratio of changes in step size)
+-   Activation function
+
+Results are compared by plotting final performance after a fixed length of time
+allowed for optimisation.
+
+TODO:
+-   Add argparse wrapper for this script, so experiments can be configured
+    from the command line
+"""
 import os
 import numpy as np
 if __name__ == "__main__":
