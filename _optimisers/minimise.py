@@ -46,10 +46,10 @@ def minimise(
         evaluator = Evaluator(i_interval=100)
     if result is None:
         result = Result()
-    if line_search is not None:
-        s = line_search.s
-    else:
+    if line_search is None:
         s = 1
+    else:
+        s = line_search.s
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()

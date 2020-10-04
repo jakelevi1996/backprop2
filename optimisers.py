@@ -22,9 +22,8 @@ def warmup(n_its=1000):
     gradient_descent(
         n,
         sin_data,
-        n_iters=n_its,
-        eval_every=n_its//10,
-        verbose=True,
-        name="Warmup",
-        line_search_flag=False
+        terminator=Terminator(i_lim=n_its),
+        evaluator=Evaluator(i_interval=n_its//10),
+        result=Result(name="Warmup", verbose=True),
+        line_search=None
     )
