@@ -2,7 +2,7 @@
 Script to compare parameters for parallel-block generalised-Newton's method
 without a line-search on 1D sinusoidal data.
 
-This script runs in approximately ??? minutes and ??? seconds.
+This script runs in approximately 7 minutes and 3 seconds.
 """
 import os
 import numpy as np
