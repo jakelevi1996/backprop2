@@ -20,6 +20,8 @@ class ActivationFunction():
         raise NotImplementedError
     def __call__(self, x):
         return self.y(x)
+    def __repr__(self):
+        return self.name
 
     def get_id_from_func(self):
         """

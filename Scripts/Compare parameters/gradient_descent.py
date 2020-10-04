@@ -43,14 +43,24 @@ all_experiments_dict = {
     "log10_s0":             {"default": 0,     "range": np.linspace(-1, 3, 5)},
     "alpha":                {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
     "beta":                 {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
+    "act_func":             {
+        "default": activations.Gaussian(),
+        "range": [
+            activations.Gaussian(),
+            activations.Cauchy(),
+            activations.Logistic(),
+            activations.Relu(),
+        ]
+    },
 }
 
 # Initialise data set
 sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
 
 # Set number of repeats and alpha
-n_repeats = 3
+n_repeats = 5
 alpha = 0.5
+verbose = True
 
 # Define function to be run as the experiment
 def run_experiment(
@@ -60,13 +70,14 @@ def run_experiment(
     log10_learning_rate,
     log10_s0,
     alpha,
-    beta
+    beta,
+    act_func
 ):
     n = NeuralNetwork(
         input_dim=1,
         output_dim=1,
         num_hidden_units=[num_units for _ in range(num_layers)],
-        act_funcs=[activations.Gaussian(), activations.Identity()]
+        act_funcs=[act_func, activations.Identity()]
     )
     result = optimisers.gradient_descent(
         n,
@@ -107,9 +118,10 @@ for var_param_name, var_param_dict in all_experiments_dict.items():
             results_min_error_list.append(min(result.test_errors))
 
     # Plot results for experiment with this parameter
-    h_line = "*" * 50
-    msg = "Plotting result for {}".format(var_param_name)
-    print("", h_line, msg, h_line, "", sep="\n")
+    if verbose:
+        h_line = "*" * 50
+        msg = "Plotting result for {}".format(var_param_name)
+        print("", h_line, msg, h_line, "", sep="\n")
     plotting.simple_plot(
         results_param_val_list,
         results_min_error_list,
@@ -120,8 +132,9 @@ for var_param_name, var_param_dict in all_experiments_dict.items():
         alpha
     )
 
-time_taken = perf_counter() - t_0
-print("All experiments performed in {:.2f} s ({:.2f} minutes)".format(
-    time_taken,
-    time_taken / 60
-))
+if verbose:
+    mins, secs = divmod(perf_counter() - t_0, 60)
+    if mins > 0:
+        print("All tests run in {} mins {:.2f} s".format(int(mins), secs))
+    else:
+        print("All tests run in {:.2f} s".format(secs))
