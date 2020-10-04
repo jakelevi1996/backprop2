@@ -22,7 +22,6 @@ This repository contains the following modules:
 ## 2020-09-27
 
 - Implement Taylor-Newton method
-- Allow PBGN to generate new indices on every iteration
 - Implement SBGN (serial instead of parallel)
 - Include section in this README about what questions are answered by this repository
 

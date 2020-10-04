@@ -47,7 +47,8 @@ def test_gradient_descent(seed):
     results_file.close()
 
 @pytest.mark.parametrize("seed", [183, 3275, 9643])
-def test_pbgn(seed):
+@pytest.mark.parametrize("reuse_block_inds", [True, False])
+def test_pbgn(seed, reuse_block_inds):
     """
     Test the Generalised Newton's method for optimisation, using parallel
     block-diagonal approximations.
@@ -60,14 +61,20 @@ def test_pbgn(seed):
     # Generate random number of iterations, network, data, and results file
     n_iters = np.random.randint(10, 20)
     n = NeuralNetwork(
-        1, 1, [4, 8, 6], [activations.Gaussian(), activations.Identity()]
+        input_dim=1,
+        output_dim=1,
+        num_hidden_units=[4, 8, 6],
+        act_funcs=[activations.Gaussian(), activations.Identity()]
     )
     sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
-    results_filename = "Test PBGN without line-search.txt"
+    name = "Test PBGN without line-search, reuse_block_inds={}".format(
+        reuse_block_inds
+    )
+    results_filename = "{}.txt".format(name)
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
     result = optimisers.Result(
-        name="PGN without line search", 
+        name=name, 
         verbose=True,
         file=results_file
     )
@@ -77,7 +84,8 @@ def test_pbgn(seed):
         sin_data,
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
-        result=result
+        result=result,
+        reuse_block_inds=reuse_block_inds
     )
     
     results_file.close()

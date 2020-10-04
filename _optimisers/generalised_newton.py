@@ -2,11 +2,25 @@ import numpy as np
 from _optimisers.minimise import minimise, Result
 
 class NewtonStepCalculator():
-    # TODO: make it possible to specify that the block indices should be
-    # regenerated on every iteration
-    def __init__(self, model, max_block_size, max_step, learning_rate):
-        self.model = model
+    def __init__(
+        self,
+        model,
+        max_block_size,
+        max_step,
+        learning_rate,
+        reuse_block_inds
+    ):
+        self.reuse_block_inds = reuse_block_inds
+        self.max_block_size = max_block_size
 
+        if reuse_block_inds:
+            self.get_block_inds(model, max_block_size)
+
+        self.delta = np.empty(model.num_params)
+        self.max_step = max_step
+        self.learning_rate = learning_rate
+    
+    def get_block_inds(self, model, max_block_size):
         # Get random indices for block-diagonalisation of weights in each layer
         self.weight_inds = [
             np.array_split(
@@ -22,18 +36,19 @@ class NewtonStepCalculator():
                 np.ceil(layer.num_bias / max_block_size)
             ) for layer in model.layers
         ]
-
-        self.delta = np.empty(model.num_params)
-
-        self.max_step = max_step
-        self.learning_rate = learning_rate
     
     def get_step(self, model, dataset):
+        # If not reusing old block inds then get new ones
+        if not self.reuse_block_inds:
+            self.get_block_inds(model, self.max_block_size)
         # Get gradient vector
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
         # Get Hessian blocks
         (hess_block_list, hess_inds_list) = model.get_hessian_blocks(
-            dataset.x_train, dataset.y_train, self.weight_inds, self.bias_inds
+            dataset.x_train,
+            dataset.y_train,
+            self.weight_inds,
+            self.bias_inds
         )
         # Iterate through each Hessian block
         for hess_block, hess_inds in zip(hess_block_list, hess_inds_list):
@@ -59,13 +74,15 @@ def generalised_newton(
     max_block_size=7,
     max_step=1,
     result=None,
+    reuse_block_inds=True,
     **kwargs
 ):
     newton_step_calculator = NewtonStepCalculator(
         model,
         max_block_size,
         max_step,
-        learning_rate
+        learning_rate,
+        reuse_block_inds
     )
 
     get_step = lambda model, dataset: newton_step_calculator.get_step(
