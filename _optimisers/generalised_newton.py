@@ -61,6 +61,14 @@ class NewtonStepCalculator():
                 -grad_rot / np.abs(evals),
                 -self.learning_rate * grad_rot
             )
+            # DEBUG
+            bool_array = (self.max_step * np.abs(evals)) < np.abs(grad_rot)
+            print(">max_step for {:3} / {:3} ({:5.1f} %)".format(
+                bool_array.sum(),
+                bool_array.size,
+                100 * bool_array.mean()
+            ))
+            # /DEBUG
             # Rotate gradient back into original coordinate system and return
             self.delta[hess_inds] = np.matmul(evecs, step_rot)
         
