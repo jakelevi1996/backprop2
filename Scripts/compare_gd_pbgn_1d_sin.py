@@ -1,6 +1,7 @@
 """
 Script to compare learning curves for gradient descent vs parallel-block
-generalised Newton's method, both with and without line-search.
+generalised Newton's method, both with and without line-search, on 1D sinusoidal
+data.
 """
 import os
 import numpy as np
