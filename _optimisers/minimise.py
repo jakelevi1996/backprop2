@@ -9,6 +9,7 @@ import models as m, data as d
 from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
+from _optimisers.batch import FullTrainingSet
 
 def minimise(
     model,
@@ -18,6 +19,7 @@ def minimise(
     terminator=None,
     line_search=None,
     result=None,
+    batch_getter=None
 ):
     """
     Abstract minimisation function, containing code which is common to all
@@ -46,6 +48,8 @@ def minimise(
         evaluator = Evaluator(i_interval=100)
     if result is None:
         result = Result()
+    if batch_getter is None:
+        batch_getter = FullTrainingSet()
     if line_search is None:
         s = 1
     else:
@@ -63,9 +67,12 @@ def minimise(
         # Evaluate the model
         if evaluator.ready_to_evaluate(i):
             result.update(model, dataset, i, s)
+        
+        # Get batch of training data
+        x_batch, y_batch = batch_getter.get_batch(dataset, model)
 
         # Get gradient and initial step
-        delta, dEdw = get_step(model, dataset)
+        delta, dEdw = get_step(model, x_batch, y_batch)
         
         # Update parameters
         if line_search is not None:

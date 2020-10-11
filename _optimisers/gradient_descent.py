@@ -1,11 +1,11 @@
 from _optimisers.minimise import minimise, Result
 
-def get_gradient_descent_step(model, dataset, learning_rate):
+def get_gradient_descent_step(model, x_batch, y_batch, learning_rate):
     """
     Method to get the descent step during each iteration of gradient-descent
     minimisation
     """
-    dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
+    dEdw = model.get_gradient_vector(x_batch, y_batch)
 
     return -learning_rate * dEdw, dEdw
 
@@ -17,9 +17,10 @@ def gradient_descent(
     **kwargs
 ):
     """ TODO: why is this ~10% slower than the old SGD function? """
-    get_step = lambda model, dataset: get_gradient_descent_step(
+    get_step = lambda model, x_batch, y_batch: get_gradient_descent_step(
         model,
-        dataset,
+        x_batch,
+        y_batch,
         learning_rate
     )
     

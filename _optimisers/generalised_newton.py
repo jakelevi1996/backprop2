@@ -37,16 +37,16 @@ class NewtonStepCalculator():
             ) for layer in model.layers
         ]
     
-    def get_step(self, model, dataset):
+    def get_step(self, model, x_batch, y_batch):
         # If not reusing old block inds then get new ones
         if not self.reuse_block_inds:
             self.get_block_inds(model, self.max_block_size)
         # Get gradient vector
-        dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
+        dEdw = model.get_gradient_vector(x_batch, y_batch)
         # Get Hessian blocks
-        (hess_block_list, hess_inds_list) = model.get_hessian_blocks(
-            dataset.x_train,
-            dataset.y_train,
+        hess_block_list, hess_inds_list = model.get_hessian_blocks(
+            x_batch,
+            y_batch,
             self.weight_inds,
             self.bias_inds
         )
@@ -85,9 +85,10 @@ def generalised_newton(
         reuse_block_inds
     )
 
-    get_step = lambda model, dataset: newton_step_calculator.get_step(
+    get_step = lambda model, x_batch, y_batch: newton_step_calculator.get_step(
         model,
-        dataset
+        x_batch,
+        y_batch
     )
 
     if result is None:
