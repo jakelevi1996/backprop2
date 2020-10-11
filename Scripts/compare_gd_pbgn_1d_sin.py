@@ -82,7 +82,7 @@ output_dir = os.path.join(current_dir, "Outputs")
 # Compare training curves
 plotting.plot_training_curves(
     results_list,
-    "Comparing gradient descent vs generalised Newton",
+    "Comparing gradient descent vs generalised Newton on 1D sinusoidal data",
     output_dir,
     e_lims=[0, 0.2]
 )
