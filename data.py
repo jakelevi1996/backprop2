@@ -28,17 +28,14 @@ class DataSet():
             self.x_train    , self.y_train      = None, None
             self.x_test     , self.y_test       = None, None
     
-    def get_train_batch(self, batch_size):  raise NotImplementedError
-    
-    def get_test_batch(self, batch_size):   raise NotImplementedError
-    
     def save(self, filename, dir_name="."):
         path = os.path.join(dir_name, filename + ".npz")
         np.savez(
-            path, input_dim=self.input_dim, output_dim=self.output_dim,
-            n_train=self.n_train, n_test=self.n_test,
-            x_train=self.x_train, x_test=self.x_test,
-            y_train=self.y_train, y_test=self.y_test
+            path,
+            input_dim=self.input_dim,   output_dim=self.output_dim,
+            n_train=self.n_train,       n_test=self.n_test,
+            x_train=self.x_train,       x_test=self.x_test,
+            y_train=self.y_train,       y_test=self.y_test
         )
 
     def load(self, filename, dir_name="."):
@@ -62,7 +59,8 @@ class DataSet():
             "y_train.T:",   self.y_train.T[:first_n],
             "x_test.T:",    self.x_test.T[:first_n],
             "y_test.T:",    self.y_test.T[:first_n],
-            sep="\n", file=file
+            sep="\n",
+            file=file
         )
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
@@ -99,8 +97,15 @@ class SinusoidalDataSet1D1D(DataSet):
     offset
     """
     def __init__(
-        self, n_train=100, n_test=50, phase=0.1, freq=1.1,
-        ampl=1.0, offset=1.0, xlim=[-2, 2], noise_std=0.1
+        self,
+        n_train=100,
+        n_test=50,
+        phase=0.1,
+        freq=1.1,
+        ampl=1.0,
+        offset=1.0,
+        xlim=[-2, 2],
+        noise_std=0.1
     ):
         # Set shape constants
         self.input_dim  , self.output_dim   = 1         , 1
@@ -109,10 +114,22 @@ class SinusoidalDataSet1D1D(DataSet):
         self.x_train    = np.random.uniform(*xlim, size=[1, n_train])
         self.x_test     = np.random.uniform(*xlim, size=[1, n_test])
         self.y_train    = noisy_sin(
-            self.x_train, phase, freq, ampl, offset, noise_std, 1
+            self.x_train,
+            phase,
+            freq,
+            ampl,
+            offset,
+            noise_std,
+            1
         )
         self.y_test     = noisy_sin(
-            self.x_test, phase, freq, ampl, offset, noise_std, 1
+            self.x_test,
+            phase,
+            freq,
+            ampl,
+            offset,
+            noise_std,
+            1
         )
 
 class SinusoidalDataSet2DnD(DataSet):
@@ -126,8 +143,14 @@ class SinusoidalDataSet2DnD(DataSet):
     values
     """
     def __init__(
-        self, nx0=200, x0lim=[-2, 2], nx1=200, x1lim=[-2, 2],
-        noise_std=0.1, train_ratio=0.8, output_dim=3
+        self,
+        nx0=200,
+        x0lim=[-2, 2],
+        nx1=200,
+        x1lim=[-2, 2],
+        noise_std=0.1,
+        train_ratio=0.8,
+        output_dim=3
     ):
         input_dim = 2
         # Generate test set inputs as a uniform mesh and reshape
@@ -142,7 +165,13 @@ class SinusoidalDataSet2DnD(DataSet):
         offset  = np.random.normal(size=[output_dim, 1])
         # Generate noiseless test set outputs
         self.y_test = noisy_sin(
-            self.x_test, phase, freq, ampl, offset, 0, output_dim
+            self.x_test,
+            phase,
+            freq,
+            ampl,
+            offset,
+            0,
+            output_dim
         )
         # Generate training set as a random subset of the test set
         n_train = int(n_test * train_ratio)
@@ -169,5 +198,5 @@ class SumOfGaussianCurvesDataSet(DataSet):
     pass
 
 class GaussianCurveDataSet(DataSet):
-    # Wrapper for SumOfGaussianCurvesDataSet
+    """ Wrapper for SumOfGaussianCurvesDataSet """
     pass
