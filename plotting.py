@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import data
 
+def min_and_max(*input_arrays):
+    """
+    min_and_max: given a variable number of np.ndarrays, return the smallest and
+    largest elements out of all of the input arguments
+    """
+    min_elem = min([array.min() for array in input_arrays])
+    max_elem = max([array.max() for array in input_arrays])
+    return min_elem, max_elem
+
 def simple_plot(x, y, x_label, y_label, plot_name, dir_name, alpha):
     # Create figure
     plt.figure(figsize=[8, 6])
