@@ -39,6 +39,15 @@ def test_constant_batch_size(seed, dataset):
     assert x_batch.shape == (dataset.x_train.shape[0], batch_size)
     assert y_batch.shape == (dataset.y_train.shape[0], batch_size)
 
+def test_constant_batch_size_non_integer_fail():
+    """
+    Test that using a non-integer batch size raises an exception when using the
+    optimisers.batch.ConstantBatchSize class
+    """
+    batch_size = 3.7
+    with pytest.raises(TypeError):
+        batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
+
 @pytest.mark.parametrize("seed", [5802, 5496, 5922])
 @pytest.mark.parametrize("dataset", dataset_list)
 def test_dynamic_batch_size(seed, dataset):
