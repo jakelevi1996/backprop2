@@ -3,9 +3,17 @@
 
 Implementation of efficient 2nd order methods for training neural networks (work in progress)
 
+## Performance of PBGN
+
+TODO
+
+## Discussion of performance
+
+TODO
+
 ## File structure description
 
-This repository contains the following modules:
+This repository contains the following modules (TODO: this section is outdated, and needs to be updated):
 
 - `models.py`: contains the `NeuralNetwork` class, which itself contains methods for initialisation, evaluation, and gradient calculations
 - `layer.py`: contains the `NeuralLayer` class, which is used by the `NeuralNetwork` class to represent each layer in the network, and the operations that it needs to perform
@@ -19,8 +27,9 @@ This repository contains the following modules:
 
 ## TODO
 
-## 2020-10-11
+### 2020-10-11
 
+- Add performance comparison of optimisers to README, and comparison with previous repo, and discussion
 - Plot learning curves and final predictions for 2D sinusoidal data
 - Implement batch-sizes
 - Investigate how batch-size affects final performance for large 2D sinusoidal data set
@@ -31,8 +40,10 @@ This repository contains the following modules:
   - Write function for automatically calling `run_all_experiments` in a loop, each time changing the default value of each parameter to the value which has the lowest mean error (or lowest given linear combination of mean and standard deviation) until the default parameter values converge to a local optimum, or a maximum number of repeats is exceeded
     - Use these locally optimum parameter values to determine the best values for PBGN and for GD with line-search, and then compare learning curvves for PBGN vs GD with these locally optimum parameters
   - Fix weird x-axis labels
+- Refactor activation functions into private classes with public instances
+- Refactor `models`, `activations`, `errors`, and `layer` module into private `_models` package, exposed through a public `models` module
 
-## 2020-10-04
+### 2020-10-04
 
 - Why is PBGN doing bad without line-search?
   - How frequently is max-step being exceeded?
@@ -43,7 +54,7 @@ This repository contains the following modules:
   - Implement batch-sizing
     - Compare performance for different batch-sizes
 
-## 2020-09-27
+### 2020-09-27
 
 - Implement Taylor-Newton method
 - Implement SBGN (serial instead of parallel)
