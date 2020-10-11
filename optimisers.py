@@ -9,6 +9,7 @@ from _optimisers.terminator import Terminator
 from _optimisers.linesearch import LineSearch
 from _optimisers import results
 from _optimisers.results import Result
+from _optimisers import batch
 import data, models
 
 def warmup(n_its=1000):
