@@ -60,12 +60,12 @@ def minimise(
     result.begin()
 
     while True:
-        # Get gradient and initial step
-        delta, dEdw = get_step(model, dataset)
-
         # Evaluate the model
         if evaluator.ready_to_evaluate(i):
             result.update(model, dataset, i, s)
+
+        # Get gradient and initial step
+        delta, dEdw = get_step(model, dataset)
         
         # Update parameters
         if line_search is not None:
