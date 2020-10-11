@@ -21,13 +21,17 @@ def print_error_details(experiment_dict):
     t = datetime.now()
     error_filename = "{} Error log.txt".format(t).replace(":", ".")
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    error_file_path = os.path.join(current_dir, error_filename)
+    error_dir = os.path.join(current_dir, "Error logs")
+    if not os.path.isdir(error_dir):
+        os.makedirs(error_dir)
+    error_file_path = os.path.join(error_dir, error_filename)
     with open(error_file_path, "w") as error_file:
         for f in [error_file, None]:
-            print("Parameter details:")
+            print("Parameter details:", file=f)
             for key, value in experiment_dict.items():
                 print("{}: {}".format(repr(key), value), file=f)
-            print("\nError details:")
+            print("*" * 50, file=f)
+            print("Error details:", file=f)
             print_exception(*sys.exc_info(), file=f)
 
 def run_all_experiments(
