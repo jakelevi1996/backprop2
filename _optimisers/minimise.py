@@ -78,8 +78,8 @@ def minimise(
         if line_search is not None:
             s = line_search.get_step_size(
                 model,
-                dataset.x_train,
-                dataset.y_train,
+                x_batch,
+                y_batch,
                 w,
                 delta,
                 dEdw,
