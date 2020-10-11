@@ -204,7 +204,7 @@ def plot_training_curves(
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    unique_names_list = list(set(result.name for result in result_list))
+    unique_names_list = sorted(list(set(result.name for result in result_list)))
     num_tests = len(unique_names_list)
     colour_list = plt.get_cmap("hsv")(
         np.linspace(0, 1, num_tests, endpoint=False))
