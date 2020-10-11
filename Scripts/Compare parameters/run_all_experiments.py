@@ -93,7 +93,7 @@ def run_all_experiments(
                 try:
                     result = run_experiment(dataset, **this_experiment_dict)
                     results_param_val_list.append(var_param_value)
-                    results_min_error_list.append(min(result.test_errors))
+                    results_min_error_list.append(result.test_errors[-1])
                 except:
                     print_error_details(this_experiment_dict)
 
