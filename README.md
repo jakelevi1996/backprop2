@@ -19,10 +19,24 @@ This repository contains the following modules:
 
 ## TODO
 
+## 2020-10-11
+
+- Plot learning curves and final predictions for 2D sinusoidal data
+- Implement batch-sizes
+- Investigate how batch-size affects final performance for large 2D sinusoidal data set
+- Implement DBS
+- Improvements to `run_all_experiments`:
+  - In plotting function called by `run_all_experiments`, plot mean (and error bars for standard deviation?) for each value of the parameter under test
+  - In `run_all_experiments`, instead of storing the results in 2 lists, store the results in a dictionary, where the keys are the values of the parameter under test, and the values are a list of results for each repeat of that value of the parameter under test
+  - Write function for automatically calling `run_all_experiments` in a loop, each time changing the default value of each parameter to the value which has the lowest mean error (or lowest given linear combination of mean and standard deviation) until the default parameter values converge to a local optimum, or a maximum number of repeats is exceeded
+    - Use these locally optimum parameter values to determine the best values for PBGN and for GD with line-search, and then compare learning curvves for PBGN vs GD with these locally optimum parameters
+  - Fix weird x-axis labels
+
 ## 2020-10-04
 
 - Why is PBGN doing bad without line-search?
   - How frequently is max-step being exceeded?
+    - Could the Results class be configured to collect data for this only when specified in the constructor, which could then be plotted?
   - What about if max-step is increased/learning rate is decreased?
 - Implement scripts to compare parameters for gradient descent and for PBGN
 - Plot 2D sinusoidal learning curves and predictions
