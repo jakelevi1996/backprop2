@@ -9,9 +9,6 @@ TODO:
 import numpy as np
 
 class BatchGetter():
-    def __init__(self):
-        raise NotImplementedError
-
     def get_batch(self, dataset, *args):
         raise NotImplementedError
 
