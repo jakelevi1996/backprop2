@@ -28,10 +28,7 @@ class Result():
         Store the name of the experiment (which is useful later when displaying
         results), display table headers, initialise lists for objective function
         evaluations and the time and iteration number for each evaluation, and
-        record the start time for the results list
-
-        TODO: optional file argument, which stored as an attribute and is passed
-        to print function
+        record the start time for the results list.
         """
         self.name = name if (name is not None) else "Unnamed experiment"
         self.file = file
