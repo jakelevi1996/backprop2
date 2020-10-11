@@ -2,7 +2,7 @@
 Script to compare parameters for parallel-block generalised-Newton's method
 without a line-search on 1D sinusoidal data.
 
-This script runs in approximately 7 minutes and 3 seconds.
+This script runs in approximately 2-3 hours.
 """
 import os
 import numpy as np
@@ -20,11 +20,11 @@ if not os.path.isdir(output_dir):
 
 # Initialise dictionary of parameter names, default values, and values to test
 all_experiments_dict = {
-    "num_units":            {"default": 10,   "range": [5, 10, 15, 20]},
-    "num_layers":           {"default": 1,    "range": [1, 2, 3]},
-    "log10_learning_rate":  {"default": -1,   "range": np.linspace(-3, 1, 5)},
-    "max_block_size":       {"default": 7,    "range": np.arange(5, 11, 1)},
-    "log10_max_step":       {"default": 0,    "range": np.linspace(-1, 1, 5)},
+    "num_units":            {"default": 10,   "range": np.arange(5, 21)},
+    "num_layers":           {"default": 1,    "range": [1, 2, 3, 4, 5]},
+    "max_block_size":       {"default": 7,    "range": np.arange(3, 16, 1)},
+    "log10_learning_rate":  {"default": -1,   "range": np.linspace(-3, 1, 15)},
+    "log10_max_step":       {"default": 0,    "range": np.linspace(-1, 1, 15)},
     "reuse_block_inds":     {"default": True, "range": [True, False]},
     "act_func":             {
         "default": activations.Gaussian(),
@@ -78,5 +78,7 @@ run_all_experiments(
     all_experiments_dict,
     run_experiment,
     sin_data,
-    output_dir
+    output_dir,
+    n_repeats=50,
+    alpha_plotting=0.3
 )
