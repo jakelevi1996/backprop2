@@ -27,9 +27,19 @@ This repository contains the following modules (TODO: this section is outdated, 
 
 ## TODO
 
+### 2020-10-15
+
+- Implement initialisers
+- Implement unit tests for initialisers
+- In a new branch, refactor minimise into a wrapper for a method of a class, which passes itself to the Result.update method, and update Result to be configurable with new columns (this will need good unit tests)
+- Implement dynamic batch sizing
+- Update all scripts to reflect new interfaces and verify
+- Update 2D-ND sinusoidal data inputs to be uniformly distributed between specified limits in the XY-plane; when plotting, do a scatter plot, with the Z-value being represented by the marker colour. Plot predictions the same as before (`pcolormesh` on a uniform grid)
+- Update `NeuralNetwork.__call__` method according to its docstring. Also, if `w is not None and x is None and t is None`, then `return self`
+
 ### 2020-10-11
 
-Result- I wonder if the use of `einsum` could be having a negative effect o the performance of PBGN vs GD, since GD seemed to perform worse when using `einsum` instead of `matmul` for transposed matrix multiplication? Might be worth branching and trying to reimplement Hessian calculations without `einsum`, and seeing if this improves the performance of PBGN
+- I wonder if the use of `einsum` could be having a negative effect o the performance of PBGN vs GD, since GD seemed to perform worse when using `einsum` instead of `matmul` for transposed matrix multiplication? Might be worth branching and trying to reimplement Hessian calculations without `einsum`, and seeing if this improves the performance of PBGN
 - Add performance comparison of optimisers to README, and comparison with previous repo, and discussion
 - Investigate how batch-size affects final performance for large 2D sinusoidal data set
 - Implement DBS
