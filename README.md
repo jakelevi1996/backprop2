@@ -29,9 +29,8 @@ This repository contains the following modules (TODO: this section is outdated, 
 
 ### 2020-10-11
 
+Result- I wonder if the use of `einsum` could be having a negative effect o the performance of PBGN vs GD, since GD seemed to perform worse when using `einsum` instead of `matmul` for transposed matrix multiplication? Might be worth branching and trying to reimplement Hessian calculations without `einsum`, and seeing if this improves the performance of PBGN
 - Add performance comparison of optimisers to README, and comparison with previous repo, and discussion
-- Plot learning curves and final predictions for 2D sinusoidal data
-- Implement batch-sizes
 - Investigate how batch-size affects final performance for large 2D sinusoidal data set
 - Implement DBS
 - Improvements to `run_all_experiments`:
@@ -40,19 +39,16 @@ This repository contains the following modules (TODO: this section is outdated, 
   - Write function for automatically calling `run_all_experiments` in a loop, each time changing the default value of each parameter to the value which has the lowest mean error (or lowest given linear combination of mean and standard deviation) until the default parameter values converge to a local optimum, or a maximum number of repeats is exceeded
     - Use these locally optimum parameter values to determine the best values for PBGN and for GD with line-search, and then compare learning curvves for PBGN vs GD with these locally optimum parameters
   - Fix weird x-axis labels
-- Refactor activation functions into private classes with public instances
-- Refactor `models`, `activations`, `errors`, and `layer` module into private `_models` package, exposed through a public `models` module
 
 ### 2020-10-04
 
 - Why is PBGN doing bad without line-search?
   - How frequently is max-step being exceeded?
     - Could the Results class be configured to collect data for this only when specified in the constructor, which could then be plotted?
+      - The minimise function could be refactored into a class (or a wrapper for a method of a class), and the instance could pass itself to the `Result.update` method. Alternative results to be collected could be specified through `lambda` expressions which accept a `Minimiser` instance as an argument
   - What about if max-step is increased/learning rate is decreased?
 - Implement scripts to compare parameters for gradient descent and for PBGN
-- Plot 2D sinusoidal learning curves and predictions
-  - Implement batch-sizing
-    - Compare performance for different batch-sizes
+- Compare performance for different batch-sizes
 
 ### 2020-09-27
 
@@ -66,7 +62,6 @@ This repository contains the following modules (TODO: this section is outdated, 
 ### 2020-09-20
 
 - Finish script to make plots of different parameter combinations
-- Implement batch-sizing
 - Plot training curves for PBGN and SGD on 2D sinusoidal data with batches
 - Plot 2D sinusoidal predictions for different optimisers
 
