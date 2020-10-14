@@ -30,8 +30,8 @@ happens under the hood).
 """
 
 import numpy as np
-import activations as a, errors as e
-from layer import NeuralLayer
+from _models import activations, errors
+from _models.layer import NeuralLayer
 
 class NeuralNetwork():
     def __init__(
@@ -66,9 +66,9 @@ class NeuralNetwork():
             layers; if this list is longer than the number of layers, then the
             first activation functions in the list are ignored. In either case,
             the final activation functions in this list will match the
-            activation functions used in the final layers. Default is
-            [a.Logistic(), a.Identity()], IE output is identity function, and
-            all hidden layers have logistic activation functions
+            activation functions used in the final layers. Default is [logistic,
+            identity], IE output is identity function, and all hidden layers
+            have logistic activation functions
         -   error_func: error function which (along with its gradients) is used
             to calculate gradients for the network parameters
 
@@ -82,9 +82,9 @@ class NeuralNetwork():
         if num_hidden_units is None:
             num_hidden_units = [10]
         if act_funcs is None:
-            act_funcs = [a.Logistic(), a.Identity()]
+            act_funcs = [activations.logistic, activations.identity]
         if error_func is None:
-            error_func = e.SumOfSquares()
+            error_func = errors.sum_of_squares
 
         # Set network constants
         self.input_dim = input_dim
