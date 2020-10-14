@@ -380,6 +380,23 @@ class NeuralNetwork():
         return hess_block_list, hess_inds_list
 
 
+    def get_dbs_metric(self):
+        """
+        TODO:
+        -   Write docstring
+        -   Add option for reduction funcion, EG mean, min, max
+
+        NOTE: it is assumed that the forward_prop and back_prop methods have
+        been called prior to calling this method (EG by the get_gradient_vector
+        method)
+        """
+        pass
+        # dbs_metric = np.min(
+        #     np.min()
+        # )
+
+
+
     def set_parameter_vector(self, new_parameters):
         """
         set_parameter_vector: set the values of all of the network parameters
@@ -473,9 +490,12 @@ class NeuralNetwork():
         w, which are used to calculate mean error, and optionally set the
         parameter vector first. Could be used to tidy up the optimisers module.
 
-        def __call__(self, x, t=None, w=None):
-            if w is not None: self.set_parameter_vector(w)
-            if t is None: return return self.forward_prop(x)
-            else: return self.mean_error(t, x) # swap round t and x
+        def __call__(self, x=None, t=None, w=None):
+            if w is not None:
+                self.set_parameter_vector(w)
+            if x is not None and t is None:
+                return return self.forward_prop(x)
+            elif x is not None and t is not None:
+                return self.mean_error(t, x) # swap round t and x
         """
         return self.forward_prop(x)
