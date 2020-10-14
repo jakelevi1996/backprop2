@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pytest
 import optimisers
-from models import NeuralNetwork
-import activations
+import models
+from models import NeuralNetwork, activations
 import data
 import plotting
 from .util import get_random_network
@@ -64,7 +64,7 @@ def test_pbgn(seed, reuse_block_inds):
         input_dim=1,
         output_dim=1,
         num_hidden_units=[4, 8, 6],
-        act_funcs=[activations.Gaussian(), activations.Identity()]
+        act_funcs=[activations.gaussian, activations.identity]
     )
     sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
     name = "Test PBGN without line-search, reuse_block_inds={}".format(

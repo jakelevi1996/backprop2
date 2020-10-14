@@ -6,9 +6,8 @@ are raised
 
 import numpy as np
 import pytest
+import models
 from models import NeuralNetwork
-import activations as a
-import errors as e
 from .util import get_random_network_inputs_targets, get_random_network, \
     get_random_inputs, get_random_targets, iterate_random_seeds
 
@@ -41,9 +40,9 @@ def test_invalid_act_function():
     """
     with pytest.raises(TypeError):
         # act_funcs argument should be a list of activation function objects
-        n = NeuralNetwork(act_funcs=a.Gaussian())
+        n = NeuralNetwork(act_funcs=models.activations.gaussian)
     
-    n = NeuralNetwork(act_funcs=[a.Gaussian])
+    n = NeuralNetwork(act_funcs=[models.activations._Gaussian])
     x, _ = get_random_inputs(n.input_dim)
     with pytest.raises(TypeError):
         # Network is initialised with the Gaussian class, not an instance
@@ -70,7 +69,7 @@ def test_invalid_error_function():
     Test the errors raised by initialising an instance of the NeuralNetwork
     class when there is an invalid value for the error_func argument
     """
-    n = NeuralNetwork(error_func=e.SumOfSquares)
+    n = NeuralNetwork(error_func=models.errors._SumOfSquares)
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
     with pytest.raises(TypeError):

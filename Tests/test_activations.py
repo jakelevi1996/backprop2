@@ -4,16 +4,16 @@ Module containing unit tests for the activations module.
 import os
 import pytest
 import numpy as np
-import activations as a
+from models import activations
 from .util import get_random_network_inputs_targets
 
 # Define list of activation functions to be tested
 act_func_list = [
-    a.Identity(),
-    a.Logistic(),
-    a.Relu(),
-    a.Gaussian(),
-    a.Cauchy()
+    activations.identity,
+    activations.logistic,
+    activations.relu,
+    activations.gaussian,
+    activations.cauchy
 ]
 
 # Get name of output directory
@@ -52,7 +52,7 @@ def test_act_func_id(seed, act_func):
     correct activation function is returned from its id
     """
     act_func_id = act_func.get_id_from_func()
-    act_func_from_id = a.get_func_from_id(act_func_id)
+    act_func_from_id = activations.get_func_from_id(act_func_id)
     # Check that the types are consisitent
     assert type(act_func_from_id) is type(act_func)
     # Check that the outputs are consisitent

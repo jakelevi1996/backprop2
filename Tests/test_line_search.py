@@ -2,8 +2,6 @@ import os
 import numpy as np
 import pytest
 import optimisers
-from models import NeuralNetwork
-import activations
 import data
 from .util import get_random_network
 

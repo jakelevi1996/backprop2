@@ -1,7 +1,5 @@
 import numpy as np
-from models import NeuralNetwork
-import activations as a
-import errors as e
+import models
 
 def get_random_network(
     low=3,
@@ -21,7 +19,7 @@ def get_random_network(
         output_dim = np.random.randint(low, high)
     num_hidden_layers = np.random.randint(low, high)
     num_hidden_units = np.random.randint(low, high, num_hidden_layers)
-    n = NeuralNetwork(
+    n = models.NeuralNetwork(
         input_dim=input_dim,
         output_dim=output_dim,
         num_hidden_units=num_hidden_units,

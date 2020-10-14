@@ -4,11 +4,11 @@ Module containing unit tests for the errors module.
 import os
 import pytest
 import numpy as np
-import errors as e
+import models
 from .util import get_random_network_inputs_targets, iterate_random_seeds
 
 # Define list of error functions to be tested
-error_func_list = [e.SumOfSquares()]
+error_func_list = [models.errors.sum_of_squares]
 
 # Get name of output directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +49,7 @@ def test_error_func_id(seed, error_func):
     """
     # Check that you get the correct error function back from its id
     error_func_id = error_func.get_id_from_func()
-    error_func_from_id = e.get_func_from_id(error_func_id)
+    error_func_from_id = models.errors.get_func_from_id(error_func_id)
     assert type(error_func_from_id) is type(error_func)
     # Check that the outputs are consisitent
     _, x, _, _ = get_random_network_inputs_targets(seed)
@@ -64,3 +64,9 @@ def test_error_func_ids_unique():
 @pytest.mark.parametrize("error_func", error_func_list)
 def test_plotting(error_func):
     error_func.plot(output_dir)
+
+def test_id_from_invalid_error_func():
+    """ Test that trying to get an id from the abstract parent class
+    _ErrorFunction raises a RuntimeError """
+    with pytest.raises(RuntimeError):
+        models.errors._ErrorFunction().get_id_from_func()

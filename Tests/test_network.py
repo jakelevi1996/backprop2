@@ -1,9 +1,7 @@
 import os
 import pytest
 import numpy as np
-from models import NeuralNetwork
-import activations as a
-import errors as e
+from models import NeuralNetwork, activations, errors
 from .util import get_random_network_inputs_targets, iterate_random_seeds
 
 # Get name of output directory
@@ -261,15 +259,15 @@ def test_too_few_act_funcs():
     layers, and that the activation function in each layer is set correctly
     """
     num_hidden_units = [3] * 10
-    act_funcs = [a.Gaussian(), a.Identity()]
+    act_funcs = [activations.gaussian, activations.identity]
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
 
     assert len(n.layers) == len(num_hidden_units) + 1
     
     for layer in n.layers[:-1]:
-        assert type(layer.act_func) is a.Gaussian
+        assert type(layer.act_func) is activations._Gaussian
     
-    assert type(n.layers[-1].act_func) is a.Identity
+    assert type(n.layers[-1].act_func) is activations._Identity
     
 def test_too_many_act_funcs():
     """
@@ -278,12 +276,12 @@ def test_too_many_act_funcs():
     layers, and that the activation function in each layer is set correctly
     """
     num_hidden_units = [3, 3]
-    act_funcs = ([a.Gaussian()] * 10) + [a.Identity()]
+    act_funcs = ([activations.gaussian] * 10) + [activations.identity]
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
 
     assert len(n.layers) == len(num_hidden_units) + 1
     
     for layer in n.layers[:-1]:
-        assert type(layer.act_func) is a.Gaussian
+        assert type(layer.act_func) is activations._Gaussian
     
-    assert type(n.layers[-1].act_func) is a.Identity
+    assert type(n.layers[-1].act_func) is activations._Identity
