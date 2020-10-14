@@ -10,13 +10,21 @@ the batch size seems to have little effect on the final performance (in this
 case the initial parameters seem to be a much more significant factor), whereas
 for 2 hidden layers with 20 hidden units each, the relative effect of the batch
 size is much more dramatic.
+
+TODO: to what extent is the variation between repeats of experiments with the
+same batch down to good/bad parameter initialisations? Try with a constant
+pre-activation statistics initialisation, instead of constant parameter
+statistics initialisation
 """
 import os
 import numpy as np
+from time import perf_counter
 if __name__ == "__main__":
     import __init__
 from models import NeuralNetwork
 import activations, data, optimisers, plotting
+
+t_0 = perf_counter()
 
 # Perform warmup experiment so process acquires priority
 optimisers.warmup()
@@ -33,7 +41,7 @@ sin_data = data.SinusoidalDataSet2DnD(
     train_ratio=0.8,
     output_dim=output_dim
 )
-t_lim = 5
+t_lim = 25
 t_interval = t_lim / 50
 results_list = []
 
@@ -94,3 +102,5 @@ plotting.plot_training_curves(
     e_lims=[0, 4],
     tp=0.5
 )
+
+print("Script run in {:.3f} s".format(perf_counter() - t_0))
