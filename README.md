@@ -32,9 +32,14 @@ This repository contains the following modules (TODO: this section is outdated, 
 - Implement initialisers
 - Implement unit tests for initialisers
 - In a new branch, refactor minimise into a wrapper for a method of a class, which passes itself to the Result.update method, and update Result to be configurable with new columns (this will need good unit tests)
+  - **Better idea**: Just let the `Result.update` method accept a `**kwargs` argument, and store a list of `Column` objects (or dictionaries) in `Result`, each of which prints a value/returns a string depending on its width, format specifier, and using a `lambda` expression to extract a value from the `**kwargs` inputs to `Result.update`
+    - Also add a method `_add_default_columns` to `Result`, which adds the default columns, and a default argument `add_default_columns=True` to the `Result` initialiser which adds the default columns and specifiers (time, iteration, train error, test error, etc)
+    - Remove `s = 1 if line_search is None else line_search.s` from `minimise`, and just pass the `LineSearch` object object as part of `**kwargs` to `Result.update`
+    - Add an `add_column(column: Column)` method to `Result` to add an arbitrary column, but also add convenience methods to add specific columns, EG `add_line_search_column` and `add_dbs_column`, with the current width and format specifiers as default arguments which are passed to the initialiser of `Column`
+    - The `Column` class should have methods `get_title_str` and `get_value_str` (the latter will accept the `**kwargs` from `Result.update`)?
 - Implement dynamic batch sizing
 - Update all scripts to reflect new interfaces and verify
-- Update 2D-ND sinusoidal data inputs to be uniformly distributed between specified limits in the XY-plane; when plotting, do a scatter plot, with the Z-value being represented by the marker colour. Plot predictions the same as before (`pcolormesh` on a uniform grid)
+- (In a new branch) Update 2D-ND sinusoidal data inputs to be uniformly distributed between specified limits in the XY-plane; when plotting, do a scatter plot, with the Z-value being represented by the marker colour. Plot predictions the same as before (`pcolormesh` on a uniform grid)
 - Update `NeuralNetwork.__call__` method according to its docstring. Also, if `w is not None and x is None and t is None`, then `return self`
 
 ### 2020-10-11
