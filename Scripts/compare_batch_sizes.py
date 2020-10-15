@@ -21,8 +21,7 @@ import numpy as np
 from time import perf_counter
 if __name__ == "__main__":
     import __init__
-from models import NeuralNetwork
-import activations, data, optimisers, plotting
+import models, data, optimisers, plotting
 
 t_0 = perf_counter()
 
@@ -41,7 +40,7 @@ sin_data = data.SinusoidalDataSet2DnD(
     train_ratio=0.8,
     output_dim=output_dim
 )
-t_lim = 25
+t_lim = 250
 t_interval = t_lim / 50
 results_list = []
 
@@ -52,11 +51,11 @@ for seed in [2295, 6997, 7681]:
     # Set the random seed
     np.random.seed(seed)
     # Generate random network and store initial parameters
-    n = NeuralNetwork(
+    n = models.NeuralNetwork(
         input_dim=2,
         output_dim=output_dim,
         num_hidden_units=[20, 20],
-        act_funcs=[activations.Cauchy(), activations.Identity()]
+        act_funcs=[models.activations.cauchy, models.activations.identity]
     )
     w0 = n.get_parameter_vector().copy()
     # Iterate through constant size batch-getters
@@ -99,7 +98,7 @@ plotting.plot_training_curves(
     results_list,
     "Comparing batch sizes for gradient descent on 2D sinusoidal data",
     output_dir,
-    e_lims=[0, 4],
+    e_lims=[0, 1.5],
     tp=0.5
 )
 
