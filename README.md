@@ -42,6 +42,10 @@ Result('Unnamed experiment')
 >>> plotting.plot_training_curves([result])
 ```
 
+Output image:
+
+![PBGN earning curve](https://raw.githubusercontent.com/jakelevi1996/backprop2/master/Results/Learning%20curves/Learning%20curves.png "PBGN learning curve")
+
 ## Performance of PBGN
 
 TODO
