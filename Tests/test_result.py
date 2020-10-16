@@ -108,3 +108,27 @@ def test_output_file():
         result.display_headers()
         result.display_last()
         result.display_summary(10)
+
+@pytest.mark.parametrize("seed", [6953, 485, 5699])
+def test_line_search_column(seed):
+    """
+    Test that changes in the step size attribute of a LineSearch object are
+    reflected in the value lists of a Result object when the Result object is
+    updated.
+    """
+    np.random.seed(seed)
+    num_steps = np.random.randint(10, 20)
+    step_sizes = np.random.uniform(0, 10, num_steps)
+    filename = "Test StepSize results column.txt"
+    path = os.path.join(output_dir, filename)
+    with open(path, "w") as f:
+        result = results.Result(add_default_columns=False)
+        ls = LineSearch()
+        col = results.columns.StepSize(ls)
+        result.add_column(col)
+        result.begin()
+        for s in step_sizes:
+            ls.s = s
+            result.update()
+        
+        assert np.all(result.get_values(col.name) == step_sizes)
