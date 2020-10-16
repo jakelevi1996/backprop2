@@ -3,6 +3,45 @@
 
 Implementation of efficient 2nd order methods for training neural networks (work in progress)
 
+## Usage example of training with 2nd order methods
+
+```
+>>> import numpy as np
+>>> import data, models, optimisers, plotting
+>>>
+>>> np.random.seed(1926)
+>>> sin_data = data.SinusoidalDataSet1D1D()
+>>> model = models.NeuralNetwork(input_dim=1, output_dim=1, num_hidden_units=[10])
+>>> result = optimisers.Result()
+>>> ls = optimisers.LineSearch()
+>>> result.add_column(optimisers.results.columns.StepSize(ls))
+>>> optimisers.generalised_newton(model, sin_data, result=result, line_search=ls)
+
+Performing test "Unnamed experiment"...
+Iteration | Time (s) | Train error | Test error  | Step Size
+--------- | -------- | ----------- | ----------- | ----------
+        0 |    0.000 |     0.62186 |     0.63667 |     1.0000
+      100 |    0.119 |     0.22288 |     0.24831 |     0.5000
+      200 |    0.228 |     0.19616 |     0.23234 |     0.2500
+      300 |    0.335 |     0.16916 |     0.22942 |     0.1250
+      400 |    0.444 |     0.12387 |     0.19325 |     0.5000
+      500 |    0.557 |     0.10104 |     0.16789 |     0.5000
+      600 |    0.665 |     0.08514 |     0.15279 |     0.2500
+      700 |    0.777 |     0.08031 |     0.14806 |     0.5000
+      800 |    0.891 |     0.07729 |     0.14504 |     0.5000
+      900 |    0.997 |     0.07523 |     0.14342 |     0.2500
+     1000 |    1.102 |     0.07356 |     0.14281 |     0.5000
+--------------------------------------------------
+Test name                      = Unnamed experiment
+Total time                     = 1.1029 s
+Total iterations               = 1,000
+Average time per iteration     = 1.1029 ms
+Average iterations per second  = 906.7
+
+Result('Unnamed experiment')
+>>> plotting.plot_training_curves([result])
+```
+
 ## Performance of PBGN
 
 TODO
@@ -42,6 +81,7 @@ This repository contains the following modules (TODO: this section is outdated, 
 - Implement dynamic batch sizing
 - Update all scripts to reflect new interfaces and verify
 - (In a new branch) Update 2D-ND sinusoidal data inputs to be uniformly distributed between specified limits in the XY-plane; when plotting, do a scatter plot, with the Z-value being represented by the marker colour. Plot predictions the same as before (`pcolormesh` on a uniform grid)
+  - Replace multiple SinusoidalDataset classes with a single class
 - Update `NeuralNetwork.__call__` method according to its docstring. Also, if `w is not None and x is None and t is None`, then `return self`
 
 ### 2020-10-11
@@ -138,7 +178,3 @@ This repository contains the following modules (TODO: this section is outdated, 
 - Add saving and loading to `NeuralNetwork` class
 - Add `Results` class to training module, which saves and restores learning curves, learned parameters, hyperparameters, etc.
 - Investigate standard deviation of gradients throughout training; also natural means
-
-## Usage example
-
-*Coming soon*.
