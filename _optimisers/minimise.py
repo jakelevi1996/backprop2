@@ -62,12 +62,7 @@ def minimise(
     while True:
         # Evaluate the model
         if evaluator.ready_to_evaluate(i):
-            result.update(
-                model=model,
-                dataset=dataset,
-                iteration=i,
-                line_search=line_search
-            )
+            result.update(model=model, dataset=dataset, iteration=i)
         
         # Get batch of training data
         x_batch, y_batch = batch_getter.get_batch(dataset, model)
@@ -98,12 +93,7 @@ def minimise(
             break
         
     # Evaluate final performance
-    result.update(
-        model=model,
-        dataset=dataset,
-        iteration=i,
-        line_search=line_search
-    )
+    result.update(model=model, dataset=dataset, iteration=i)
     if result.verbose:
         result.display_summary(i)
 

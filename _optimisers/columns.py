@@ -87,22 +87,24 @@ class TestError(_Column):
         )
 
 class StepSize(_Column):
-    """
-    TODO: this class could be initialised with the LineSearch object that is
-    passed to the minimise wrapper, store it as an attribute, and get the s
-    attribute directly from this object, rather than
-    """
     def __init__(
         self,
+        line_search,
         name="step_size",
         width=10,
         format_spec=".4f",
         title_name="Step Size"
     ):
+        """
+        Initialise a column to use for step sizes. This column must be
+        initialised with the LineSearch object that will be used during
+        minimisation with the Result that this column will belong to.
+        """
+        self.line_search = line_search
         super().__init__(name, width, format_spec, title_name)
     
     def update(self, kwargs):
-        self.value_list.append(kwargs["line_search"].s)
+        self.value_list.append(self.line_search.s)
 
 class DbsMetric(_Column):
     def __init__(
