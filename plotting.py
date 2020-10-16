@@ -211,24 +211,25 @@ def plot_training_curves(
     for result in result_list:
         # Get line colour, depending on the name of the experiment
         colour = colour_list[unique_names_list.index(result.name)]
+        # Get values from Result object
+        times = result.get_values("time")
+        train_errors = result.get_values("train_error")
+        test_errors = result.get_values("test_error")
+        iters = result.get_values("iteration")
         # Plot errors against time
-        axes[0].plot(result.times, result.train_errors, c=colour, ls="--",
-            alpha=tp)
-        axes[0].plot(result.times, result.test_errors, c=colour, ls="-",
-            alpha=tp)
+        axes[0].plot(times, train_errors,   c=colour, ls="--",  alpha=tp)
+        axes[0].plot(times, test_errors,    c=colour, ls="-",   alpha=tp)
         axes[0].set_xlabel("Time (s)")
         axes[0].set_ylabel("Mean error")
         axes[0].grid(True)
         # Plot errors against iteration
-        axes[1].plot(result.iters, result.train_errors, c=colour, ls="--",
-            alpha=tp)
-        axes[1].plot(result.iters, result.test_errors, c=colour, ls="-",
-            alpha=tp)
+        axes[1].plot(iters, train_errors,   c=colour, ls="--",  alpha=tp)
+        axes[1].plot(iters, test_errors,    c=colour, ls="-",   alpha=tp)
         axes[1].set_xlabel("Iteration")
         axes[1].set_ylabel("Mean error")
         axes[1].grid(True)
         # Plot iteration against time
-        axes[2].plot(result.times, result.iters, c=colour, ls="-", alpha=tp)
+        axes[2].plot(times, iters, c=colour, ls="-", alpha=tp)
         axes[2].set_xlabel("Time (s)")
         axes[2].set_ylabel("Iteration")
         axes[2].grid(True)

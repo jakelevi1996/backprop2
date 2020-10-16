@@ -77,12 +77,12 @@ def test_plot_training_curves():
         d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
         w = n.get_parameter_vector()
         result = Result(name="Network {}".format(j))
+        result.begin()
         
         # Call the result.update method a few times
         for i in range(n_iters):
-            s = np.random.normal()
             n.set_parameter_vector(w + i)
-            result.update(n, d, i, s)
+            result.update(model=n, dataset=d, iteration=i)
         
         results_list.append(result)
     

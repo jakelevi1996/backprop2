@@ -17,12 +17,7 @@ class Result():
     """
     Class to store the results of optimisation in a single object which can be
     passed directly to plotting and/or analysis functions. Also contains methods
-    for updating and displaying results
-
-    TODO:
-    - Make this class configurable, so columns such as step-size and |x| are
-    optional, and the column width and format spec for each column is
-    configurable
+    for updating and displaying results.
     """
     def __init__(
         self,
@@ -78,6 +73,13 @@ class Result():
         return perf_counter() - self.start_time
     
     def update(self, **kwargs):
+        """
+        Update all the columns in this Result object with new values. Depending
+        on the columns used by this object, certain keyword arguments will be
+        required; if the default columns are used, then the keyword arguments
+        model, dataset, and iteration will be required. The begin method must be
+        called before the update method, otherwise an AttributeError is raised.
+        """
         kwargs["time"] = self.time_elapsed()
 
         for col in self._column_list:

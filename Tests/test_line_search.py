@@ -40,7 +40,8 @@ def test_gradient_descent_line_search(seed):
         result=result
     )
     # Make sure each iteration reduces the training error
-    for i in range(len(result_ls.train_errors) - 1):
-        assert result_ls.train_errors[i + 1] < result_ls.train_errors[i]
+    train_error_list = result.get_values("train_error")
+    for i in range(len(train_error_list) - 1):
+        assert train_error_list[i + 1] < train_error_list[i]
     
     results_file.close()

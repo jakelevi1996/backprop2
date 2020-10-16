@@ -15,9 +15,11 @@ output_dir = os.path.join(current_dir, "Outputs")
 
 def get_updated_or_empty_result(use_updated_result, seed):
     if use_updated_result:
-        result = test_update(seed)
+        return test_update(seed)
     else:
         result = results.Result()
+        result.begin()
+        return result
 
 @pytest.mark.parametrize("seed", [3681, 7269, 2084])
 def test_update(seed, result=None):
@@ -34,16 +36,17 @@ def test_update(seed, result=None):
     if result is None:
         result = results.Result()
     
+    result.begin()
     # Call the result.update method a few times
     for i in range(5):
-        s = np.random.normal()
         n.set_parameter_vector(w + i)
-        result.update(n, d, i, s)
+        result.update(model=n, dataset=d, iteration=i)
     
-    # Check that some of the attributes have non-zero length
-    assert len(result.train_errors) > 0
-    assert len(result.times) > 0
-    assert len(result.step_size) > 0
+    # Check that value lists for the default columns have non-zero length
+    assert len(result.get_values("train_error")) > 0
+    assert len(result.get_values("test_error")) > 0
+    assert len(result.get_values("iteration")) > 0
+    assert len(result.get_values("time")) > 0
     
     return result
 
@@ -76,7 +79,7 @@ def test_display_headers(seed, use_updated_result):
     result.display_headers()
 
 @pytest.mark.parametrize("seed", [9190, 6940, 6310])
-@pytest.mark.parametrize("use_updated_result", [True, False])
+@pytest.mark.parametrize("use_updated_result", [True])
 def test_display_last(seed, use_updated_result):
     """ Test the display_last method of the Result class """
     result = get_updated_or_empty_result(use_updated_result, seed)

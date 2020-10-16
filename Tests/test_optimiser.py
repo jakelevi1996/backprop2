@@ -40,9 +40,6 @@ def test_gradient_descent(seed):
         evaluator=optimisers.Evaluator(i_interval=1),
         result=result
     )
-    # Make sure each iteration reduces the training error
-    for i in range(len(result_ls.train_errors) - 1):
-        assert result_ls.train_errors[i + 1] < result_ls.train_errors[i]
     
     results_file.close()
 
