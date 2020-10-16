@@ -4,7 +4,7 @@ Module containing unit tests for the Result class in the results module.
 import os
 import pytest
 import numpy as np
-from optimisers import results
+from optimisers import results, LineSearch
 from .util import get_random_network
 import data
 
@@ -12,6 +12,12 @@ import data
 # Get name of output directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(current_dir, "Outputs")
+
+def get_updated_or_empty_result(use_updated_result, seed):
+    if use_updated_result:
+        result = test_update(seed)
+    else:
+        result = results.Result()
 
 @pytest.mark.parametrize("seed", [3681, 7269, 2084])
 def test_update(seed, result=None):
@@ -41,13 +47,12 @@ def test_update(seed, result=None):
     
     return result
 
-# Create an empty result, and get an updated result, for testing other methods
-empty_result = results.Result()
-updated_result = test_update(8946)
-
-@pytest.mark.parametrize("result", [empty_result, updated_result])
-def test_save_load(result):
+@pytest.mark.parametrize("seed", [810, 6361, 9133])
+@pytest.mark.parametrize("use_updated_result", [True, False])
+def test_save_load(seed, use_updated_result):
     """ Test saving and loading a Result object """
+    result = get_updated_or_empty_result(use_updated_result, seed)
+
     filename = "Saved result.npz"
     result.save(filename, output_dir)
     loaded_result = results.load(filename, output_dir)
@@ -62,19 +67,28 @@ def test_save_load(result):
     assert result.step_size     == loaded_result.step_size
     assert result.start_time    == loaded_result.start_time
 
-@pytest.mark.parametrize("result", [empty_result, updated_result])
-def test_display_headers(result):
+@pytest.mark.parametrize("seed", [9843, 1213, 1005])
+@pytest.mark.parametrize("use_updated_result", [True, False])
+def test_display_headers(seed, use_updated_result):
     """ Test the display_headers method of the Result class """
+    result = get_updated_or_empty_result(use_updated_result, seed)
+
     result.display_headers()
 
-@pytest.mark.parametrize("result", [updated_result])
-def test_display_last(result):
+@pytest.mark.parametrize("seed", [9190, 6940, 6310])
+@pytest.mark.parametrize("use_updated_result", [True, False])
+def test_display_last(seed, use_updated_result):
     """ Test the display_last method of the Result class """
+    result = get_updated_or_empty_result(use_updated_result, seed)
+
     result.display_last()
 
-@pytest.mark.parametrize("result", [empty_result, updated_result])
-def test_display_summary(result):
+@pytest.mark.parametrize("seed", [4973, 6153, 4848])
+@pytest.mark.parametrize("use_updated_result", [True, False])
+def test_display_summary(seed, use_updated_result):
     """ Test the display_summary method of the Result class """
+    result = get_updated_or_empty_result(use_updated_result, seed)
+
     result.display_summary(10)
 
 def test_output_file():
