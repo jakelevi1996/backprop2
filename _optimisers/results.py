@@ -1,6 +1,7 @@
 import os
 from time import perf_counter
 import numpy as np
+from _optimisers import columns
 
 # Define list of attributes which are saved and loaded by the Result class
 attr_name_list = [
@@ -23,7 +24,13 @@ class Result():
     optional, and the column width and format spec for each column is
     configurable
     """
-    def __init__(self, name=None, verbose=True, file=None):
+    def __init__(
+        self,
+        name=None,
+        verbose=True,
+        file=None,
+        add_default_columns=True
+    ):
         """
         Store the name of the experiment (which is useful later when displaying
         results), display table headers, initialise lists for objective function
@@ -32,51 +39,58 @@ class Result():
         """
         self.name = name if (name is not None) else "Unnamed experiment"
         self.file = file
-        if verbose:
-            self.display_headers()
         self.verbose = verbose
+        self._column_list = list()
+        self._column_dict = dict()
+        if add_default_columns:
+            self._add_default_columns()
 
-        self.train_errors   = []
-        self.test_errors    = []
-        self.times          = []
-        self.iters          = []
-        self.step_size      = []
-        # TODO: DBS criterion
-        self.begin()
+    def _add_default_columns(self):
+        for col in [
+            columns.Iteration,
+            columns.Time,
+            columns.TrainError,
+            columns.TestError
+        ]:
+            self.add_column(col())
+
+    def add_column(self, column):
+        if column.name in self._column_dict:
+            raise ValueError("A column with this name has already been added")
+
+        self._column_list.append(column)
+        self._column_dict[column.name] = column
+    
+    def get_values(self, name):
+        """
+        Given the input string name, return the list of values for the column
+        with the matching name.
+        """
+        return self._column_dict[name].value_list
     
     def begin(self):
+        if self.verbose:
+            self.display_headers()
+        
         self.start_time = perf_counter()
     
     def time_elapsed(self):
         return perf_counter() - self.start_time
     
-    def update(self, model, dataset, i, s):
-        t = self.time_elapsed()
-        e_train = model.mean_error(dataset.y_train, dataset.x_train)
-        e_test  = model.mean_error(dataset.y_test, dataset.x_test)
-        self.train_errors.append(e_train)
-        self.test_errors.append(e_test)
-        self.times.append(t)
-        self.iters.append(i)
-        self.step_size.append(s)
+    def update(self, **kwargs):
+        kwargs["time"] = self.time_elapsed()
+
+        for col in self._column_list:
+            col.update(kwargs)
 
         if self.verbose:
             self.display_last()
     
     def display_headers(self):
-        # num_fields, field_width = 3, 10
-        print("\nPerforming test \"{}\"...".format(self.name), file=self.file)
-        print(
-            "{:9} | {:8} | {:11} | {:11} | {:10}".format(
-                "Iteration",
-                "Time (s)",
-                "Train error",
-                "Test error",
-                "Step size",
-            ),
-            file=self.file
-        )
-        print(" | ".join("-" * i for i in [9, 8, 11, 11, 10]), file=self.file)
+        title_list = [col.title_str for col in self._column_list]
+        print("\nPerforming test \"{}\"...".format(self.name),  file=self.file)
+        print(" | ".join(title_list),                           file=self.file)
+        print(" | ".join("-" * len(t) for t in title_list),     file=self.file)
 
     def display_last(self):
         """
@@ -84,13 +98,7 @@ class Result():
         Raises IndexError if update has not been called on this object before 
         """
         print(
-            "{:9d} | {:8.3f} | {:11.5f} | {:11.5f} | {:10.4f}".format(
-                self.iters[-1],
-                self.times[-1],
-                self.train_errors[-1],
-                self.test_errors[-1],
-                self.step_size[-1]
-            ),
+            " | ".join(col.get_value_str() for col in self._column_list),
             file=self.file
         )
 
@@ -118,6 +126,14 @@ class Result():
     def save(self, filename, dir_name="."):
         """
         Save all of the relevant attributes of the Result object in a numpy file
+
+        TODO: this needs to be updated in several ways, EG to save self.name,
+        and to save the relevant attributes for each column. Maybe each column
+        should have a method to return a specially formatted dictionary, which
+        can be saved using np.savez? Maybe this method should wrap a module-wide
+        results.save functions, which is capable of saving lists of experiments?
+        How to deal with lists of Result objects with duplicate names? Could
+        store the number of repeats of each name in the savez dictionary?
         """
         path = os.path.abspath(os.path.join(dir_name, filename))
         np.savez(
@@ -130,6 +146,8 @@ class Result():
         Load the result attributes from the specified filename, replacing the
         values of the attributes in the object which is calling this method, and
         making sure that each attribute has the correct type
+
+        TODO: this method needs to be updated; see comments above
         """
         path = os.path.abspath(os.path.join(dir_name, filename))
         with np.load(path) as data:

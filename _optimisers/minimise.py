@@ -50,10 +50,6 @@ def minimise(
         result = Result()
     if batch_getter is None:
         batch_getter = FullTrainingSet()
-    if line_search is None:
-        s = 1
-    else:
-        s = line_search.s
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
@@ -66,7 +62,12 @@ def minimise(
     while True:
         # Evaluate the model
         if evaluator.ready_to_evaluate(i):
-            result.update(model, dataset, i, s)
+            result.update(
+                model=model,
+                dataset=dataset,
+                iteration=i,
+                line_search=line_search
+            )
         
         # Get batch of training data
         x_batch, y_batch = batch_getter.get_batch(dataset, model)
@@ -97,7 +98,12 @@ def minimise(
             break
         
     # Evaluate final performance
-    result.update(model, dataset, i, s)
+    result.update(
+        model=model,
+        dataset=dataset,
+        iteration=i,
+        line_search=line_search
+    )
     if result.verbose:
         result.display_summary(i)
 
