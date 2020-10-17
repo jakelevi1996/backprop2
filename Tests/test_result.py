@@ -1,5 +1,9 @@
 """
 Module containing unit tests for the Result class in the results module.
+
+TODO: test exceptions in the Result class, EG adding a column which already
+exists with the same name, calling Result.update before Result.begin, and
+calling Result.display_last before calling Result.update
 """
 import os
 import pytest
@@ -50,33 +54,13 @@ def test_update(seed, result=None):
     
     return result
 
-@pytest.mark.parametrize("seed", [810, 6361, 9133])
-@pytest.mark.parametrize("use_updated_result", [True, False])
-def test_save_load(seed, use_updated_result):
-    """ Test saving and loading a Result object """
-    result = get_updated_or_empty_result(use_updated_result, seed)
-
-    filename = "Saved result.npz"
-    result.save(filename, output_dir)
-    loaded_result = results.load(filename, output_dir)
-    
-    assert result.name          == loaded_result.name
-    assert result.verbose       == loaded_result.verbose
-    assert result.train_errors  == loaded_result.train_errors
-    assert result.train_errors  == loaded_result.train_errors
-    assert result.test_errors   == loaded_result.test_errors
-    assert result.times         == loaded_result.times
-    assert result.iters         == loaded_result.iters
-    assert result.step_size     == loaded_result.step_size
-    assert result.start_time    == loaded_result.start_time
-
 @pytest.mark.parametrize("seed", [9843, 1213, 1005])
 @pytest.mark.parametrize("use_updated_result", [True, False])
 def test_display_headers(seed, use_updated_result):
     """ Test the display_headers method of the Result class """
     result = get_updated_or_empty_result(use_updated_result, seed)
 
-    result.display_headers()
+    result._display_headers()
 
 @pytest.mark.parametrize("seed", [9190, 6940, 6310])
 @pytest.mark.parametrize("use_updated_result", [True])
@@ -84,7 +68,7 @@ def test_display_last(seed, use_updated_result):
     """ Test the display_last method of the Result class """
     result = get_updated_or_empty_result(use_updated_result, seed)
 
-    result.display_last()
+    result._display_last()
 
 @pytest.mark.parametrize("seed", [4973, 6153, 4848])
 @pytest.mark.parametrize("use_updated_result", [True, False])
@@ -105,8 +89,8 @@ def test_output_file():
     with open(path, "w") as f:
         result = results.Result("Test result", True, f)
         test_update(seed=seed, result=result)
-        result.display_headers()
-        result.display_last()
+        result._display_headers()
+        result._display_last()
         result.display_summary(10)
 
 @pytest.mark.parametrize("seed", [6953, 485, 5699])
@@ -122,7 +106,7 @@ def test_line_search_column(seed):
     filename = "Test StepSize results column.txt"
     path = os.path.join(output_dir, filename)
     with open(path, "w") as f:
-        result = results.Result(add_default_columns=False)
+        result = results.Result(add_default_columns=False, file=f)
         ls = LineSearch()
         col = results.columns.StepSize(ls)
         result.add_column(col)

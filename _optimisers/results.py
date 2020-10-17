@@ -18,6 +18,14 @@ class Result():
     Class to store the results of optimisation in a single object which can be
     passed directly to plotting and/or analysis functions. Also contains methods
     for updating and displaying results.
+
+    NOTE: saving and loading of Result objects is currently deprecated, because
+    due to updating this module with Column objects, implementing saving and
+    loading of Result objects in npz files would currently require more effort
+    to develop than is worthwhile. Alternative are to manually extract
+    value_lists from each column and save those in a npz file, or just pickle
+    the whole Result object. TODO: implement saving and loading of Result
+    objects
     """
     def __init__(
         self,
@@ -65,12 +73,12 @@ class Result():
     
     def begin(self):
         if self.verbose:
-            self.display_headers()
+            self._display_headers()
         
-        self.start_time = perf_counter()
+        self._start_time = perf_counter()
     
-    def time_elapsed(self):
-        return perf_counter() - self.start_time
+    def _time_elapsed(self):
+        return perf_counter() - self._start_time
     
     def update(self, **kwargs):
         """
@@ -80,21 +88,21 @@ class Result():
         model, dataset, and iteration will be required. The begin method must be
         called before the update method, otherwise an AttributeError is raised.
         """
-        kwargs["time"] = self.time_elapsed()
+        kwargs["time"] = self._time_elapsed()
 
         for col in self._column_list:
             col.update(kwargs)
 
         if self.verbose:
-            self.display_last()
+            self._display_last()
     
-    def display_headers(self):
+    def _display_headers(self):
         title_list = [col.title_str for col in self._column_list]
         print("\nPerforming test \"{}\"...".format(self.name),  file=self.file)
         print(" | ".join(title_list),                           file=self.file)
         print(" | ".join("-" * len(t) for t in title_list),     file=self.file)
 
-    def display_last(self):
+    def _display_last(self):
         """
         Display the results of the last time the update method was called.
         Raises IndexError if update has not been called on this object before 
@@ -105,7 +113,7 @@ class Result():
         )
 
     def display_summary(self, n_iters):
-        t_total = self.time_elapsed()
+        t_total = self._time_elapsed()
         t_mean = t_total / n_iters
         print(
             "-" * 50,
@@ -125,44 +133,5 @@ class Result():
             file=self.file
         )
     
-    def save(self, filename, dir_name="."):
-        """
-        Save all of the relevant attributes of the Result object in a numpy file
-
-        TODO: this needs to be updated in several ways, EG to save self.name,
-        and to save the relevant attributes for each column. Maybe each column
-        should have a method to return a specially formatted dictionary, which
-        can be saved using np.savez? Maybe this method should wrap a module-wide
-        results.save functions, which is capable of saving lists of experiments?
-        How to deal with lists of Result objects with duplicate names? Could
-        store the number of repeats of each name in the savez dictionary?
-        """
-        path = os.path.abspath(os.path.join(dir_name, filename))
-        np.savez(
-            path,
-            **{a: getattr(self, a) for a in attr_name_list}
-        )
-
-    def load(self, filename, dir_name="."):
-        """
-        Load the result attributes from the specified filename, replacing the
-        values of the attributes in the object which is calling this method, and
-        making sure that each attribute has the correct type
-
-        TODO: this method needs to be updated; see comments above
-        """
-        path = os.path.abspath(os.path.join(dir_name, filename))
-        with np.load(path) as data:
-            for a in attr_name_list:
-                a_type = type(getattr(self, a))
-                a_val = data[a]
-                setattr(self, a, a_type(a_val))
-    
     def __repr__(self):
         return "Result({})".format(repr(self.name))
-
-def load(filename, dir_name="."):
-    """ Load a results file. Wrapper for the Result.load method """
-    r = Result()
-    r.load(filename, dir_name)
-    return r
