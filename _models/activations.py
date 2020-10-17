@@ -142,6 +142,13 @@ class _Cauchy(_ActivationFunction):
 class _SoftMax(_ActivationFunction):
     pass
 
+# TODO: replace get_id_from_func and get_func_from_id functions with this dict
+# or similar for saving/loading NeuralNetwork objects
+act_func_names_dict = {
+    act_func.__name__: act_func
+    for act_func in _ActivationFunction.__subclasses__()
+}
+
 # Expose public instances of private classes
 identity   = _Identity()
 logistic   = _Logistic()

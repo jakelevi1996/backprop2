@@ -33,7 +33,7 @@ class _Column:
         initialised with verbose=True.
         """
         return self._value_fmt_str.format(self.value_list[-1])
-
+    
 class Iteration(_Column):
     def __init__(
         self,
@@ -127,3 +127,6 @@ class BatchSize(_Column):
     ):
         super().__init__(name, width, format_spec, title_name)
         raise NotImplementedError()
+
+# Create dictionary mapping names to _Column subclasses, for saving/loading
+column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
