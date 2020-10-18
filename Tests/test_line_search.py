@@ -30,13 +30,16 @@ def test_gradient_descent_line_search(seed):
         verbose=True,
         file=results_file
     )
+    # Add step size column to result
+    ls = optimisers.LineSearch()
+    result.add_column(optimisers.results.columns.StepSize(ls))
     # Call gradient descent function
     result_ls = optimisers.gradient_descent(
         n,
         sin_data,
         terminator=optimisers.Terminator(i_lim=n_iters),
         evaluator=optimisers.Evaluator(i_interval=1),
-        line_search=optimisers.LineSearch(),
+        line_search=ls,
         result=result
     )
     # Make sure each iteration reduces the training error
