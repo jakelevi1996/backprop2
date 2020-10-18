@@ -5,8 +5,7 @@ import os
 import numpy as np
 if __name__ == "__main__":
     import __init__
-from models import NeuralNetwork
-import activations, data, optimisers, plotting
+import models, data, optimisers, plotting
 
 # Set time limit for training and evaluation frequency
 t_lim = 5
@@ -20,16 +19,16 @@ output_dir = os.path.join(current_dir, "Outputs")
 np.random.seed(2865)
 
 # Generate random network and data
-n = NeuralNetwork(
+n = models.NeuralNetwork(
     input_dim=1,
     output_dim=1,
     num_hidden_units=[10],
-    act_funcs=[activations.Cauchy(), activations.Identity()]
+    act_funcs=[models.activations.cauchy, models.activations.identity]
 )
-sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
 
 # Call gradient descent function
-optimisers.gradient_descent(
+result = optimisers.gradient_descent(
     n,
     sin_data,
     terminator=optimisers.Terminator(t_lim=t_lim),
@@ -47,4 +46,12 @@ plotting.plot_1D_regression(
     sin_data,
     x_pred,
     y_pred
+)
+
+# Plot learning curve
+plotting.plot_training_curves(
+    [result],
+    "Gradient descent learning curves for 1D sin data",
+    output_dir,
+    e_lims=[0, 0.02]
 )
