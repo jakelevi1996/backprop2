@@ -2,6 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
 import data
 
 def min_and_max(*input_arrays):
@@ -81,14 +83,14 @@ def plot_2D_nD_regression(
     dir_name,
     n_output_dims,
     dataset,
-    y_pred,
+    x_pred_0,
+    x_pred_1,
+    model,
     tight_layout=False
 ):
     """
-    plot_2D_nD_regression: plot the training data, test data, and model
-    predictions for a regression data set with 2 input dimensions and
-    n_output_dims output dimensions. NB this function is not expected to work if
-    the training data has been shuffled.
+    Plot the training data, test data, and model predictions for a regression
+    data set with 2 input dimensions and n_output_dims output dimensions.
 
     Inputs:
     -   plot_name: title of the plot; will also be used as the filename
@@ -96,68 +98,77 @@ def plot_2D_nD_regression(
         doesn't already exist)
     -   n_output_dims: number of output dimensions to plot
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes. It is assumed that
-        x_test is a uniform 2D grid created using np.meshgrid, and x_train is a
-        subset of the points contained in x_test
-    -   y_pred: predictions for the data, EG from a NeuralNetwork object,
-        evaluated on the training data inputs
+        x_train, y_train, x_test, and y_test attributes
+    -   x_pred_0: first dimension of inputs that the model will use to make
+        predictions, as a 1-dimensional np.ndarray. The upper and lower limits
+        of this array will be used to set the x axis limits
+    -   x_pred_1: second dimension of inputs that the model will use to make
+        predictions, as a 1-dimensional np.ndarray. The upper and lower limits
+        of this array will be used to set the y axis limits
+    -   model: instance of NeuralNetwork, used to form predictions
     -   tight_layout: Boolean flag indicating whether or not to use a
         tight-layout for saving the plots, which (for some reason) makes this
         function about 50% slower for certain inputs. Default is False.
     """
     # Create subplots and set figure size
-    fig, axes = plt.subplots(3, n_output_dims, sharex=True, sharey=True)
-    fig.set_size_inches(4 * n_output_dims, 10)
+    fig, axes = plt.subplots(
+        3,
+        n_output_dims + 1,
+        sharex=True,
+        sharey=True,
+        gridspec_kw={"width_ratios": ([1] * n_output_dims) + [0.2]}
+    )
+    fig.set_size_inches(4 * (n_output_dims + 1), 10)
     if axes.ndim == 1:
         axes = np.expand_dims(axes, 1)
-    # Reshape test and evaluation data back into grids
-    nx0 = np.unique(dataset.x_test[0]).size
-    nx1 = np.unique(dataset.x_test[1]).size
-    x_test0 = dataset.x_test[0].reshape(nx1, nx0)
-    x_test1 = dataset.x_test[1].reshape(nx1, nx0)
-    y_min, y_max = dataset.y_test.min(), dataset.y_test.max()
-    # Check if the Dataset object has a train_inds attribute
-    if hasattr(dataset, "train_inds"):
-        train_inds_bool = np.full(dataset.n_test, False)
-        train_inds_bool[dataset.train_inds] = True
-    else:
-        train_inds_bool = np.equal(
-            dataset.x_test.T.reshape(1, -1, 2),
-            dataset.x_train.T.reshape(-1, 1, 2)
-        ).all(axis=2).any(axis=0)
+    y_min = dataset.y_test.min()
+    y_max = dataset.y_test.max()
+    # Use model to make predictions
+    xx0, xx1 = np.meshgrid(x_pred_0, x_pred_1)
+    x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
+    y_pred = model(x_pred)
     # Iterate through each output dimension
     for i in range(n_output_dims):
-        # Plot test data
-        axes[0][i].pcolormesh(
-            x_test0,
-            x_test1,
-            dataset.y_test[i].reshape(nx1, nx0),
-            vmin=y_min,
-            vmax=y_max
-        )
         # Plot training data
-        y_train = np.where(train_inds_bool, dataset.y_test[i], np.nan)
-        axes[1][i].pcolormesh(
-            x_test0,
-            x_test1,
-            np.reshape(y_train, [nx1, nx0]),
+        axes[0][i].scatter(
+            dataset.x_train[0, :],
+            dataset.x_train[1, :],
+            c=dataset.y_train[i, :],
             vmin=y_min,
-            vmax=y_max
+            vmax=y_max,
+            alpha=0.5,
+            ec=None
+        )
+        # Plot test data
+        axes[1][i].scatter(
+            dataset.x_test[0, :],
+            dataset.x_test[1, :],
+            c=dataset.y_test[i, :],
+            vmin=y_min,
+            vmax=y_max,
+            alpha=0.5,
+            ec=None
         )
         # Plot predictions
         axes[2][i].pcolormesh(
-            x_test0,
-            x_test1,
-            y_pred[i].reshape(nx1, nx0),
+            x_pred_0,
+            x_pred_1,
+            y_pred[i].reshape(x_pred_1.size, x_pred_0.size),
             vmin=y_min,
             vmax=y_max
         )
         axes[2][i].set_xlabel(r"$y_{}$".format(i))
     # Format, save and close
-    plt.get_cmap().set_bad("k")
-    axes[0][0].set_ylabel("Test data")
-    axes[1][0].set_ylabel("Training data")
+    axes[0][0].set_ylabel("Training data")
+    axes[1][0].set_ylabel("Test data")
     axes[2][0].set_ylabel("Predictions")
+    for i in range(axes.shape[0]):
+        axes[i, -1].set_ylim(x_pred_1.min(), x_pred_1.max())
+    for j in range(axes.shape[1]):
+        axes[-1, j].set_xlim(x_pred_0.min(), x_pred_0.max())
+    for a in axes[:, -1]:
+        a.axis("off")
+    fig.colorbar(ScalarMappable(Normalize(y_min, y_max)), ax=axes[:, -1], fraction=1)
     fig.suptitle(plot_name, fontsize=16)
     if tight_layout:
         fig.tight_layout(rect=[0, 0, 1, 0.95])
