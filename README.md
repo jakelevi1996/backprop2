@@ -87,6 +87,14 @@ Tests\test_result.py ......................                                     
 
 ## TODO (yes, these to-do lists should be on Jira, and no, I don't intend to copy them over in the near future)
 
+## 2020-10-18
+
+- Implement DBS
+- Add unit test for DBS
+- Add section to README plotting training curves and predictions for PBGN on 2D-ND sinusoidal data
+- Add comparison of PBGN vs GD, LS and no LS to Readme, and discussion
+- Add 2D sinusoidal predictions to Readme
+
 ### 2020-10-15
 
 - Implement initialisers
