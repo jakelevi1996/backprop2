@@ -1,5 +1,11 @@
+"""
+Module for containing general utilities for unit testing, EG generating random
+NeuralNetwork models and data (both from existing Dataset classes and also
+completely at random)
+"""
+
 import numpy as np
-import models
+import models, data
 
 def get_random_network(
     low=3,
@@ -58,47 +64,21 @@ def get_random_network_inputs_targets(
     t = get_random_targets(n.output_dim, N_D)
     return n, x, t, N_D
 
-def iterate_random_seeds(*seeds):
-    """
-    This function can be used to return a decorator, which will automatically
-    repeat a test function multiple times with different random seeds (the seeds
-    are provided as arguments to this function). It is assumed that the function
-    being decorated accepts no arguments, and returns no values (minor
-    modifications would be needed if these assumptions were untrue). The
-    decorator can be used as follows:
+dataset_list = [
+    "1x1_sinusoidal_set_freq",
+    "1x1_sinusoidal_random_freq",
+    "2x1_sinusoidal",
+    "2x4_sinusoidal",
+]
 
-    ```
-    @iterate_random_seeds(5920, 2788, 235)
-    def function_name():
-        do_function_body()
-    ```
-
-    TODO: remove this decorator and replace with pytest.mark.parametrize in
-    test_network and test_network_errors
-    """
-    # decorator_func is the decorator which is returned, given the seeds
-    def decorator_func(func):
-        # func_wrapper is called when the decorated function is called
-        def func_wrapper():
-            # Call decorated function once with each random seed
-            for s in seeds:
-                np.random.seed(s)
-                func()
-
-        # Calling the decorator returns the decorated function wrapper
-        return func_wrapper
-
-    # When this function is called, the decorator is returned
-    return decorator_func
-
-def generate_decorator_expression(num_expressions=10):
-    """
-    This function can be used to print multiple decorator expressions for the
-    decorator above, with different input random seeds
-
-    TODO: remove this function
-    """
-    for _ in range(num_expressions):
-        print("@iterate_random_seeds({}, {}, {})".format(
-            *np.random.randint(0, 10000, size=[3])
-        ))
+def get_dataset(dataset_str):
+    if dataset_str == "1x1_sinusoidal_set_freq":
+        return data.Sinusoidal(input_dim=1, output_dim=1, freq=1.1)
+    elif dataset_str == "1x1_sinusoidal_random_freq":
+        return data.Sinusoidal(input_dim=1, output_dim=1)
+    elif dataset_str == "2x1_sinusoidal":
+        return data.Sinusoidal(input_dim=2, output_dim=1)
+    elif dataset_str == "2x4_sinusoidal":
+        return data.Sinusoidal(input_dim=2, output_dim=4)
+    else:
+        raise ValueError("Invalid input string")
