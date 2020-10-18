@@ -54,6 +54,37 @@ TODO
 
 TODO
 
+## Unit tests
+
+To run unit tests, use the command `pytest ./Tests --durations 5`:
+
+```
+$ pytest ./Tests --durations 5
+========================================================================== test session starts ========================================================================== 
+platform win32 -- Python 3.7.6, pytest-5.4.1, py-1.8.1, pluggy-0.13.1
+rootdir: C:\Users\Jake\Documents\Programming\backprop2
+collected 236 items                                                                                                                                                       
+
+Tests\test_activations.py ...................................................                                                                                      [ 21%] 
+Tests\test_batch_sizes.py .......................................                                                                                                  [ 38%] 
+Tests\test_data.py ........................                                                                                                                        [ 48%] 
+Tests\test_errors.py ............                                                                                                                                  [ 53%] 
+Tests\test_line_search.py ...                                                                                                                                      [ 54%] 
+Tests\test_network.py ..............................................                                                                                               [ 74%] 
+Tests\test_network_errors.py ........................                                                                                                              [ 84%] 
+Tests\test_optimiser.py .........                                                                                                                                  [ 88%] 
+Tests\test_plotting.py ......                                                                                                                                      [ 90%] 
+Tests\test_result.py ......................                                                                                                                        [100%] 
+
+======================================================================= slowest 5 test durations ======================================================================== 
+0.48s call     Tests/test_plotting.py::test_plot_2D_nD_regression[1743-3]
+0.29s call     Tests/test_activations.py::test_plotting[act_func0]
+0.28s call     Tests/test_plotting.py::test_plot_2D_nD_regression[1814-1]
+0.28s call     Tests/test_plotting.py::test_plot_training_curves
+0.15s call     Tests/test_errors.py::test_plotting[error_func0]
+========================================================================== 236 passed in 4.68s ==========================================================================
+```
+
 ## TODO (yes, these to-do lists should be on Jira, and no, I don't intend to copy them over in the near future)
 
 ### 2020-10-15
