@@ -115,16 +115,21 @@ class DbsMetric(_Column):
         title_name="DBS metric"
     ):
         super().__init__(name, width, format_spec, title_name)
-        raise NotImplementedError()
+    
+    def update(self, kwargs):
+        # TODO: this should be replaced by the BatchSize column below
+        self.value_list.append(kwargs["model"].get_dbs_metric())
 
 class BatchSize(_Column):
     def __init__(
         self,
+        batch_getter,
         name="batch_size",
         width=9,
         format_spec="d",
         title_name="Batch size"
     ):
+        self.batch_getter = batch_getter
         super().__init__(name, width, format_spec, title_name)
         raise NotImplementedError()
 
