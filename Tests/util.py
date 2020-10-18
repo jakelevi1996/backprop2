@@ -13,7 +13,8 @@ def get_random_network(
     act_funcs=None,
     error_func=None,
     input_dim=None,
-    output_dim=None
+    output_dim=None,
+    weight_std=1.0
 ):
     """
     Generate a neural network with a random number of inputs, outputs, hidden
@@ -30,7 +31,8 @@ def get_random_network(
         output_dim=output_dim,
         num_hidden_units=num_hidden_units,
         act_funcs=act_funcs,
-        error_func=error_func
+        error_func=error_func,
+        weight_std=weight_std
     )
     return n
 

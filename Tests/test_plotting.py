@@ -23,7 +23,7 @@ def test_plot_1D_regression(seed):
     """
     np.random.seed(seed)
     # Generate training and test sets for 1D to 1D regression
-    s11 = data.SinusoidalDataSet1D1D(n_train=100, n_test=50, xlim=[0, 1])
+    s11 = data.Sinusoidal(n_train=100, n_test=50, x_lo=0, x_hi=1)
     # Generate random predictions
     min_elem, max_elem = plotting.min_and_max(s11.x_train, s11.x_test)
     N_D = 200
@@ -47,12 +47,24 @@ def test_plot_2D_nD_regression(seed, output_dim):
     number of output dimensions
     """
     np.random.seed(seed)
-    # Generate training and test sets for 2D to ND regression
-    s23 = data.SinusoidalDataSet2DnD(
-        nx0=10,
-        nx1=12,
-        train_ratio=0.9,
-        output_dim=output_dim
+    input_dim = 2
+    x_lo = -2
+    x_hi = 2
+    x_pred = np.linspace(x_lo, x_hi, 20)
+    # Generate dataset and network
+    s23 = data.Sinusoidal(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        n_train=200,
+        x_lo=x_lo,
+        x_hi=x_hi
+    )
+    model = get_random_network(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        low=2,
+        high=3,
+        weight_std=10
     )
     # Generate random predictions
     y_pred = np.random.normal(size=[output_dim, s23.x_test.shape[1]])
@@ -62,7 +74,9 @@ def test_plot_2D_nD_regression(seed, output_dim):
         output_dir,
         n_output_dims=output_dim,
         dataset=s23,
-        y_pred=y_pred
+        x_pred_0=x_pred,
+        x_pred_1=x_pred,
+        model=model,
     )
 
 def test_plot_training_curves():
@@ -74,7 +88,7 @@ def test_plot_training_curves():
         n_iters = np.random.randint(10, 20)
         output_dim = np.random.randint(2, 5)
         n = get_random_network(input_dim=2, output_dim=output_dim)
-        d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
+        d = data.Sinusoidal(input_dim=2, output_dim=output_dim, n_train=150)
         w = n.get_parameter_vector()
         result = Result(name="Network {}".format(j))
         result.begin()

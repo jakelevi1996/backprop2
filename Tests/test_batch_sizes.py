@@ -56,8 +56,13 @@ def test_invalid_xlim():
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=4, x_hi=[3, 4, 5, 6])
 
-def test_invalid_freq():
-    raise NotImplementedError
+def test_invalid_freq_shape():
+    """
+    Test that initialising a DataSet with a frequency that doesn't broadcast to
+    the input and output dimensions raises a ValueError
+    """
+    with pytest.raises(ValueError):
+        d = data.Sinusoidal(input_dim=3, output_dim=7, freq=np.zeros([5, 9]))
 
 @pytest.mark.parametrize("seed", [5802, 5496, 5922])
 @pytest.mark.parametrize("dataset_str", dataset_list)

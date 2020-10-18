@@ -23,7 +23,7 @@ def test_gradient_descent(seed):
     # Generate random number of iterations, network, data, and results file
     n_iters = np.random.randint(10, 20)
     n = get_random_network(input_dim=1, output_dim=1)
-    sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
     results_filename = "Test gradient descent without line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
@@ -63,7 +63,7 @@ def test_pbgn(seed, reuse_block_inds):
         num_hidden_units=[4, 8, 6],
         act_funcs=[activations.gaussian, activations.identity]
     )
-    sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
     name = "Test PBGN without line-search, reuse_block_inds={}".format(
         reuse_block_inds
     )

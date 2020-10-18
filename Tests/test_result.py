@@ -35,7 +35,7 @@ def test_update(seed, result=None):
     np.random.seed(seed)
     output_dim = np.random.randint(2, 5)
     n = get_random_network(input_dim=2, output_dim=output_dim)
-    d = data.SinusoidalDataSet2DnD(nx0=10, nx1=15, output_dim=output_dim)
+    d = data.Sinusoidal(input_dim=2, output_dim=output_dim, n_train=100)
     w = n.get_parameter_vector()
     if result is None:
         result = results.Result()

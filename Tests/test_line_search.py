@@ -21,7 +21,7 @@ def test_gradient_descent_line_search(seed):
     # Generate random number of iterations, network, data, and results file
     n_iters = np.random.randint(10, 20)
     n = get_random_network(input_dim=1, output_dim=1)
-    sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
     results_filename = "Test gradient descent with line-search.txt"
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")

@@ -21,8 +21,10 @@ def test_save_load(seed, dataset_str):
     dataset.save(dataset_str, output_dir)
     dataset_loaded = data.DataSet(dataset_str, output_dir)
     attr_list = [
-        "input_dim", "output_dim", "n_train", "n_test",
-        "x_train", "y_train", "x_test", "y_test"
+        "input_dim" , "output_dim"  ,
+        "n_train"   , "n_test"      ,
+        "x_train"   , "x_test"      ,
+        "y_train"   , "y_test"
     ]
     for a in attr_list:
         assert np.all(getattr(dataset, a) == getattr(dataset_loaded, a))
