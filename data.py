@@ -124,9 +124,6 @@ class Sinusoidal(DataSet):
         -   ValueError: if x-limits don't broadcast to the size of x_train and
             x_test
         """
-        # Set shape constants
-        self.input_dim  , self.output_dim   = input_dim , output_dim
-        self.n_train    , self.n_test       = n_train   , n_test
         # Set unspecified parameters
         if n_train is None:
             n_train = pow(100, input_dim)
@@ -140,10 +137,13 @@ class Sinusoidal(DataSet):
             ampl = np.random.normal(size=[output_dim, output_dim])
         if offset is None:
             offset = np.random.normal(size=[output_dim, 1])
+        # Set shape constants
+        self.input_dim  , self.output_dim   = input_dim , output_dim
+        self.n_train    , self.n_test       = n_train   , n_test
         # Generate input/output training and test data
-        self.x_train    = np.random.uniform(x_lo, x_hi, size=[1, n_train])
-        self.x_test     = np.random.uniform(x_lo, x_hi, size=[1, n_test])
-        self.y_train    = noisy_sin(
+        self.x_train = np.random.uniform(x_lo, x_hi, size=[input_dim, n_train])
+        self.x_test  = np.random.uniform(x_lo, x_hi, size=[input_dim, n_test])
+        self.y_train = noisy_sin(
             self.x_train,
             phase,
             freq,
@@ -152,7 +152,7 @@ class Sinusoidal(DataSet):
             noise_std,
             output_dim
         )
-        self.y_test     = noisy_sin(
+        self.y_test = noisy_sin(
             self.x_test,
             phase,
             freq,
