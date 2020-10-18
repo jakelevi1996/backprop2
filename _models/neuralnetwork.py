@@ -382,20 +382,13 @@ class NeuralNetwork():
 
     def get_dbs_metric(self):
         """
-        TODO:
-        -   Write docstring
-        -   Add option for reduction funcion, EG mean, min, max
+        TODO: Write docstring
 
         NOTE: it is assumed that the forward_prop and back_prop methods have
         been called prior to calling this method (EG by the get_gradient_vector
         method)
         """
-        pass
-        # dbs_metric = np.min(
-        #     np.min()
-        # )
-
-
+        return min(layer.get_dbs_metric() for layer in self.layers)
 
     def set_parameter_vector(self, new_parameters):
         """

@@ -145,3 +145,18 @@ class NeuralLayer():
             self.input_dim,
             repr(self.act_func.name)
         )
+
+    def get_dbs_metric(self):
+        """
+        Get the sum of the DBS metrics for the gradients of the weights and
+        biases in this layer
+        """
+        weight_dbs_vector = np.divide(
+            self.w_grad.var(axis=-1),
+            np.square(self.w_grad.mean(axis=-1))
+        )
+        bias_dbs_vector = np.divide(
+            self.b_grad.var(axis=-1),
+            np.square(self.b_grad.mean(axis=-1))
+        )
+        return min(weight_dbs_vector.min(), bias_dbs_vector.min())
