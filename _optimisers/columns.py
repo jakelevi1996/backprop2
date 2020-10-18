@@ -117,7 +117,6 @@ class DbsMetric(_Column):
         super().__init__(name, width, format_spec, title_name)
     
     def update(self, kwargs):
-        # TODO: this should be replaced by the BatchSize column below
         self.value_list.append(kwargs["model"].get_dbs_metric())
 
 class BatchSize(_Column):
