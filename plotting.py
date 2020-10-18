@@ -57,10 +57,16 @@ def plot_1D_regression(
     plt.figure(figsize=figsize)
     # Plot training and test data
     plt.plot(
-        dataset.x_train.ravel(), dataset.y_train.ravel(), train_marker, alpha=tp
+        dataset.x_train.ravel(),
+        dataset.y_train.ravel(),
+        train_marker,
+        alpha=tp
     )
     plt.plot(
-        dataset.x_test.ravel(), dataset.y_test.ravel(), test_marker, alpha=tp
+        dataset.x_test.ravel(),
+        dataset.y_test.ravel(),
+        test_marker,
+        alpha=tp
     )
     if (x_pred is not None) and (y_pred is not None):
         # Plot predictions
@@ -215,13 +221,15 @@ def plot_training_curves(
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    unique_names_list = sorted(list(set(result.name for result in result_list)))
-    num_tests = len(unique_names_list)
+    name_list = [result.name for result in result_list]
+    unique_names_list = sorted(list(set(name_list)))
     colour_list = plt.get_cmap("hsv")(
-        np.linspace(0, 1, num_tests, endpoint=False))
+        np.linspace(0, 1, len(unique_names_list), endpoint=False)
+    )
+    colour_dict = dict(zip(unique_names_list, colour_list))
     for result in result_list:
         # Get line colour, depending on the name of the experiment
-        colour = colour_list[unique_names_list.index(result.name)]
+        colour = colour_dict[result.name]
         # Get values from Result object
         times = result.get_values("time")
         train_errors = result.get_values("train_error")
@@ -318,9 +326,36 @@ def plot_error_func(error_func, dir_name, xlims, npoints):
     plt.savefig(filename)
     plt.close()
 
-def plot_result_attribute():
+def plot_result_attribute(
+    plot_name,
+    dir_name,
+    result_list,
+    attribute,
+    figsize=[8, 6]
+):
     """
     Function to plot a specific attribute stored in the Result class, for
     example the step size, or the DBS, during each iteration
     """
-    raise NotImplementedError
+    plt.figure(figsize=figsize)
+    name_list = [result.name for result in result_list]
+    unique_names_list = sorted(list(set(name_list)))
+    colour_list = plt.get_cmap("hsv")(
+        np.linspace(0, 1, len(unique_names_list), endpoint=False)
+    )
+    colour_dict = dict(zip(unique_names_list, colour_list))
+    for result in result_list:
+        plt.plot(
+            result.get_values("iteration"),
+            result.get_values(attribute),
+            c=colour_dict[result.name]
+        )
+    # Format, save and close
+    plt.title(plot_name)
+    plt.xlabel("Iteration")
+    plt.ylabel(attribute)
+    plt.grid(True)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    plt.savefig("{}/{}.png".format(dir_name, plot_name))
+    plt.close()
