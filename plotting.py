@@ -54,6 +54,7 @@ def plot_1D_regression(
     be an instance of data.DataSet, and should contain x_train, y_train, x_test,
     and y_test attributes
     """
+    assert dataset.input_dim == 1
     plt.figure(figsize=figsize)
     # Plot training and test data
     plt.plot(
@@ -116,6 +117,7 @@ def plot_2D_nD_regression(
         tight-layout for saving the plots, which (for some reason) makes this
         function about 50% slower for certain inputs. Default is False.
     """
+    assert dataset.input_dim == 2
     # Create subplots and set figure size
     fig, axes = plt.subplots(
         3,
