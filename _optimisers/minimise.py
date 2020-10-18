@@ -3,9 +3,6 @@ Module to contain optimisation procedures and inner loop functions (EG HNGD,
 backtracking, forward-tracking, etc.), agnostic to all models and objective
 functions
 """
-import numpy as np
-from time import perf_counter
-import models as m, data as d
 from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
@@ -55,9 +52,9 @@ def minimise(
     w = model.get_parameter_vector()
     i = 0
 
+    result.begin()
     evaluator.begin()
     terminator.begin()
-    result.begin()
 
     while True:
         # Evaluate the model
