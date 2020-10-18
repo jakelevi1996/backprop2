@@ -90,29 +90,59 @@ def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     y = np.dot(ampl, np.sin(2 * np.pi * np.dot(freq, (x - phase))))
     return y + np.random.normal(offset, noise_std, [output_dim, x.shape[1]])
 
-class SinusoidalDataSet1D1D(DataSet):
+
+class Sinusoidal(DataSet):
     """
-    SinusoidalDataSet1D1D: class for a sinusoidal data set with 1D inputs and 1D
-    outputs, and sensible default values for phase, frequency, amplitude and
-    offset
+    Class for a sinusoidal data set. The input and output dimensions are
+    configurable through the initialiser arguments. The training and test set
+    inputs are uniformaly distributed between specified limits.
     """
     def __init__(
         self,
-        n_train=100,
-        n_test=50,
-        phase=0.1,
-        freq=1.1,
-        ampl=1.0,
-        offset=1.0,
-        xlim=[-2, 2],
-        noise_std=0.1
+        input_dim=1,
+        output_dim=1,
+        n_train=None,
+        n_test=None,
+        x_lo=-2,
+        x_hi=2,
+        noise_std=0.1,
+        phase=None,
+        freq=None,
+        ampl=None,
+        offset=None,
     ):
+        """
+        Initialise a Sinusoidal dataset object...
+
+        Inputs:
+        -   ...
+
+        Outputs:
+        -   ...
+
+        Raises:
+        -   ValueError: if x-limits don't broadcast to the size of x_train and
+            x_test
+        """
         # Set shape constants
-        self.input_dim  , self.output_dim   = 1         , 1
+        self.input_dim  , self.output_dim   = input_dim , output_dim
         self.n_train    , self.n_test       = n_train   , n_test
+        # Set unspecified parameters
+        if n_train is None:
+            n_train = pow(100, input_dim)
+        if n_test is None:
+            n_test = n_train
+        if phase is None:
+            phase = np.random.normal(size=[input_dim, 1])
+        if freq is None:
+            freq = np.random.normal(size=[output_dim, input_dim])
+        if ampl is None:
+            ampl = np.random.normal(size=[output_dim, output_dim])
+        if offset is None:
+            offset = np.random.normal(size=[output_dim, 1])
         # Generate input/output training and test data
-        self.x_train    = np.random.uniform(*xlim, size=[1, n_train])
-        self.x_test     = np.random.uniform(*xlim, size=[1, n_test])
+        self.x_train    = np.random.uniform(x_lo, x_hi, size=[1, n_train])
+        self.x_test     = np.random.uniform(x_lo, x_hi, size=[1, n_test])
         self.y_train    = noisy_sin(
             self.x_train,
             phase,
@@ -120,7 +150,7 @@ class SinusoidalDataSet1D1D(DataSet):
             ampl,
             offset,
             noise_std,
-            1
+            output_dim
         )
         self.y_test     = noisy_sin(
             self.x_test,
@@ -129,67 +159,8 @@ class SinusoidalDataSet1D1D(DataSet):
             ampl,
             offset,
             noise_std,
-            1
-        )
-
-class SinusoidalDataSet2DnD(DataSet):
-    """
-    SinusoidalDataSet2DnD: class for a sinusoidal data set with 2D inputs and nD
-    outputs. The test set is a uniform mesh of points (which makes plotting
-    easier), and the training set is a random subset of these.
-
-    TODO: the parameters of the random generation of phase, frequency, amplitude
-    and offset may or may not need to be altered to give more sensible typical
-    values
-    """
-    def __init__(
-        self,
-        nx0=200,
-        x0lim=[-2, 2],
-        nx1=200,
-        x1lim=[-2, 2],
-        noise_std=0.1,
-        train_ratio=0.8,
-        output_dim=3
-    ):
-        input_dim = 2
-        # Generate test set inputs as a uniform mesh and reshape
-        x0, x1 = np.linspace(*x0lim, nx0), np.linspace(*x1lim, nx1)
-        x0_mesh, x1_mesh = np.meshgrid(x0, x1)
-        self.x_test = np.stack([x0_mesh.ravel(), x1_mesh.ravel()], axis=0)
-        n_test = self.x_test.shape[1]
-        # Randomly generate phase, frequency, amplitude, and offset
-        phase   = np.random.normal(size=[input_dim, 1])
-        freq    = np.random.normal(size=[output_dim, input_dim])
-        ampl    = np.random.normal(size=[output_dim, output_dim])
-        offset  = np.random.normal(size=[output_dim, 1])
-        # Generate noiseless test set outputs
-        self.y_test = noisy_sin(
-            self.x_test,
-            phase,
-            freq,
-            ampl,
-            offset,
-            0,
             output_dim
         )
-        # Generate training set as a random subset of the test set
-        n_train = int(n_test * train_ratio)
-        train_inds = np.random.choice(n_test, n_train, replace=False)
-        self.x_train = self.x_test[:, train_inds]
-        self.y_train = self.y_test[:, train_inds]
-        # Add noise to training and test outputs independently
-        self.y_test += np.random.normal(0, noise_std, self.y_test.shape)
-        self.y_train += np.random.normal(0, noise_std, self.y_train.shape)
-        # Set shape constants
-        self.input_dim  , self.output_dim   = input_dim , output_dim
-        self.n_train    , self.n_test       = n_train   , n_test
-        self.nx0        , self.nx1          = nx0       , nx1
-        self.train_inds = train_inds
-
-
-def generate_sinusoidal_data():
-    pass
 
 class CircleDataSet(DataSet):
     pass
