@@ -5,7 +5,7 @@ import os
 import pytest
 import numpy as np
 import models
-from .util import get_random_network_inputs_targets, iterate_random_seeds
+from .util import get_random_network_inputs_targets
 
 # Define list of error functions to be tested
 error_func_list = [models.errors.sum_of_squares]

@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from models import NeuralNetwork, activations, errors
-from .util import get_random_network_inputs_targets, iterate_random_seeds
+from .util import get_random_network_inputs_targets
 
 # Get name of output directory
 current_dir = os.path.dirname(os.path.abspath(__file__))

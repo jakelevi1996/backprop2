@@ -9,14 +9,15 @@ import pytest
 import models
 from models import NeuralNetwork
 from .util import get_random_network_inputs_targets, get_random_network, \
-    get_random_inputs, get_random_targets, iterate_random_seeds
+    get_random_inputs, get_random_targets
 
-@iterate_random_seeds(3998, 3146, 9386)
-def test_set_vector_errors():
+@pytest.mark.parametrize("seed", [3998, 3146, 9386])
+def test_set_vector_errors(seed):
     """
     Test the errors raised by the NeuralNetwork.set_parameter_vector method when
     there is an invalid argument
     """
+    np.random.seed(seed)
     n = get_random_network()
     num_params = n.get_parameter_vector().size
 
@@ -32,12 +33,13 @@ def test_set_vector_errors():
         # Parameter vector is not a numpy array, so has no reshape method
         n.set_parameter_vector([0] * num_params)
 
-@iterate_random_seeds(9045, 8503, 1546)
-def test_invalid_act_function():
+@pytest.mark.parametrize("seed", [9045, 8503, 1546])
+def test_invalid_act_function(seed):
     """
     Test the errors raised by initialising an instance of the NeuralNetwork
     class when there is an invalid value for the act_funcs argument
     """
+    np.random.seed(seed)
     with pytest.raises(TypeError):
         # act_funcs argument should be a list of activation function objects
         n = NeuralNetwork(act_funcs=models.activations.gaussian)
@@ -63,12 +65,13 @@ def test_invalid_act_function():
         # Activation function abs has no dydx method, so backprop fails
         n.back_prop(x, t)
 
-@iterate_random_seeds(8137, 9241, 8754)
-def test_invalid_error_function():
+@pytest.mark.parametrize("seed", [8137, 9241, 8754])
+def test_invalid_error_function(seed):
     """
     Test the errors raised by initialising an instance of the NeuralNetwork
     class when there is an invalid value for the error_func argument
     """
+    np.random.seed(seed)
     n = NeuralNetwork(error_func=models.errors._SumOfSquares)
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
@@ -85,12 +88,13 @@ def test_invalid_error_function():
         # Error function sum has no dydx method, so backprop fails
         n.back_prop(x, t)
 
-@iterate_random_seeds(6808, 8234, 4376)
-def test_print_weights_grads_bad_file():
+@pytest.mark.parametrize("seed", [6808, 8234, 4376])
+def test_print_weights_grads_bad_file(seed):
     """
     Test calling print_weights and print_grads methods with invalid file
     arguments
     """
+    np.random.seed(seed)
     n = get_random_network()
     with pytest.raises(AttributeError):
         # file argument should be a file object returned by the open function
@@ -99,24 +103,28 @@ def test_print_weights_grads_bad_file():
         # file argument should be a file object returned by the open function
         n.print_grads(file="filename")
 
-@iterate_random_seeds(6216, 6733, 8485)
-def test_print_grads_before_backprop_error():
+@pytest.mark.parametrize("seed", [6216, 6733, 8485])
+def test_print_grads_before_backprop_error(seed):
     """
     Test that using the print_grads method before backpropagation raises an
     attribute error
     """
+    np.random.seed(seed)
     n = get_random_network()
     with pytest.raises(AttributeError):
         n.print_grads()
 
-@iterate_random_seeds(6926, 1825, 4717)
-def test_forward_prop_bad_input_shape():
+@pytest.mark.parametrize("seed", [6926, 1825, 4717])
+def test_forward_prop_bad_input_shape(seed):
+    np.random.seed(seed)
     pass
 
-@iterate_random_seeds(2171, 7087, 3292)
-def test_back_prop_bad_input_shape():
+@pytest.mark.parametrize("seed", [2171, 7087, 3292])
+def test_back_prop_bad_input_shape(seed):
+    np.random.seed(seed)
     pass
 
-@iterate_random_seeds(8078, 3421, 2461)
-def test_back_prop_bad_target_shape():
+@pytest.mark.parametrize("seed", [8078, 3421, 2461])
+def test_back_prop_bad_target_shape(seed):
+    np.random.seed(seed)
     pass
