@@ -7,8 +7,7 @@ training curves is tested in the test module for the optimiser module.
 import os
 import numpy as np
 import pytest
-import plotting, data
-from optimisers import Result
+import plotting, data, optimisers
 from .util import get_random_network
 
 # Get name of output directory
@@ -90,7 +89,7 @@ def test_plot_training_curves():
         n = get_random_network(input_dim=2, output_dim=output_dim)
         d = data.Sinusoidal(input_dim=2, output_dim=output_dim, n_train=150)
         w = n.get_parameter_vector()
-        result = Result(name="Network {}".format(j))
+        result = optimisers.Result(name="Network {}".format(j))
         result.begin()
         
         # Call the result.update method a few times
@@ -100,10 +99,45 @@ def test_plot_training_curves():
         
         results_list.append(result)
     
-    
     plotting.plot_training_curves(
         results_list,
         "Test plot_training_curves",
         output_dir,
         e_lims=None
+    )
+
+def test_plot_result_attribute():
+    """
+    Test plotting function for plotting the values in one of the columns of a
+    Result object over time
+    """
+    np.random.seed(1521)
+    n_its = np.random.randint(10, 20)
+    results_list = []
+    for i in range(5):
+        i = min(i, 2)
+        name = "test_plot_result_attribute_%i" % i
+        output_text_filename = os.path.join(output_dir, name + ".txt")
+        with open(output_text_filename, "w") as f:
+            result = optimisers.Result(
+                name=name,
+                file=f,
+                add_default_columns=False
+            )
+            ls = optimisers.LineSearch()
+            ls_column = optimisers.results.columns.StepSize(ls)
+            result.add_column(ls_column)
+            result.add_column(optimisers.results.columns.Iteration())
+            result.begin()
+            for j in range(n_its):
+                ls.s = np.random.uniform() + i
+                result.update(iteration=j)
+        
+        results_list.append(result)
+    
+    plotting.plot_result_attribute(
+        "test_plot_result_attribute_linesearch",
+        output_dir,
+        results_list,
+        attribute=ls_column.name
     )
