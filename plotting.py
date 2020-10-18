@@ -331,7 +331,8 @@ def plot_result_attribute(
     dir_name,
     result_list,
     attribute,
-    figsize=[8, 6]
+    figsize=[8, 6],
+    alpha=0.7
 ):
     """
     Function to plot a specific attribute stored in the Result class, for
@@ -348,12 +349,17 @@ def plot_result_attribute(
         plt.plot(
             result.get_values("iteration"),
             result.get_values(attribute),
-            c=colour_dict[result.name]
+            c=colour_dict[result.name],
+            alpha=alpha
         )
     # Format, save and close
     plt.title(plot_name)
     plt.xlabel("Iteration")
     plt.ylabel(attribute)
+    plt.legend(handles=[
+        Line2D([], [], color=c, label=name)
+        for c, name in zip(colour_list, unique_names_list)
+    ])
     plt.grid(True)
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
