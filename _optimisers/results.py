@@ -3,16 +3,6 @@ from time import perf_counter
 import numpy as np
 from _optimisers import columns
 
-# Define list of attributes which are saved and loaded by the Result class
-attr_name_list = [
-    "train_errors",
-    "test_errors",
-    "times",
-    "iters",
-    "step_size",
-    "start_time",
-]
-
 class Result():
     """
     Class to store the results of optimisation in a single object which can be
@@ -36,9 +26,9 @@ class Result():
     ):
         """
         Store the name of the experiment (which is useful later when displaying
-        results), display table headers, initialise lists for objective function
-        evaluations and the time and iteration number for each evaluation, and
-        record the start time for the results list.
+        results), verbosity, output file, and initialise list and dictionary of
+        columns. If specified by the input argument, then add default columns to
+        this Result object.
         """
         self.name = name if (name is not None) else "Unnamed experiment"
         self.file = file
