@@ -142,6 +142,36 @@ class _Cauchy(_ActivationFunction):
 class _SoftMax(_ActivationFunction):
     pass
 
+class _PiecewiseQuadratic(_ActivationFunction):
+    name = "Piecewise quadratic activation function"
+
+    def y(self, x):
+        xm2 = x - 2.0
+        xp2 = x + 2.0
+        y = np.where(x > 2.0,           0.0,                x)
+        y = np.where(x < 2.0,           xm2 * xm2,          y)
+        y = np.where(x < 1.0,           2.0 - x*x,          y)
+        y = np.where(x < -1.0,          xp2 * xp2,          y)
+        y = np.where(x < -2.0,          0.0,                y)
+        return y
+
+    def dydx(self, x):
+        dydx = np.where(x > 2.0,        0.0,                x)
+        dydx = np.where(x < 2.0,        2.0 * x - 4.0,      dydx)
+        dydx = np.where(x < 1.0,        -2.0 * x,           dydx)
+        dydx = np.where(x < -1.0,       2.0 * x + 4.0,      dydx)
+        dydx = np.where(x < -2.0,       0.0,                dydx)
+        return dydx
+
+    def d2ydx2(self, x):
+        d2ydx2 = np.where(x > 2.0,      0.0,                x)
+        d2ydx2 = np.where(x < 2.0,      2.0,                d2ydx2)
+        d2ydx2 = np.where(x < 1.0,      -2.0,               d2ydx2)
+        d2ydx2 = np.where(x < -1.0,     2.0,                d2ydx2)
+        d2ydx2 = np.where(x < -2.0,     0.0,                d2ydx2)
+        return d2ydx2
+
+
 # TODO: replace get_id_from_func and get_func_from_id functions with this dict
 # or similar for saving/loading NeuralNetwork objects
 act_func_names_dict = {
@@ -150,9 +180,10 @@ act_func_names_dict = {
 }
 
 # Expose public instances of private classes
-identity   = _Identity()
-logistic   = _Logistic()
-relu       = _Relu()
-gaussian   = _Gaussian()
-cauchy     = _Cauchy()
-softMax    = _SoftMax()
+identity            = _Identity()
+logistic            = _Logistic()
+relu                = _Relu()
+gaussian            = _Gaussian()
+cauchy              = _Cauchy()
+softMax             = _SoftMax()
+piecewise_quadratic = _PiecewiseQuadratic()

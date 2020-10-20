@@ -13,7 +13,8 @@ act_func_list = [
     activations.logistic,
     activations.relu,
     activations.gaussian,
-    activations.cauchy
+    activations.cauchy,
+    activations.piecewise_quadratic
 ]
 
 # Get name of output directory
