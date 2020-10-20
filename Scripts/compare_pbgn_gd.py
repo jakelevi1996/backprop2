@@ -9,9 +9,11 @@ the NeuralNetwork, and the axis limits in the output plots.
 
 Below are some examples for calling this script:
 
-    python Scripts\compare_gd_pbgn_1d_sin.py 1 1 100 50 0.05 10 0 0.2
+    python Scripts\compare_pbgn_gd.py 1 1 100 50 5 10 0 0.2
 
-    python Scripts\compare_gd_pbgn_1d_sin.py 2 3 2500 50 0.10 20,20 0 4
+    python Scripts\compare_pbgn_gd.py 2 3 2500 50 10 20,20 0 4
+
+Running each of the above examples requires ??? s and ??? s respectively.
 
 To get help information for the available arguments, use the following command:
 
@@ -20,6 +22,7 @@ To get help information for the available arguments, use the following command:
 """
 import os
 from argparse import ArgumentParser
+from time import perf_counter
 import numpy as np
 if __name__ == "__main__":
     import __init__
@@ -210,6 +213,7 @@ if __name__ == "__main__":
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
 
     # Call main function using command-line arguments
+    t_start = perf_counter()
     main(
         args.input_dim,
         args.output_dim,
@@ -219,3 +223,4 @@ if __name__ == "__main__":
         num_hidden_units,
         [args.e_lo, args.e_hi]
     )
+    print("Main function run in %.3f s" % (perf_counter() - t_start))
