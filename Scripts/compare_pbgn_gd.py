@@ -5,15 +5,16 @@ vs gradient descent, both with and without line-search, on sinusoidal data.
 This script requires command line arguments for the input and output dimensions
 and number of training points in the data-set, the batch size and length of time
 to train for each experiment, the number of hidden units in each hidden layer of
-the NeuralNetwork, and the axis limits in the output plots.
+the NeuralNetwork, the axis limits in the output plots, and the number of
+repeats to perform of each experiment.
 
 Below are some examples for calling this script:
 
-    python Scripts\compare_pbgn_gd.py 1 1 100 50 5 10 0 0.2
+    python Scripts\compare_pbgn_gd.py 1 1 100 50 1 10 0 0.02 3
 
-    python Scripts\compare_pbgn_gd.py 2 3 2500 50 10 20,20 0 4
+    python Scripts\compare_pbgn_gd.py 2 3 2500 50 10 20,20 0 4 3
 
-Running each of the above examples requires ??? s and ??? s respectively.
+Running each of the above examples requires 12.858 s and 121.004 s respectively.
 
 To get help information for the available arguments, use the following command:
 
@@ -35,7 +36,8 @@ def main(
     batch_size,
     t_lim,
     num_hidden_units,
-    e_lims
+    e_lims,
+    n_repeats
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -49,6 +51,8 @@ def main(
     -   num_hidden_units: list of positive integers, number of hidden units in
         each hidden layer of the NeuralNetwork, EG [10] or [20, 20]
     -   e_lims: list of 2 floats, used as axis limits in the output plots
+    -   n_repeats: positive integer number of repeats to perform of each
+        experiment
     """
     # Perform warmup experiment so process acquires priority
     optimisers.warmup()
@@ -63,9 +67,9 @@ def main(
     results_list = []
     t_interval = t_lim / 50
 
-    for seed in [2295, 6997, 7681]:
+    for i in range(n_repeats):
         # Set the random seed
-        np.random.seed(seed)
+        np.random.seed(i)
         # Generate random network and store initial parameters
         n = models.NeuralNetwork(
             input_dim=input_dim,
@@ -205,6 +209,12 @@ if __name__ == "__main__":
         default=0.2,
         type=float
     )
+    parser.add_argument(
+        "n_repeats",
+        help="Number of repeats to perform of each experiment",
+        default=3,
+        type=int
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -221,6 +231,7 @@ if __name__ == "__main__":
         args.batch_size,
         args.t_lim,
         num_hidden_units,
-        [args.e_lo, args.e_hi]
+        [args.e_lo, args.e_hi],
+        args.n_repeats,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
