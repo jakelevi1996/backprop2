@@ -18,7 +18,7 @@ def warmup(n_its=1000):
     of an optimiser, because the process priority often appears to be initially
     slow
     """
-    sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+    sin_data = data.Sinusoidal(1, 1, freq=1)
     n = models.NeuralNetwork(1, 1, [20])
     gradient_descent(
         n,
