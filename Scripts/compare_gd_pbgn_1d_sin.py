@@ -7,15 +7,14 @@ import os
 import numpy as np
 if __name__ == "__main__":
     import __init__
-from models import NeuralNetwork
-import activations, data, optimisers, plotting
+import data, models, optimisers, plotting
 
 # Perform warmup experiment so process acquires priority
 optimisers.warmup()
 
 # Initialise data, time limit, and results list
 np.random.seed(9251)
-sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
 t_lim = 5
 t_interval = t_lim / 50
 results_list = []
@@ -24,11 +23,11 @@ for seed in [2295, 6997, 7681]:
     # Set the random seed
     np.random.seed(seed)
     # Generate random network and store initial parameters
-    n = NeuralNetwork(
+    n = models.NeuralNetwork(
         input_dim=1,
         output_dim=1,
         num_hidden_units=[10],
-        act_funcs=[activations.Gaussian(), activations.Identity()]
+        act_funcs=[models.activations.gaussian, models.activations.identity]
     )
     w0 = n.get_parameter_vector().copy()
     # Call gradient descent function
