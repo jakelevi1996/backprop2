@@ -45,25 +45,44 @@ class ConstantPreActivationStatistics(_Initialiser):
         self.hidden_layer_std   = hidden_layer_std
 
     def initialise_params(self, model, *args):
+        this_layer = model.layers[0]
         init_weight_std = np.sqrt(1.0 / self.x_train.var(axis=1).sum())
-        init_bias = -(init_weight_std @ self.x_train).mean(axis=1)
-        model.layers[0].init_params(0, init_weight_std, init_bias, 0)
-        model.layers[0].activate(self.x_train)
+        init_weight = np.random.normal(
+            0,
+            init_weight_std,
+            [this_layer.output_dim, this_layer.input_dim]
+        )
+        init_bias = -(init_weight @ self.x_train).mean(axis=1)
+        this_layer.init_params(init_weight, 0, init_bias, 0)
+        this_layer.activate(self.x_train)
 
         for i in range(1, len(model.layers) - 1):
             layer_input = model.layers[i-1].output
+            this_layer = model.layers[i]
             init_weight_std = np.sqrt(1.0 / layer_input.var(axis=1).sum())
-            init_bias = -(init_weight_std @ layer_input).mean(axis=1)
-            model.layers[i].init_params(0, init_weight_std, init_bias, 0)
-            model.layers[i].activate(self.x_train)
+            init_weight = np.random.normal(
+                0,
+                init_weight_std,
+                [this_layer.output_dim, this_layer.input_dim]
+            )
+            init_bias = -(init_weight @ layer_input).mean(axis=1)
+            this_layer.init_params(init_weight, 0, init_bias, 0)
+            this_layer.activate(layer_input)
         
         # TODO: will this work if there is only 1 layer?
         layer_input = model.layers[-2].output
-        init_weight_std = np.sqrt(
-            self.y_train.var(axis=1) / layer_input.var(axis=1).sum()
+        this_layer = model.layers[-1]
+        init_weight_std = np.sqrt(np.divide(
+            self.y_train.var(axis=1, keepdims=True),
+            layer_input.var(axis=1).sum()
+        ))
+        init_weight = np.random.normal(
+            0,
+            init_weight_std,
+            [this_layer.output_dim, this_layer.input_dim]
         )
-        init_bias = -(init_weight_std @ layer_input).mean(axis=1)
-        model.layers[-1].init_params(0, init_weight_std, init_bias, 0)
+        init_bias = -(init_weight @ layer_input).mean(axis=1)
+        this_layer.init_params(init_weight, 0, init_bias, 0)
 
 
 class FromModelFile(_Initialiser):
