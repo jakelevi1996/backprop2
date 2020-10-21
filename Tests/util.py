@@ -14,7 +14,7 @@ def get_random_network(
     error_func=None,
     input_dim=None,
     output_dim=None,
-    weight_std=1.0
+    initialiser=None
 ):
     """
     Generate a neural network with a random number of inputs, outputs, hidden
@@ -32,9 +32,7 @@ def get_random_network(
         num_hidden_units=num_hidden_units,
         act_funcs=act_funcs,
         error_func=error_func,
-        initialiser=models.initialisers.ConstantParameterStatistics(
-            weight_std=weight_std
-        )
+        initialiser=initialiser
     )
     return n
 
@@ -56,14 +54,21 @@ def get_random_network_inputs_targets(
     N_D_low=5,
     N_D_high=15,
     act_funcs=None,
-    error_func=None
+    error_func=None,
+    initialiser=None
 ):
     """
     Wrapper for the following functions: np.random.seed, get_random_network,
     get_random_inputs, get_random_targets. Return the outputs in a tuple
     """
     np.random.seed(seed)
-    n = get_random_network(low, high, act_funcs, error_func)
+    n = get_random_network(
+        low,
+        high,
+        act_funcs,
+        error_func,
+        initialiser=initialiser
+    )
     x, N_D = get_random_inputs(n.input_dim, N_D_low, N_D_high)
     t = get_random_targets(n.output_dim, N_D)
     return n, x, t, N_D
