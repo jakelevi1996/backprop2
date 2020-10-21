@@ -7,7 +7,7 @@ training curves is tested in the test module for the optimiser module.
 import os
 import numpy as np
 import pytest
-import plotting, data, optimisers
+import plotting, data, optimisers, models
 from .util import get_random_network
 
 # Get name of output directory
@@ -49,9 +49,9 @@ def test_plot_2D_nD_regression(seed, output_dim):
     input_dim = 2
     x_lo = -2
     x_hi = 2
-    x_pred = np.linspace(x_lo, x_hi, 20)
+    x_pred = np.linspace(x_lo, x_hi, 10)
     # Generate dataset and network
-    s23 = data.Sinusoidal(
+    sin_data = data.Sinusoidal(
         input_dim=input_dim,
         output_dim=output_dim,
         n_train=200,
@@ -63,16 +63,17 @@ def test_plot_2D_nD_regression(seed, output_dim):
         output_dim=output_dim,
         low=2,
         high=3,
-        weight_std=10
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=sin_data.x_train,
+            y_train=sin_data.y_train
+        )
     )
-    # Generate random predictions
-    y_pred = np.random.normal(size=[output_dim, s23.x_test.shape[1]])
     # Call plotting function under test
     plotting.plot_2D_nD_regression(
         "Random predictions 2D-{}D sinusoid".format(output_dim),
         output_dir,
         n_output_dims=output_dim,
-        dataset=s23,
+        dataset=sin_data,
         x_pred_0=x_pred,
         x_pred_1=x_pred,
         model=model,
