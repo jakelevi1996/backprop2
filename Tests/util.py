@@ -32,7 +32,9 @@ def get_random_network(
         num_hidden_units=num_hidden_units,
         act_funcs=act_funcs,
         error_func=error_func,
-        weight_std=weight_std
+        initialiser=models.initialisers.ConstantParameterStatistics(
+            weight_std=weight_std
+        )
     )
     return n
 

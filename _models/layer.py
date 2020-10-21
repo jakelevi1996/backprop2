@@ -1,26 +1,51 @@
 import numpy as np
 
 class NeuralLayer():
-    def __init__(self, num_units, num_inputs, act_func, weight_std, bias_std):
+    def __init__(self, num_units, num_inputs, act_func):
         """
-        Initialise the constants and parameters for a neural network layer. This
-        method is called during NeuralNetwork.__init__()
+        Initialise the attributes for a neural network layer. This method is
+        called during NeuralNetwork._init_layers(), which is called by the
+        NeuralNetwork constructor, NeuralNetwork.__init__().
         """
-        # Randomly initialise parameters
-        self.weights = np.random.normal(0, weight_std, [num_units, num_inputs])
-        self.bias = np.random.normal(0, bias_std, [num_units, 1])
-        
-        # Set layer constants
         self.input_dim      = num_inputs
         self.output_dim     = num_units
         self.act_func       = act_func
-        self.num_weights    = self.weights.size
-        self.num_bias       = self.bias.size
-        self.diag_indices   = np.diag_indices(num_units)
+        self.num_weights    = num_units * num_inputs
+        self.num_bias       = num_units
 
-        x, y = np.indices([num_units, num_inputs])
+        self.diag_indices   = np.diag_indices(num_units)
+        x, y                = np.indices([num_units, num_inputs])
         self.eps_inds       = x.ravel()
         self.z_inds         = y.ravel()
+    
+    def init_params(self, weight_mean, weight_std, bias_mean, bias_std):
+        """
+        Initialise the parameters (weights and biases) in this layer using a
+        Gaussian distribution with parameters given by the input arguments. This
+        method is called by the initialiser (which should be an instance of a
+        subclass of models.initialisers._Initialiser) which is passed to the
+        NeuralNetwork constructor.
+
+        Inputs:
+        -   weight_mean: mean for the weights in this layer. Must be
+            broadcastable to the shape [self.output_dim, self.input_dim]
+        -   weight_std: standard deviation for the weights in this layer. Must
+            be broadcastable to the shape [self.output_dim, self.input_dim]
+        -   bias_mean: mean for the biases in this layer. Must be broadcastable
+            to the shape [self.output_dim, 1]
+        -   bias_std: standard deviation for the biases in this layer. Must be
+            broadcastable to the shape [self.output_dim, 1]
+        """
+        self.weights = np.random.normal(
+            weight_mean,
+            weight_std,
+            [self.output_dim, self.input_dim]
+        )
+        self.bias = np.random.normal(
+            bias_mean,
+            bias_std,
+            [self.output_dim, 1]
+        )
     
     def activate(self, layer_input):
         """
@@ -104,7 +129,16 @@ class NeuralLayer():
     
     def calc_weight_gradients2(self, block_inds, N_D):
         """
-        ...
+        Calculate the second derivatives of the error function with respect to
+        the weights in this layer, for the specified block-indices, using the
+        epsilon for this layer, which must have already been calculated using
+        self.backprop2(next_layer).
+
+        Inputs:
+        -   block_inds: list of integers in [0, self.num_weights), used as the
+            indices for the Hessian block which is calculated
+        -   N_D: the number of data points which were last propogated through
+            this network
         """
         block_size = block_inds.size
         hessian_block = np.prod(
@@ -127,9 +161,16 @@ class NeuralLayer():
         )
         return hessian_block
 
-    def calc_bias_gradients2(self, block_inds, N_D):
+    def calc_bias_gradients2(self, block_inds):
         """
-        ...
+        Calculate the second derivative of the error function with respect to
+        the biases in this layer, for the specified block-indices, using the
+        epsilon for this layer, which must have already been calculated using
+        self.backprop2(next_layer).
+
+        Inputs:
+        -   block_inds: list of integers in [0, self.num_bias), used as the
+            indices for the Hessian block which is calculated
         """
         block_size = block_inds.size
         hessian_block = self.epsilon[
@@ -140,6 +181,9 @@ class NeuralLayer():
         return hessian_block
 
     def __repr__(self):
+        """
+        Return a string representation of this layer. Useful for debugging.
+        """
         return "NeuralLayer(num_units={}, num_inputs={}, act_func={})".format(
             self.output_dim,
             self.input_dim,
@@ -148,8 +192,8 @@ class NeuralLayer():
 
     def get_dbs_metric(self):
         """
-        Get the sum of the DBS metrics for the gradients of the weights and
-        biases in this layer
+        Get the minimum DBS metric for the gradients of the weights and biases
+        in this layer
         """
         weight_dbs_vector = np.divide(
             self.w_grad.var(axis=-1),

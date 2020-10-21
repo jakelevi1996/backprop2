@@ -30,7 +30,7 @@ happens under the hood).
 """
 
 import numpy as np
-from _models import activations, errors
+from _models import activations, errors, initialisers
 from _models.layer import NeuralLayer
 
 class NeuralNetwork():
@@ -41,9 +41,7 @@ class NeuralNetwork():
         num_hidden_units=None,
         act_funcs=None,
         error_func=None,
-        weight_std=1.0,
-        bias_std=1.0,
-        filename=None
+        initialiser=None,
     ):
         """
         __init__: initialise the network-constants and the weights, biases and
@@ -57,8 +55,6 @@ class NeuralNetwork():
             in each hidden layer of the network (input layer first); the length
             of the list is equal to the number of hidden layers. Default value
             is [10] (IE a single hidden layer with 10 units)
-        -   weight_std: standard deviation for initialisation of weights
-        -   bias_std: standard deviation for initialisation of biases
         -   act_funcs: list of activation functions for each layer in the
             network. The length of this list can be different to the number of
             network layers: if this list is shorter than the number of layers,
@@ -85,6 +81,8 @@ class NeuralNetwork():
             act_funcs = [activations.logistic, activations.identity]
         if error_func is None:
             error_func = errors.sum_of_squares
+        if initialiser is None:
+            initialiser = initialisers.ConstantParameterStatistics()
 
         # Set network constants
         self.input_dim = input_dim
@@ -93,51 +91,44 @@ class NeuralNetwork():
         self._num_layers = len(self._num_units_list)
         self._error_func = error_func
 
-        # Load or initialise weights
-        if filename is not None:
-            self.load_model(filename)
-        else:
-            self.num_params = self.gaussian_initialiser(
-                act_funcs, weight_std, bias_std
-            )
+        # Initialise layers
+        self._init_layers(act_funcs)
+
+        # Initialise parameters
+        initialiser.initialise_params(self)
 
         # Initialise memory for the parameter and gradient vectors
+        self.num_params = sum(
+            layer.num_weights + layer.num_bias for layer in self.layers
+        )
         self.param_vector = np.empty(self.num_params)
         self.grad_vector = np.empty(self.num_params)
     
-    def gaussian_initialiser(self, act_func_list, weight_std, bias_std):
+    def _init_layers(self, act_func_list):
         """
-        gaussian_initialiser: initialise the layers of the neural network, using
-        a Gaussian distribution with zero mean, a single standard deviation for
-        all weights, and a single standard deviation for all biases. Also
-        initialise the memory for the parameter and gradient vectors.
-
-        TODO: if this becomes an external function/method, it can accept as
-        additional arguments self._num_units_list (from which it can calculate
-        the number of layers) and self.input_dim, and return the list of layers
-        the number of parameters
+        Initialise the layers of the neural network.
         """
         # Resize the list of activation functions
         act_func = lambda i: act_func_list[
             max(len(act_func_list) - self._num_layers + i, 0)
         ]
+
         # Initialise the input layer
         new_layer = NeuralLayer(
-            self._num_units_list[0], self.input_dim, act_func(0),
-            weight_std, bias_std
+            self._num_units_list[0],
+            self.input_dim,
+            act_func(0),
         )
         self.layers = [new_layer]
-        num_params = new_layer.num_weights + new_layer.num_bias
+
         # Initialise the rest of the layers
         for i in range(1, self._num_layers):
             new_layer = NeuralLayer(
-                self._num_units_list[i], self._num_units_list[i-1],
-                act_func(i), weight_std, bias_std
+                self._num_units_list[i],
+                self._num_units_list[i-1],
+                act_func(i)
             )
             self.layers.append(new_layer)
-            num_params += (new_layer.num_weights + new_layer.num_bias)
-        
-        return num_params
     
     def glorot_initialiser(self, act_funcs):
         # TODO: Should initialisers have their own classes?
@@ -367,10 +358,7 @@ class NeuralNetwork():
             # Iterate through each block of biases in this layer
             for block_bias_inds in bias_ind_list[i]:
                 # Calculate the Hessian block and update output lists
-                hess_block = layer.calc_bias_gradients2(
-                    block_bias_inds,
-                    self.N_D
-                )
+                hess_block = layer.calc_bias_gradients2(block_bias_inds)
                 hess_block_list.append(hess_block.mean(axis=-1))
                 hess_inds_list.append(block_bias_inds + offset)
             
@@ -492,3 +480,7 @@ class NeuralNetwork():
                 return self.mean_error(t, x) # swap round t and x
         """
         return self.forward_prop(x)
+
+def load_network(filename, dir_name):
+    raise NotImplementedError()
+    return NeuralNetwork(initialiser=initialisers.FromModelFile(filename))
