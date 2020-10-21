@@ -1,4 +1,5 @@
 """ TODO """
+import numpy as np
 
 class _Initialiser:
     """ TODO """
@@ -44,7 +45,26 @@ class ConstantPreActivationStatistics(_Initialiser):
         self.hidden_layer_std   = hidden_layer_std
 
     def initialise_params(self, model, *args):
-        raise NotImplementedError()
+        init_weight_std = np.sqrt(1.0 / self.x_train.var(axis=1).sum())
+        init_bias = -(init_weight_std @ self.x_train).mean(axis=1)
+        model.layers[0].init_params(0, init_weight_std, init_bias, 0)
+        model.layers[0].activate(self.x_train)
+
+        for i in range(1, len(model.layers) - 1):
+            layer_input = model.layers[i-1].output
+            init_weight_std = np.sqrt(1.0 / layer_input.var(axis=1).sum())
+            init_bias = -(init_weight_std @ layer_input).mean(axis=1)
+            model.layers[i].init_params(0, init_weight_std, init_bias, 0)
+            model.layers[i].activate(self.x_train)
+        
+        # TODO: will this work if there is only 1 layer?
+        layer_input = model.layers[-2].output
+        init_weight_std = np.sqrt(
+            self.y_train.var(axis=1) / layer_input.var(axis=1).sum()
+        )
+        init_bias = -(init_weight_std @ layer_input).mean(axis=1)
+        model.layers[-1].init_params(0, init_weight_std, init_bias, 0)
+
 
 class FromModelFile(_Initialiser):
     def __init__(self, filename):
