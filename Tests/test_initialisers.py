@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 import models, data
-from .util import get_random_network_inputs_targets, get_output_dir_name
+from .util import get_output_dir_name
 
 output_dir = get_output_dir_name()
 test_initialisers_output_dir = os.path.join(output_dir, "Test initialisers")
@@ -48,4 +48,32 @@ def test_ConstantPreActivationStatistics(seed):
 
     assert nn(sin_data.x_train).shape == sin_data.y_train.shape
     output_fname = "test_ConstantPreActivationStatistics, seed=%i.txt" % seed
+    _print_pre_activation_statistics(nn, output_fname)
+
+@pytest.mark.parametrize("seed", [793, 7405, 3245])
+def test_ConstantParameterStatistics(seed):
+    """
+    ...
+
+    TODO: test with 0, 1, 2 hidden layers
+    """
+    np.random.seed(seed)
+    input_dim = np.random.randint(2, 10)
+    output_dim = np.random.randint(2, 10)
+    N_D = np.random.randint(100, 200)
+    x_lo = np.random.uniform(-10, 0)
+    x_hi = np.random.uniform(0, 10)
+    sin_data = data.Sinusoidal(input_dim, output_dim, N_D, 0, x_lo, x_hi)
+    initialiser = models.initialisers.ConstantParameterStatistics()
+    num_hidden_layers = np.random.randint(3, 6)
+    num_hidden_units = np.random.randint(3, 6, num_hidden_layers)
+    nn = models.NeuralNetwork(
+        input_dim,
+        output_dim,
+        num_hidden_units,
+        initialiser=initialiser
+    )
+
+    assert nn(sin_data.x_train).shape == sin_data.y_train.shape
+    output_fname = "test_ConstantParameterStatistics, seed=%i.txt" % seed
     _print_pre_activation_statistics(nn, output_fname)
