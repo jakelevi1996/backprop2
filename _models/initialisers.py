@@ -81,7 +81,9 @@ class ConstantPreActivationStatistics(_Initialiser):
             init_weight_std,
             [this_layer.output_dim, this_layer.input_dim]
         )
-        init_bias = -(init_weight @ layer_input).mean(axis=1)
+        output_mean = self.y_train.mean(axis=1)
+        pre_activation_mean = (init_weight @ layer_input).mean(axis=1)
+        init_bias = output_mean - pre_activation_mean
         this_layer.init_params(init_weight, 0, init_bias, 0)
 
 
