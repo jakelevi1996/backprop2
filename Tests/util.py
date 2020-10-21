@@ -4,8 +4,15 @@ NeuralNetwork models and data (both from existing Dataset classes and also
 completely at random)
 """
 
+import os
 import numpy as np
 import models, data
+
+def get_output_dir_name():
+    """ Return name of output directory for unit test outputs """
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(current_dir, "Outputs")
+    return output_dir
 
 def get_random_network(
     low=3,
