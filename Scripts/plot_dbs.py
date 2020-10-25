@@ -10,9 +10,9 @@ perform of each experiment.
 
 Below are some examples for calling this script:
 
-    python Scripts\plot_dbs.py 1 1 100 1 10 0 0.02 3
+    python Scripts\plot_dbs.py 1 1 100 1 10 0 0.02 3 0.995 0.99 10
 
-    python Scripts\plot_dbs.py 2 3 2500 10 20,20 0 4 3
+    python Scripts\plot_dbs.py 2 3 2500 20 20,20 0 4 3 0.995 0.99 10
 
 Running each of the above examples requires ??? s and ??? s respectively.
 
@@ -42,7 +42,10 @@ def main(
     t_lim,
     num_hidden_units,
     e_lims,
-    n_repeats
+    n_repeats,
+    alpha_smooth,
+    p_c,
+    min_batch_size
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -51,13 +54,14 @@ def main(
     -   input_dim: positive integer number of input dimensions
     -   output_dim: positive integer number of output dimensions
     -   n_train: positive integer number of points in the training set
-    -   batch_size: positive integer batch size to use for training
     -   t_lim: positive float, length of time to train for each experiment
     -   num_hidden_units: list of positive integers, number of hidden units in
         each hidden layer of the NeuralNetwork, EG [10] or [20, 20]
     -   e_lims: list of 2 floats, used as axis limits in the output plots
     -   n_repeats: positive integer number of repeats to perform of each
         experiment
+    -   alpha_smooth: float in (0, 1), amount of smoothing to apply to DBS batch
+        size
     """
     # Perform warmup experiment so process acquires priority
     optimisers.warmup()
@@ -75,7 +79,7 @@ def main(
     for i in range(n_repeats):
         # Set the random seed
         np.random.seed(i)
-        # Generate random network and store initial parameters
+        # Generate random network
         model = models.NeuralNetwork(
             input_dim=input_dim,
             output_dim=output_dim,
@@ -87,7 +91,9 @@ def main(
         batch_getter = optimisers.batch.DynamicBatchSize(
             model,
             sin_data,
-            alpha_smooth=0.99
+            alpha_smooth=alpha_smooth,
+            prob_correct_direction=p_c,
+            min_batch_size=min_batch_size
         )
         result.add_column(optimisers.results.columns.BatchSize(batch_getter))
         result.add_column(optimisers.results.columns.DbsMetric())
@@ -103,13 +109,16 @@ def main(
         results_list.append(result)
 
     # Compare training curves
-    plot_name_suffix = "\n%iD-%iD data" % (input_dim, output_dim)
-    plot_name_suffix += ", %.2g s training time" % t_lim
-    plot_name_suffix += ", %s hidden units" % str(num_hidden_units)
+    plot_name_suffix = "\n%iD-%iD data"             % (input_dim, output_dim)
+    plot_name_suffix += ", %.2g s training time"    % t_lim
+    plot_name_suffix += ", %s hidden units"         % str(num_hidden_units)
+    plot_name_suffix += ", alpha_smooth = %.3f"     % alpha_smooth
+    plot_name_suffix += ", p_c = %.3f"              % p_c
+    plot_name_suffix += ", min_batch_size = %.3f"   % min_batch_size
     plotting.plot_training_curves(
         results_list,
         "DBS learning curves" + plot_name_suffix,
-        output_dir,
+        os.path.join(output_dir, plot_name_suffix.replace("\n", "")),
         e_lims=e_lims
     )
     for attr_name in ["dbs_metric", "batch_size"]:
@@ -117,7 +126,7 @@ def main(
         plot_name += plot_name_suffix
         plotting.plot_result_attribute(
             plot_name,
-            output_dir,
+            os.path.join(output_dir, plot_name_suffix.replace("\n", "")),
             results_list,
             attr_name
         )
@@ -177,6 +186,24 @@ if __name__ == "__main__":
         default=3,
         type=int
     )
+    parser.add_argument(
+        "alpha_smooth",
+        help="Amount of smoothing to apply to DBS batch size",
+        default=0.99,
+        type=float
+    )
+    parser.add_argument(
+        "p_c",
+        help="Probability of moving in the correct direction",
+        default=0.99,
+        type=float
+    )
+    parser.add_argument(
+        "min_batch_size",
+        help="Minimum batch size",
+        default=10,
+        type=int
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -194,5 +221,8 @@ if __name__ == "__main__":
         num_hidden_units,
         [args.e_lo, args.e_hi],
         args.n_repeats,
+        args.alpha_smooth,
+        args.p_c,
+        args.min_batch_size,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
