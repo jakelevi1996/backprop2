@@ -176,7 +176,11 @@ def plot_2D_nD_regression(
         axes[-1, j].set_xlim(x_pred_0.min(), x_pred_0.max())
     for a in axes[:, -1]:
         a.axis("off")
-    fig.colorbar(ScalarMappable(Normalize(y_min, y_max)), ax=axes[:, -1], fraction=1)
+    fig.colorbar(
+        ScalarMappable(Normalize(y_min, y_max)),
+        ax=axes[:, -1],
+        fraction=1
+    )
     fig.suptitle(plot_name, fontsize=16)
     if tight_layout:
         fig.tight_layout(rect=[0, 0, 1, 0.95])
@@ -334,7 +338,9 @@ def plot_result_attribute(
     result_list,
     attribute,
     figsize=[8, 6],
-    alpha=0.7
+    alpha=0.7,
+    marker=None,
+    ls=None
 ):
     """
     Function to plot a specific attribute stored in the Result class, for
@@ -352,7 +358,9 @@ def plot_result_attribute(
             result.get_values("iteration"),
             result.get_values(attribute),
             c=colour_dict[result.name],
-            alpha=alpha
+            alpha=alpha,
+            marker=marker,
+            ls=ls
         )
     # Format, save and close
     plt.title(plot_name)
