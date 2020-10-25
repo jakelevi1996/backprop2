@@ -93,7 +93,6 @@ Tests\test_result.py ......................                                     
 
 ### 2020-10-18
 
-- Add unit test for DBS
 - Add section to README plotting training curves and predictions for PBGN on 2D-ND sinusoidal data
 - Add comparison of PBGN vs GD, LS and no LS to Readme, and discussion
 - Add 2D sinusoidal predictions to Readme
