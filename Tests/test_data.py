@@ -41,4 +41,11 @@ def test_print_data(seed, dataset_str):
     path = os.path.join(output_dir, filename)
     with open(path, "w") as f:
         dataset.print_data(file=f)
-    
+
+def test_invalid_freq_shape():
+    """
+    Test that initialising a DataSet with a frequency that doesn't broadcast to
+    the input and output dimensions raises a ValueError
+    """
+    with pytest.raises(ValueError):
+        d = data.Sinusoidal(input_dim=3, output_dim=7, freq=np.zeros([5, 9]))
