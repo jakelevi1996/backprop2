@@ -2,16 +2,15 @@ import os
 import pytest
 import numpy as np
 import models, data
-from .util import get_output_dir_name
+from .util import output_dir as parent_output_dir
 
-output_dir = get_output_dir_name()
-test_initialisers_output_dir = os.path.join(output_dir, "Test initialisers")
-if not os.path.isdir(test_initialisers_output_dir):
-    os.makedirs(test_initialisers_output_dir)
+output_dir = os.path.join(parent_output_dir, "Test initialisers")
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
     
 def _print_pre_activation_statistics(nn, output_fname):
     np.set_printoptions(precision=3, linewidth=1000, suppress=True)
-    output_path = os.path.join(test_initialisers_output_dir, output_fname)
+    output_path = os.path.join(output_dir, output_fname)
     with open(output_path, "w") as f:
         for i, layer in enumerate(nn.layers):
             print("Layer %i pre-activation mean:" % i, file=f)
@@ -22,7 +21,9 @@ def _print_pre_activation_statistics(nn, output_fname):
 @pytest.mark.parametrize("seed", [9928, 1175, 3399])
 def test_ConstantPreActivationStatistics(seed):
     """
-    ...
+    Test the models.initialisers.ConstantPreActivationStatistics class, which
+    initialises a model with approximately constant statistics in the
+    pre-activation for each layer.
 
     TODO: test with 0, 1, 2 hidden layers
     """
@@ -53,7 +54,9 @@ def test_ConstantPreActivationStatistics(seed):
 @pytest.mark.parametrize("seed", [793, 7405, 3245])
 def test_ConstantParameterStatistics(seed):
     """
-    ...
+    Test the models.initialisers.ConstantParameterStatistics class, which
+    initialises a model with constant statistics for the weights and biases in
+    each layer.
 
     TODO: test with 0, 1, 2 hidden layers
     """

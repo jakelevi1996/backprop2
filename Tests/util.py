@@ -8,11 +8,11 @@ import os
 import numpy as np
 import models, data
 
-def get_output_dir_name():
-    """ Return name of output directory for unit test outputs """
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(current_dir, "Outputs")
-    return output_dir
+# Get name of output directory, and create it if it doesn't exist
+current_dir = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(current_dir, "Outputs")
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
 
 def get_random_network(
     low=3,

@@ -9,10 +9,12 @@ import numpy as np
 import pytest
 import plotting, data, optimisers, models
 from .util import get_random_network
+from .util import output_dir as parent_output_dir
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = os.path.join(parent_output_dir, "Test plotting")
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
 
 @pytest.mark.parametrize("seed", [8974, 4798, 1812])
 def test_plot_1D_regression(seed):
@@ -140,5 +142,7 @@ def test_plot_result_attribute():
         "test_plot_result_attribute_linesearch",
         output_dir,
         results_list,
-        attribute=ls_column.name
+        attribute=ls_column.name,
+        marker="o",
+        ls=""
     )
