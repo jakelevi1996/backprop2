@@ -35,18 +35,28 @@ class DynamicBatchSize(BatchGetter):
     def __init__(
         self,
         model,
+        dataset,
         prob_correct_direction=0.99,
         alpha_smooth=0.2,
-        init_batch_size=50
+        init_batch_size=50,
+        min_batch_size=10
     ):
         inv_cdf_p               = norm.ppf(prob_correct_direction)
         self.scale              = inv_cdf_p * inv_cdf_p
         self.model              = model
         self.batch_size         = init_batch_size
+        self.min_batch_size     = min_batch_size
         self.alpha_smooth       = alpha_smooth
         self.one_m_alpha_smooth = 1 - alpha_smooth
+        # Call get_gradient_vector once so gradients will be initialised
+        batch_inds = np.random.choice(dataset.n_train, size=init_batch_size)
+        model.get_gradient_vector(
+            dataset.x_train[:, batch_inds],
+            dataset.y_train[:, batch_inds]
+        )
 
-    def get_batch(self, dataset, *args):
+
+    def get_batch(self, dataset):
         """
         Get dynamically calculated batch size.
 
@@ -55,6 +65,10 @@ class DynamicBatchSize(BatchGetter):
         new_batch_size = self.model.get_dbs_metric() * self.scale
         self.batch_size *= self.alpha_smooth
         self.batch_size += self.one_m_alpha_smooth * new_batch_size
+        self.batch_size = min(
+            max(self.batch_size, self.min_batch_size),
+            dataset.n_train
+        )
         batch_inds = np.random.choice(
             dataset.n_train,
             size=int(self.batch_size)

@@ -62,7 +62,7 @@ def minimise(
             result.update(model=model, dataset=dataset, iteration=i)
         
         # Get batch of training data
-        x_batch, y_batch = batch_getter.get_batch(dataset, model)
+        x_batch, y_batch = batch_getter.get_batch(dataset)
 
         # Get gradient and initial step
         delta, dEdw = get_step(model, x_batch, y_batch)
