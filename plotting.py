@@ -283,7 +283,7 @@ def plot_training_curves(
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name))
+    plt.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
     plt.close()
 
 def plot_speed_trials():
@@ -373,5 +373,5 @@ def plot_result_attribute(
     plt.grid(True)
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name))
+    plt.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
     plt.close()
