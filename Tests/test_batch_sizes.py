@@ -76,13 +76,16 @@ def test_dynamic_batch_size(seed, dataset_str):
     batch_size = np.random.randint(10, 20)
     model = models.NeuralNetwork(dataset.input_dim, dataset.output_dim)
     batch_getter = optimisers.batch.DynamicBatchSize(model, dataset)
-    n_iters = np.random.randint(10, 20)
+    n_iters = np.random.randint(50, 100)
     output_fname = "Test dynamic batch size, dataset = %s.txt" % dataset_str
     with open(os.path.join(output_dir, output_fname), "w") as f:
         result = optimisers.Result(file=f)
+        result.add_column(optimisers.results.columns.BatchSize(batch_getter))
         result = optimisers.gradient_descent(
             model,
             dataset,
             result=result,
-            batch_getter=batch_getter
+            batch_getter=batch_getter,
+            terminator=optimisers.Terminator(i_lim=n_iters),
+            evaluator=optimisers.Evaluator(i_interval=1)
         )

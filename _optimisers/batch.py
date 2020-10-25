@@ -62,13 +62,16 @@ class DynamicBatchSize(BatchGetter):
 
         TODO: have option to only recalculate batch size every N iterations
         """
+        # Calculate new batch size and smooth with current batch size
         new_batch_size = self.model.get_dbs_metric() * self.scale
         self.batch_size *= self.alpha_smooth
         self.batch_size += self.one_m_alpha_smooth * new_batch_size
+        # Clip batch-size to [self.min_batch_size, dataset.n_train]
         self.batch_size = min(
             max(self.batch_size, self.min_batch_size),
             dataset.n_train
         )
+        # Get batch inds and extract batch data from dataset
         batch_inds = np.random.choice(
             dataset.n_train,
             size=int(self.batch_size)

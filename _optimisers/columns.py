@@ -130,7 +130,9 @@ class BatchSize(_Column):
     ):
         self.batch_getter = batch_getter
         super().__init__(name, width, format_spec, title_name)
-        raise NotImplementedError()
+    
+    def update(self, kwargs):
+        self.value_list.append(int(self.batch_getter.batch_size))
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
