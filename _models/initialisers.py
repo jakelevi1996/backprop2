@@ -45,46 +45,62 @@ class ConstantPreActivationStatistics(_Initialiser):
         self.hidden_layer_std   = hidden_layer_std
 
     def initialise_params(self, model, *args):
+        """
+        Initialise parameters for the neural network.
+
+        TODO: experiment with different standard deviations in each column of
+        the weight matrix, as a function of the standard deviation of each row
+        of the input matrix, so that each weighted row contributes an equal
+        variance to the final output variance (rather than having constant
+        statistics for each column of the weight matrix)
+        """
         this_layer = model.layers[0]
-        init_weight_std = np.sqrt(1.0 / self.x_train.var(axis=1).sum())
-        init_weight = np.random.normal(
+        weights_std = (
+            self.hidden_layer_std / np.sqrt(self.x_train.var(axis=1).sum())
+        )
+        weights = np.random.normal(
             0,
-            init_weight_std,
+            weights_std,
             [this_layer.output_dim, this_layer.input_dim]
         )
-        init_bias = -(init_weight @ self.x_train).mean(axis=1)
-        this_layer.init_params(init_weight, 0, init_bias, 0)
+        bias = self.hidden_layer_mean - (weights @ self.x_train).mean(axis=1)
+        this_layer.init_params(weights, 0, bias, 0)
         this_layer.activate(self.x_train)
 
         for i in range(1, len(model.layers) - 1):
             layer_input = model.layers[i-1].output
             this_layer = model.layers[i]
-            init_weight_std = np.sqrt(1.0 / layer_input.var(axis=1).sum())
-            init_weight = np.random.normal(
+            weights_std = (
+                self.hidden_layer_std / np.sqrt(layer_input.var(axis=1).sum())
+            )
+            weights = np.random.normal(
                 0,
-                init_weight_std,
+                weights_std,
                 [this_layer.output_dim, this_layer.input_dim]
             )
-            init_bias = -(init_weight @ layer_input).mean(axis=1)
-            this_layer.init_params(init_weight, 0, init_bias, 0)
+            bias = (
+                self.hidden_layer_mean - (weights @ layer_input).mean(axis=1)
+            )
+            this_layer.init_params(weights, 0, bias, 0)
             this_layer.activate(layer_input)
         
-        # TODO: will this work if there is only 1 layer?
-        layer_input = model.layers[-2].output
-        this_layer = model.layers[-1]
-        init_weight_std = np.sqrt(np.divide(
-            self.y_train.var(axis=1, keepdims=True),
-            layer_input.var(axis=1).sum()
-        ))
-        init_weight = np.random.normal(
-            0,
-            init_weight_std,
-            [this_layer.output_dim, this_layer.input_dim]
-        )
-        output_mean = self.y_train.mean(axis=1)
-        pre_activation_mean = (init_weight @ layer_input).mean(axis=1)
-        init_bias = output_mean - pre_activation_mean
-        this_layer.init_params(init_weight, 0, init_bias, 0)
+        # TODO: add unit test for network with no hidden layers
+        if len(model.layers) > 1:
+            layer_input = model.layers[-2].output
+            this_layer = model.layers[-1]
+            weights_std = np.sqrt(np.divide(
+                self.y_train.var(axis=1, keepdims=True),
+                layer_input.var(axis=1).sum()
+            ))
+            weights = np.random.normal(
+                0,
+                weights_std,
+                [this_layer.output_dim, this_layer.input_dim]
+            )
+            output_mean = self.y_train.mean(axis=1)
+            pre_activation_mean = (weights @ layer_input).mean(axis=1)
+            bias = output_mean - pre_activation_mean
+            this_layer.init_params(weights, 0, bias, 0)
 
 
 class FromModelFile(_Initialiser):

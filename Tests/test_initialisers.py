@@ -18,8 +18,11 @@ def _print_pre_activation_statistics(nn, output_fname):
             print("Layer %i pre-activation STD:" % i, file=f)
             print(layer.pre_activation.std(axis=1, keepdims=True), file=f)
 
-@pytest.mark.parametrize("seed", [9928, 1175, 3399])
-def test_ConstantPreActivationStatistics(seed):
+seed_list = [9928, 1175, 3399, 0]
+mean_list = [0, 0, 10, 0]
+std_list = [1, 10, 1, 1]
+@pytest.mark.parametrize("seed,mean,std", zip(seed_list, mean_list, std_list))
+def test_ConstantPreActivationStatistics(seed, mean, std):
     """
     Test the models.initialisers.ConstantPreActivationStatistics class, which
     initialises a model with approximately constant statistics in the
@@ -36,7 +39,9 @@ def test_ConstantPreActivationStatistics(seed):
     sin_data = data.Sinusoidal(input_dim, output_dim, N_D, 0, x_lo, x_hi)
     initialiser = models.initialisers.ConstantPreActivationStatistics(
         sin_data.x_train,
-        sin_data.y_train
+        sin_data.y_train,
+        mean,
+        std
     )
     num_hidden_layers = np.random.randint(3, 6)
     num_hidden_units = np.random.randint(3, 6, num_hidden_layers)
