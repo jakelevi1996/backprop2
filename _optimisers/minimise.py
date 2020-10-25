@@ -46,7 +46,7 @@ def minimise(
     if result is None:
         result = Result()
     if batch_getter is None:
-        batch_getter = FullTrainingSet()
+        batch_getter = FullTrainingSet(dataset)
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
