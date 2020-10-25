@@ -39,8 +39,15 @@ class DynamicBatchSize(BatchGetter):
         prob_correct_direction=0.99,
         alpha_smooth=0.2,
         init_batch_size=50,
-        min_batch_size=10
+        min_batch_size=10,
     ):
+        """
+        ...
+
+        TODO: use isf instead of ppf, update kwarg name accordingly and update
+        tests and scripts (or alternatively, allow to specify the scale
+        directly?)
+        """
         inv_cdf_p               = norm.ppf(prob_correct_direction)
         self.scale              = inv_cdf_p * inv_cdf_p
         self.model              = model
@@ -60,7 +67,9 @@ class DynamicBatchSize(BatchGetter):
         """
         Get dynamically calculated batch size.
 
-        TODO: have option to only recalculate batch size every N iterations
+        TODO:
+        -   Have option to only recalculate batch size every N iterations
+        -   Use Kalman filter instead of exponential smoothing
         """
         # Calculate new batch size and smooth with current batch size
         new_batch_size = self.model.get_dbs_metric() * self.scale
