@@ -124,7 +124,7 @@ class BatchSize(_Column):
         self,
         batch_getter,
         name="batch_size",
-        width=9,
+        width=10,
         format_spec="d",
         title_name="Batch size"
     ):
