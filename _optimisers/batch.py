@@ -2,9 +2,21 @@
 TODO
 
 TODO:
-- Add docstrings
-- When using random choice to select batch_inds, compare with replacement vs
-  without replacement
+-   Add docstrings
+-   When using random choice to select batch_inds, compare with replacement vs
+    without replacement
+-   Rename DynamicBatchSize as LocalDynamicBatchSize, and implement a
+    GlobalDynamicBatchSize, which calculates the probability that the dot
+    product of the descent direction with the gradient vector is < 0 (IE
+    guaranteeing a reduction). The dot product is a linear combination of each
+    element of the descent direction, and the random variables representing each
+    element of the gradient vector; assuming independence, a mean and variance
+    can be calculated for the entire dot product, and by calculating the
+    probability of this dot product being <= 0, it should be possible to
+    calculate a batch size. In this scenario, where does N (the number of data
+    points/batch size) come into the picture? Same as before, averaging over N
+    samples, variance scales by 1/N
+
 """
 import numpy as np
 from scipy.stats import norm
