@@ -12,7 +12,7 @@ Below are some examples for calling this script:
 
     python Scripts\plot_dbs.py 1 1 100 1 10 0 0.02 3 0.995 0.99 10
 
-    python Scripts\plot_dbs.py 2 3 2500 20 20,20 0 4 3 0.995 0.99 10
+    python Scripts\plot_dbs.py 2 3 2500 20 20,20 0 4 3 0.995 0.99999 10
 
 Running each of the above examples requires ??? s and ??? s respectively.
 
@@ -112,13 +112,17 @@ def main(
     plot_name_suffix = "\n%iD-%iD data"             % (input_dim, output_dim)
     plot_name_suffix += ", %.2g s training time"    % t_lim
     plot_name_suffix += ", %s hidden units"         % str(num_hidden_units)
-    plot_name_suffix += ", alpha_smooth = %.3f"     % alpha_smooth
+    plot_name_suffix += "\nalpha_smooth = %.3f"     % alpha_smooth
     plot_name_suffix += ", p_c = %.3f"              % p_c
     plot_name_suffix += ", min_batch_size = %.3f"   % min_batch_size
+    this_test_output_dir = os.path.join(
+        output_dir,
+        plot_name_suffix.replace("\n", "")
+    )
     plotting.plot_training_curves(
         results_list,
         "DBS learning curves" + plot_name_suffix,
-        os.path.join(output_dir, plot_name_suffix.replace("\n", "")),
+        this_test_output_dir,
         e_lims=e_lims
     )
     for attr_name in ["dbs_metric", "batch_size"]:
@@ -126,7 +130,7 @@ def main(
         plot_name += plot_name_suffix
         plotting.plot_result_attribute(
             plot_name,
-            os.path.join(output_dir, plot_name_suffix.replace("\n", "")),
+            this_test_output_dir,
             results_list,
             attr_name
         )
