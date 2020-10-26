@@ -8,6 +8,7 @@ TODO:
 """
 import numpy as np
 from scipy.stats import norm
+from _optimisers.terminator import Terminator
 
 class BatchGetter():
     def get_batch(self, dataset):
@@ -31,7 +32,7 @@ class ConstantBatchSize(BatchGetter):
         batch_inds = np.random.choice(dataset.n_train, size=self.batch_size)
         return dataset.x_train[:, batch_inds], dataset.y_train[:, batch_inds]
 
-class DynamicBatchSize(BatchGetter):
+class DynamicBatchSize(BatchGetter, Terminator):
     def __init__(
         self,
         model,
@@ -53,6 +54,7 @@ class DynamicBatchSize(BatchGetter):
         self.model              = model
         self.batch_size         = init_batch_size
         self.min_batch_size     = min_batch_size
+        self.max_batch_size     = dataset.n_train
         self.alpha_smooth       = alpha_smooth
         self.one_m_alpha_smooth = 1 - alpha_smooth
         # Call get_gradient_vector once so gradients will be initialised
@@ -86,3 +88,6 @@ class DynamicBatchSize(BatchGetter):
             size=int(self.batch_size)
         )
         return dataset.x_train[:, batch_inds], dataset.y_train[:, batch_inds]
+
+    def ready_to_terminate(self, **kwargs):
+        return self.batch_size >= self.max_batch_size
