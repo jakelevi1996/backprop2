@@ -8,9 +8,10 @@ printing
 """
 
 class _Column:
-    def __init__(self, name, width, format_spec, title_name=None):
+    def __init__(self, name, format_spec, title_name=None, width=None):
         self.name = name
         title_name = title_name if (title_name is not None) else name
+        width = width if (width is not None) else len(title_name)
         self.title_str = "{{:{}s}}".format(width).format(title_name)
         self.value_list = []
         self._value_fmt_str = "{{:{}{}}}".format(width, format_spec)
@@ -38,31 +39,28 @@ class Iteration(_Column):
     def __init__(
         self,
         name="iteration",
-        width=9,
         format_spec="d",
         title_name="Iteration"
     ):
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
 
 class Time(_Column):
     def __init__(
         self,
         name="time",
-        width=8,
         format_spec=".3f",
         title_name="Time (s)"
     ):
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
 
 class TrainError(_Column):
     def __init__(
         self,
         name="train_error",
-        width=11,
         format_spec=".5f",
         title_name="Train error"
     ):
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
     
     def update(self, kwargs):
         dataset = kwargs["dataset"]
@@ -74,11 +72,10 @@ class TestError(_Column):
     def __init__(
         self,
         name="test_error",
-        width=11,
         format_spec=".5f",
         title_name="Test error"
     ):
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
     
     def update(self, kwargs):
         dataset = kwargs["dataset"]
@@ -91,7 +88,6 @@ class StepSize(_Column):
         self,
         line_search,
         name="step_size",
-        width=10,
         format_spec=".4f",
         title_name="Step Size"
     ):
@@ -101,7 +97,7 @@ class StepSize(_Column):
         minimisation with the Result that this column will belong to.
         """
         self.line_search = line_search
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
     
     def update(self, kwargs):
         self.value_list.append(self.line_search.s)
@@ -110,11 +106,10 @@ class DbsMetric(_Column):
     def __init__(
         self,
         name="dbs_metric",
-        width=9,
         format_spec=".4f",
         title_name="DBS metric"
     ):
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
     
     def update(self, kwargs):
         self.value_list.append(kwargs["model"].get_dbs_metric())
@@ -124,12 +119,11 @@ class BatchSize(_Column):
         self,
         batch_getter,
         name="batch_size",
-        width=10,
         format_spec="d",
         title_name="Batch size"
     ):
         self.batch_getter = batch_getter
-        super().__init__(name, width, format_spec, title_name)
+        super().__init__(name, format_spec, title_name)
     
     def update(self, kwargs):
         self.value_list.append(int(self.batch_getter.batch_size))
