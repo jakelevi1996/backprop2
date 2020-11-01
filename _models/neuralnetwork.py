@@ -103,6 +103,7 @@ class NeuralNetwork():
         )
         self.param_vector = np.empty(self.num_params)
         self.grad_vector = np.empty(self.num_params)
+        self.grad_var_vector = np.empty(self.num_params)
     
     def _init_layers(self, act_func_list):
         """
@@ -377,6 +378,37 @@ class NeuralNetwork():
         method)
         """
         return min(layer.get_dbs_metric() for layer in self.layers)
+    
+    def get_global_dbs_metric(self):
+        """
+        Calculate a global DBS metric, used to calculate the probability that
+        the dot product between the gradient vector and the descent direction
+        (assumed to be equal to the negative gradient vector) is less than zero,
+        implying a decrease in the objective function. In this global DBS
+        metric, the dot product is modelled as a linear combination of each
+        element of the gradient vector, with each element being modelled as an
+        indpendent Gaussian random variable.
+        """
+        grad_sq = self.grad_vector * self.grad_vector
+        mean_dot_prod = grad_sq.sum()
+        mean_sq_dot_prod = mean_dot_prod * mean_dot_prod
+        
+        # Calculate the variance of each element of the gradient vector
+        i = 0
+        for layer in self.layers:
+            # Calculate the weight variance and update the pointer
+            self.grad_var_vector[i:i+layer.num_weights] = (
+                layer.w_grad.var(axis=-1).ravel()
+            )
+            i += layer.num_weights
+            # Calculate the bias variance and update the pointer
+            self.grad_var_vector[i:i+layer.num_bias] = (
+                layer.b_grad.var(axis=-1).ravel()
+            )
+        
+        var_dot_prod = (self.grad_var_vector * grad_sq).sum()
+        # Calculate and return the metric
+        return var_dot_prod / mean_sq_dot_prod
 
     def set_parameter_vector(self, new_parameters):
         """
