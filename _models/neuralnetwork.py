@@ -405,6 +405,7 @@ class NeuralNetwork():
             self.grad_var_vector[i:i+layer.num_bias] = (
                 layer.b_grad.var(axis=-1).ravel()
             )
+            i += layer.num_bias
         
         var_dot_prod = (self.grad_var_vector * grad_sq).sum()
         # Calculate and return the metric
