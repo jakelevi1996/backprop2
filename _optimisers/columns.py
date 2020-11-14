@@ -114,6 +114,18 @@ class DbsMetric(_Column):
     def update(self, kwargs):
         self.value_list.append(kwargs["model"].get_dbs_metric())
 
+class GlobalDbsMetric(_Column):
+    def __init__(
+        self,
+        name="global_dbs_metric",
+        format_spec=".4f",
+        title_name="Global DBS metric"
+    ):
+        super().__init__(name, format_spec, title_name)
+    
+    def update(self, kwargs):
+        self.value_list.append(kwargs["model"].get_global_dbs_metric())
+
 class BatchSize(_Column):
     def __init__(
         self,
