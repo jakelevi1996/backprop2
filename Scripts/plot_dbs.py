@@ -1,6 +1,7 @@
 """
 Script to DBS metric and batch size, when training a neural network on
-sinusoidal data using gradient descent with a line-search.
+sinusoidal data using gradient descent with a line-search and a dynamic batch
+size.
 
 This script requires command line arguments for the input and output dimensions
 and number of training points in the data-set, the length of time to train for
@@ -97,6 +98,7 @@ def main(
         )
         result.add_column(optimisers.results.columns.BatchSize(batch_getter))
         result.add_column(optimisers.results.columns.DbsMetric())
+        result.add_column(optimisers.results.columns.GlobalDbsMetric())
         result = optimisers.gradient_descent(
             model,
             sin_data,
@@ -125,7 +127,7 @@ def main(
         this_test_output_dir,
         e_lims=e_lims
     )
-    for attr_name in ["dbs_metric", "batch_size"]:
+    for attr_name in ["dbs_metric", "global_dbs_metric", "batch_size"]:
         plot_name = "%s against iteration for dynamic batch size" % attr_name
         plot_name += plot_name_suffix
         plotting.plot_result_attribute(
