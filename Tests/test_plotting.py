@@ -146,3 +146,50 @@ def test_plot_result_attribute():
         marker="o",
         ls=""
     )
+
+def test_plot_result_attribute_subplots():
+    """
+    Test plotting function for plotting the values in multiple columns of a
+    Result object over time, with one subplot per column
+    """
+    np.random.seed(1521)
+    n_its = np.random.randint(10, 20)
+    n_train = np.random.randint(10, 20)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    results_list = []
+    for i in range(5):
+        model = models.NeuralNetwork(input_dim=1, output_dim=1)
+        model.get_gradient_vector(sin_data.x_train, sin_data.y_train)
+        name = "test_plot_result_attribute_subplots_%i" % (i + 1)
+        output_text_filename = os.path.join(output_dir, name + ".txt")
+        with open(output_text_filename, "w") as f:
+            result = optimisers.Result(name=name, file=f)
+            ls = optimisers.LineSearch()
+            ls_column = optimisers.results.columns.StepSize(ls)
+            dbs_metric_column = optimisers.results.columns.DbsMetric()
+            result.add_column(ls_column)
+            result.add_column(dbs_metric_column)
+            optimisers.gradient_descent(
+                model,
+                sin_data,
+                result=result,
+                terminator=optimisers.Terminator(i_lim=n_its),
+                evaluator=optimisers.Evaluator(i_interval=1)
+            )
+        results_list.append(result)
+    
+    attribute_list = [
+        "train_error",
+        "test_error",
+        "time",
+        ls_column.name,
+        dbs_metric_column.name
+    ]
+    plotting.plot_result_attributes_subplots(
+        "test_plot_result_attribute_linesearch",
+        output_dir,
+        results_list,
+        attribute_list,
+        marker="o",
+        ls=""
+    )
