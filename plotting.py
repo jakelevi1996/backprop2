@@ -387,16 +387,20 @@ def plot_result_attributes_subplots(
     figsize=[16, 9],
     alpha=0.7,
     marker=None,
-    ls=None
+    ls=None,
+    log_axes_attributes=None
 ):
     """
     Similar to the plot_result_attribute function, except accept a list of
     attribute names, and use a different subplot for each attribute (and one
     also for the legend). If num_rows or num_cols are not set, then they are
-    chosen to make the plot as square as possible. Raises a ValueError if
-    num_rows * num_cols < len(attribute_list) + 1.
+    chosen to make the plot as square as possible. If present,
+    log_axes_attributes should be an iterable (EG a set) containing the names of
+    any plots which should have logarithmic y axes.
+
+    Raises a ValueError if num_rows * num_cols < len(attribute_list) + 1.
     """
-    # Set number of plots, rows and columns
+    # Set number of plots, rows and columns, and log_axes_attributes
     num_plots = len(attribute_list) + 1
     if num_rows is None and num_cols is None:
         num_cols = ceil(sqrt(num_plots))
@@ -406,6 +410,8 @@ def plot_result_attributes_subplots(
         num_cols = ceil(num_plots / num_rows)
     if num_rows * num_cols < num_plots:
         raise ValueError("Not enough rows/columns for attribute list")
+    if log_axes_attributes is None:
+        log_axes_attributes = []
 
     # Create subplots, name list, colour list, and colour dictionary
     fig, axes = plt.subplots(num_rows, num_cols, sharex=True, figsize=figsize)
@@ -417,8 +423,12 @@ def plot_result_attributes_subplots(
     colour_dict = dict(zip(unique_names_list, colour_list))
     # Iterate through attributes, axes, and results
     for attribute, ax in zip(attribute_list, axes.flat):
+        if attribute in log_axes_attributes:
+            ax_plot_func = lambda *args, **kwargs: ax.semilogy(*args, **kwargs)
+        else:
+            ax_plot_func = lambda *args, **kwargs: ax.plot(*args, **kwargs)
         for result in result_list:
-            ax.plot(
+            ax_plot_func(
                 result.get_values("iteration"),
                 result.get_values(attribute),
                 c=colour_dict[result.name],
@@ -435,8 +445,8 @@ def plot_result_attributes_subplots(
     axes.flat[len(attribute_list)].legend(
         loc="center",
         handles=[
-        Line2D([], [], color=c, label=name)
-        for c, name in zip(colour_list, unique_names_list)
+            Line2D([], [], color=c, label=name)
+            for c, name in zip(colour_list, unique_names_list)
         ]
     )
     axes.flat[len(attribute_list)].axis("off")
