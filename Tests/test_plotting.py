@@ -173,6 +173,7 @@ def test_plot_result_attribute_subplots():
                 model,
                 sin_data,
                 result=result,
+                line_search=ls,
                 terminator=optimisers.Terminator(i_lim=n_its),
                 evaluator=optimisers.Evaluator(i_interval=1)
             )
@@ -191,5 +192,6 @@ def test_plot_result_attribute_subplots():
         results_list,
         attribute_list,
         marker="o",
-        ls=""
+        ls="",
+        log_axes_attributes={"train_error", "test_error", ls_column.name}
     )
