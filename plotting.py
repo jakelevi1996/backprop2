@@ -426,8 +426,8 @@ def plot_result_attributes_subplots(
                 marker=marker,
                 ls=ls
             )
-        ax.xlabel("Iteration")
-        ax.ylabel(attribute)
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel(attribute)
         ax.grid(True)
 
     # Format, save and close
