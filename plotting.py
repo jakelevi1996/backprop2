@@ -432,10 +432,14 @@ def plot_result_attributes_subplots(
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=20)
-    axes.flat[len(attribute_list)].legend(handles=[
+    axes.flat[len(attribute_list)].legend(
+        loc="center",
+        handles=[
         Line2D([], [], color=c, label=name)
         for c, name in zip(colour_list, unique_names_list)
-    ])
+        ]
+    )
+    axes.flat[len(attribute_list)].axis("off")
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
     fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
