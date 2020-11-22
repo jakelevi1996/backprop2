@@ -6,11 +6,10 @@ import models
 from models import NeuralNetwork, activations
 import data
 import plotting
-from .util import get_random_network
+from .util import get_random_network, get_output_dir
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Optimisers")
 
 @pytest.mark.parametrize("seed", [5653, 9869, 2702])
 def test_gradient_descent(seed):

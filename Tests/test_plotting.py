@@ -8,13 +8,10 @@ import os
 import numpy as np
 import pytest
 import plotting, data, optimisers, models
-from .util import get_random_network
-from .util import output_dir as parent_output_dir
+from .util import get_random_network, get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
-output_dir = os.path.join(parent_output_dir, "Test plotting")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+output_dir = get_output_dir("Plotting")
 
 @pytest.mark.parametrize("seed", [8974, 4798, 1812])
 def test_plot_1D_regression(seed):
@@ -144,7 +141,7 @@ def test_plot_result_attribute():
         results_list,
         attribute=ls_column.name,
         marker="o",
-        ls=""
+        line_style=""
     )
 
 def test_plot_result_attribute_subplots():
@@ -187,11 +184,11 @@ def test_plot_result_attribute_subplots():
         dbs_metric_column.name
     ]
     plotting.plot_result_attributes_subplots(
-        "test_plot_result_attribute_linesearch",
+        "test_plot_result_attribute_subplots",
         output_dir,
         results_list,
         attribute_list,
         marker="o",
-        ls="",
+        line_style="",
         log_axes_attributes={"train_error", "test_error", ls_column.name}
     )

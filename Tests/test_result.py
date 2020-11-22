@@ -9,13 +9,11 @@ import os
 import pytest
 import numpy as np
 from optimisers import results, LineSearch
-from .util import get_random_network
+from .util import get_random_network, get_output_dir
 import data
 
-
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Result")
 
 def get_updated_or_empty_result(use_updated_result, seed):
     if use_updated_result:

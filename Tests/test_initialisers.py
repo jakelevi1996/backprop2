@@ -2,11 +2,10 @@ import os
 import pytest
 import numpy as np
 import models, data
-from .util import output_dir as parent_output_dir
+from .util import get_output_dir
 
-output_dir = os.path.join(parent_output_dir, "Test initialisers")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Initialisers")
     
 def _print_pre_activation_statistics(nn, output_fname):
     np.set_printoptions(precision=3, linewidth=1000, suppress=True)

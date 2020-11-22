@@ -5,7 +5,7 @@ import os
 import pytest
 import numpy as np
 from models import activations
-from .util import get_random_network_inputs_targets
+from .util import get_output_dir, get_random_network_inputs_targets
 
 # Define list of activation functions to be tested
 act_func_list = [
@@ -17,9 +17,8 @@ act_func_list = [
     activations.piecewise_quadratic
 ]
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Activations")
 
 @pytest.mark.parametrize("seed", [2144, 6646, 9914])
 @pytest.mark.parametrize("act_func", act_func_list)

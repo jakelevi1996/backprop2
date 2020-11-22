@@ -8,11 +8,14 @@ import os
 import numpy as np
 import models, data
 
-# Get name of output directory, and create it if it doesn't exist
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+def get_output_dir(subdir_name):
+    """ Get name of output directory for a given test module, and create it if
+    it doesn't exist """
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(current_dir, "Outputs", subdir_name)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    return output_dir
 
 def get_random_network(
     low=3,

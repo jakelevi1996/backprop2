@@ -5,13 +5,10 @@ import os
 import numpy as np
 import pytest
 import models, data, optimisers
-from .util import get_random_network
-from .util import output_dir as parent_output_dir
+from .util import get_random_network, get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
-output_dir = os.path.join(parent_output_dir, "Test columns")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+output_dir = get_output_dir("Columns")
 
 def test_standard_columns():
     """ Test using a Result object with the standard columns """

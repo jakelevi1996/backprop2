@@ -6,12 +6,10 @@ import os
 import numpy as np
 import pytest
 import optimisers, data, models
-from .util import get_dataset, dataset_list, get_random_network
-from .util import output_dir as parent_output_dir
+from .util import get_dataset, dataset_list, get_random_network, get_output_dir
 
-output_dir = os.path.join(parent_output_dir, "Test batch sizes")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Batch sizes")
 
 @pytest.mark.parametrize("seed", [5802, 5496, 5922])
 @pytest.mark.parametrize("dataset_str", dataset_list)

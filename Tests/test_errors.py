@@ -5,14 +5,13 @@ import os
 import pytest
 import numpy as np
 import models
-from .util import get_random_network_inputs_targets
+from .util import get_random_network_inputs_targets, get_output_dir
 
 # Define list of error functions to be tested
 error_func_list = [models.errors.sum_of_squares]
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Errors")
 
 @pytest.mark.parametrize("seed", [2144, 6646, 9914])
 @pytest.mark.parametrize("error_func", error_func_list)

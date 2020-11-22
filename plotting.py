@@ -341,11 +341,11 @@ def plot_result_attribute(
     figsize=[8, 6],
     alpha=0.7,
     marker=None,
-    ls=None
+    line_style=None
 ):
     """
     Function to plot a specific attribute stored in the Result class, for
-    example the step size, or the DBS, during each iteration
+    example the step size, or the DBS, during each iteration.
     """
     plt.figure(figsize=figsize)
     name_list = [result.name for result in result_list]
@@ -361,7 +361,7 @@ def plot_result_attribute(
             c=colour_dict[result.name],
             alpha=alpha,
             marker=marker,
-            ls=ls
+            ls=line_style
         )
     # Format, save and close
     plt.title(plot_name)
@@ -387,7 +387,7 @@ def plot_result_attributes_subplots(
     figsize=[16, 9],
     alpha=0.7,
     marker=None,
-    ls=None,
+    line_style=None,
     log_axes_attributes=None
 ):
     """
@@ -434,22 +434,24 @@ def plot_result_attributes_subplots(
                 c=colour_dict[result.name],
                 alpha=alpha,
                 marker=marker,
-                ls=ls
+                ls=line_style
             )
         ax.set_xlabel("Iteration")
         ax.set_ylabel(attribute)
-        ax.grid(True)
+        ax.grid(which="major", ls="-")
+        ax.grid(which="minor", ls=":", alpha=0.5)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=20)
-    axes.flat[len(attribute_list)].legend(
+    legend_subplot_index = len(attribute_list)
+    axes.flat[legend_subplot_index].legend(
         loc="center",
         handles=[
             Line2D([], [], color=c, label=name)
             for c, name in zip(colour_list, unique_names_list)
         ]
     )
-    axes.flat[len(attribute_list)].axis("off")
+    axes.flat[legend_subplot_index].axis("off")
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
     fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
