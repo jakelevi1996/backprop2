@@ -3,11 +3,10 @@ import numpy as np
 import pytest
 import optimisers
 import data
-from .util import get_random_network
+from .util import get_random_network, get_output_dir
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Line search")
 
 @pytest.mark.parametrize("seed", [3217, 3132, 3523])
 def test_gradient_descent_line_search(seed):

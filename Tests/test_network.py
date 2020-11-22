@@ -2,13 +2,10 @@ import os
 import pytest
 import numpy as np
 from models import NeuralNetwork, activations, errors
-from .util import get_random_network_inputs_targets
+from .util import get_random_network_inputs_targets, get_output_dir
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
-
-
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Network")
 
 @pytest.mark.parametrize("seed", [6588, 4626, 376])
 def test_forward_propagation(seed):

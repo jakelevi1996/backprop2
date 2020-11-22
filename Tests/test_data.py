@@ -2,11 +2,10 @@ import os
 import numpy as np
 import pytest
 import data
-from .util import get_dataset, dataset_list
+from .util import get_dataset, dataset_list, get_output_dir
 
-# Get name of output directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(current_dir, "Outputs")
+# Get name of output directory, and create it if it doesn't exist
+output_dir = get_output_dir("Data")
 
 @pytest.mark.parametrize("seed", [4405, 9721, 5974])
 @pytest.mark.parametrize("dataset_str", dataset_list)

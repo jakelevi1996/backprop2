@@ -193,7 +193,9 @@ class NeuralLayer():
     def get_dbs_metric(self):
         """
         Get the minimum DBS metric for the gradients of the weights and biases
-        in this layer
+        in this layer. NOTE: it is assumed that the forward_prop and back_prop
+        methods have been called prior to calling this method (EG by calling the
+        NeuralNetwork.get_gradient_vector method)
         """
         weight_dbs_vector = np.divide(
             self.w_grad.var(axis=-1),

@@ -8,13 +8,10 @@ import os
 import numpy as np
 import pytest
 import plotting, data, optimisers, models
-from .util import get_random_network
-from .util import output_dir as parent_output_dir
+from .util import get_random_network, get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
-output_dir = os.path.join(parent_output_dir, "Test plotting")
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+output_dir = get_output_dir("Plotting")
 
 @pytest.mark.parametrize("seed", [8974, 4798, 1812])
 def test_plot_1D_regression(seed):
@@ -144,5 +141,54 @@ def test_plot_result_attribute():
         results_list,
         attribute=ls_column.name,
         marker="o",
-        ls=""
+        line_style=""
+    )
+
+def test_plot_result_attribute_subplots():
+    """
+    Test plotting function for plotting the values in multiple columns of a
+    Result object over time, with one subplot per column
+    """
+    np.random.seed(1521)
+    n_its = np.random.randint(10, 20)
+    n_train = np.random.randint(10, 20)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    results_list = []
+    for i in range(5):
+        model = models.NeuralNetwork(input_dim=1, output_dim=1)
+        model.get_gradient_vector(sin_data.x_train, sin_data.y_train)
+        name = "test_plot_result_attribute_subplots_%i" % (i + 1)
+        output_text_filename = os.path.join(output_dir, name + ".txt")
+        with open(output_text_filename, "w") as f:
+            result = optimisers.Result(name=name, file=f)
+            ls = optimisers.LineSearch()
+            ls_column = optimisers.results.columns.StepSize(ls)
+            dbs_metric_column = optimisers.results.columns.DbsMetric()
+            result.add_column(ls_column)
+            result.add_column(dbs_metric_column)
+            optimisers.gradient_descent(
+                model,
+                sin_data,
+                result=result,
+                line_search=ls,
+                terminator=optimisers.Terminator(i_lim=n_its),
+                evaluator=optimisers.Evaluator(i_interval=1)
+            )
+        results_list.append(result)
+    
+    attribute_list = [
+        "train_error",
+        "test_error",
+        "time",
+        ls_column.name,
+        dbs_metric_column.name
+    ]
+    plotting.plot_result_attributes_subplots(
+        "test_plot_result_attribute_subplots",
+        output_dir,
+        results_list,
+        attribute_list,
+        marker="o",
+        line_style="",
+        log_axes_attributes={"train_error", "test_error", ls_column.name}
     )

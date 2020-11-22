@@ -1,4 +1,5 @@
 import os
+from math import ceil, sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -340,11 +341,11 @@ def plot_result_attribute(
     figsize=[8, 6],
     alpha=0.7,
     marker=None,
-    ls=None
+    line_style=None
 ):
     """
     Function to plot a specific attribute stored in the Result class, for
-    example the step size, or the DBS, during each iteration
+    example the step size, or the DBS, during each iteration.
     """
     plt.figure(figsize=figsize)
     name_list = [result.name for result in result_list]
@@ -360,7 +361,7 @@ def plot_result_attribute(
             c=colour_dict[result.name],
             alpha=alpha,
             marker=marker,
-            ls=ls
+            ls=line_style
         )
     # Format, save and close
     plt.title(plot_name)
@@ -375,3 +376,83 @@ def plot_result_attribute(
         os.makedirs(dir_name)
     plt.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
     plt.close()
+
+def plot_result_attributes_subplots(
+    plot_name,
+    dir_name,
+    result_list,
+    attribute_list,
+    num_rows=None,
+    num_cols=None,
+    figsize=[16, 9],
+    alpha=0.7,
+    marker=None,
+    line_style=None,
+    log_axes_attributes=None
+):
+    """
+    Similar to the plot_result_attribute function, except accept a list of
+    attribute names, and use a different subplot for each attribute (and one
+    also for the legend). If num_rows or num_cols are not set, then they are
+    chosen to make the plot as square as possible. If present,
+    log_axes_attributes should be an iterable (EG a set) containing the names of
+    any plots which should have logarithmic y axes.
+
+    Raises a ValueError if num_rows * num_cols < len(attribute_list) + 1.
+    """
+    # Set number of plots, rows and columns, and log_axes_attributes
+    num_plots = len(attribute_list) + 1
+    if num_rows is None and num_cols is None:
+        num_cols = ceil(sqrt(num_plots))
+    if num_rows is None:
+        num_rows = ceil(num_plots / num_cols)
+    if num_cols is None:
+        num_cols = ceil(num_plots / num_rows)
+    if num_rows * num_cols < num_plots:
+        raise ValueError("Not enough rows/columns for attribute list")
+    if log_axes_attributes is None:
+        log_axes_attributes = []
+
+    # Create subplots, name list, colour list, and colour dictionary
+    fig, axes = plt.subplots(num_rows, num_cols, sharex=True, figsize=figsize)
+    name_list = [result.name for result in result_list]
+    unique_names_list = sorted(list(set(name_list)))
+    colour_list = plt.get_cmap("hsv")(
+        np.linspace(0, 1, len(unique_names_list), endpoint=False)
+    )
+    colour_dict = dict(zip(unique_names_list, colour_list))
+    # Iterate through attributes, axes, and results
+    for attribute, ax in zip(attribute_list, axes.flat):
+        if attribute in log_axes_attributes:
+            ax_plot_func = lambda *args, **kwargs: ax.semilogy(*args, **kwargs)
+        else:
+            ax_plot_func = lambda *args, **kwargs: ax.plot(*args, **kwargs)
+        for result in result_list:
+            ax_plot_func(
+                result.get_values("iteration"),
+                result.get_values(attribute),
+                c=colour_dict[result.name],
+                alpha=alpha,
+                marker=marker,
+                ls=line_style
+            )
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel(attribute)
+        ax.grid(which="major", ls="-")
+        ax.grid(which="minor", ls=":", alpha=0.5)
+
+    # Format, save and close
+    fig.suptitle(plot_name, fontsize=20)
+    legend_subplot_index = len(attribute_list)
+    axes.flat[legend_subplot_index].legend(
+        loc="center",
+        handles=[
+            Line2D([], [], color=c, label=name)
+            for c, name in zip(colour_list, unique_names_list)
+        ]
+    )
+    axes.flat[legend_subplot_index].axis("off")
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
+    plt.close(fig)
