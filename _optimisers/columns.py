@@ -140,5 +140,22 @@ class BatchSize(_Column):
     def update(self, kwargs):
         self.value_list.append(int(self.batch_getter.batch_size))
 
+class ExpectedReductionMean(_Column):
+    # Calculated using inner product between delta and gradients, based on first
+    # order Taylor series. This should model approaching convergence, because
+    # all the gradients start to point in different directions.
+    pass
+
+class ExpectedReductionVariance(_Column):
+    pass
+
+class ActualReductionVsFullTrainingSet(_Column):
+    # Calculated by using the mean error from the previous iteration. This
+    # should model overfitting a batch because the batch size is too small
+    pass
+
+class ActualReductionVsNextBatch(_Column):
+    pass
+
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
