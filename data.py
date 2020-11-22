@@ -5,6 +5,9 @@ data.
 
 TODO: implement DataSet classes for CircleDataSet, SumOfGaussianCurvesDataSet,
 GaussianCurveDataSet. One module per class, moved over to the data directory?
+
+TODO: have a class/subclasses for generating input points (EG uniform, Gaussian,
+grid, etc), which is shared between all data classes?
 """
 import os
 import numpy as np
@@ -112,17 +115,43 @@ class Sinusoidal(DataSet):
         offset=None,
     ):
         """
-        Initialise a Sinusoidal dataset object...
+        Initialise a noisy Sinusoidal dataset object.
 
         Inputs:
-        -   ...
+        -   input_dim: integer number of input dimensions. Default is 1
+        -   output_dim: integer number of output dimensions. Default is  1
+        -   n_train: integer number of points in the training set. Default is
+            100 ^ input_dim
+        -   n_test: integer number of points in the test set. Default is the
+            same as n_train
+        -   x_lo: the lower limit for random uniformly generated x-values.
+            Should be a float, or a numpy array with shape [input_dim, 1].
+            Default is -2
+        -   x_hi: the upper limit for random uniformly generated x-values.
+            Should be a float, or a numpy array with shape [input_dim, 1].
+            Default is 2
+        -   noise_std: standard deviation for Gaussian noise applied to output
+            data. Should be a float, or a numpy array with shape [output_dim,
+            1]. Default is 0.1
+        -   phase: phase used in sinusoidal function. Should be a float, or a
+            numpy array with shape [input_dim, 1]. Default is randomly generated
+        -   freq: frequency used in sinusoidal function. Should be a float, or a
+            numpy array with shape that broadcasts to [output_dim, input_dim].
+            Default is randomly generated
+        -   ampl: amplitude used in sinusoidal function. Should be a float, or a
+            numpy array with shape that broadcasts to [output_dim, output_dim].
+            Default is randomly generated
+        -   offset: offset used in sinusoidal function. Should be a float, or a
+            numpy array with shape [output_dim, 1]. Default is randomly
+            generated
 
         Outputs:
-        -   ...
+        -   Sinusoidal DataSet object initialised with noisy training and test
+            data
 
         Raises:
-        -   ValueError: if x-limits don't broadcast to the size of x_train and
-            x_test
+        -   ValueError: if x-limits x_lo and x_hi don't broadcast to the size of
+            x_train and x_test
         """
         # Set unspecified parameters
         if n_train is None:
