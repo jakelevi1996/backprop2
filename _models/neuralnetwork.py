@@ -373,8 +373,8 @@ class NeuralNetwork():
         TODO: Write docstring
 
         NOTE: it is assumed that the forward_prop and back_prop methods have
-        been called prior to calling this method (EG by the get_gradient_vector
-        method)
+        been called prior to calling this method (EG by calling the
+        get_gradient_vector method)
         """
         return min(layer.get_dbs_metric() for layer in self.layers)
 
