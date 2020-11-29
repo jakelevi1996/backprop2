@@ -61,8 +61,8 @@ def minimise(
 
     if not result.begun:
         result.begin()
-    evaluator.begin()
-    terminator.begin()
+    evaluator.begin(i)
+    terminator.begin(i)
 
     while True:
         # Evaluate the model

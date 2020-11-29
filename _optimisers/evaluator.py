@@ -11,11 +11,11 @@ class Evaluator:
         self.t_interval = t_interval
         self.i_interval = i_interval
         self.t_next_print = 0
-        self.i_next_print = 0
     
-    def begin(self):
-        """ Reset the timer """
+    def begin(self, i):
+        """ Reset the timer, and set the next iteration to evaluate """
         self.t_start = perf_counter()
+        self.i_next_print = i
     
     def ready_to_evaluate(self, i):
         """
