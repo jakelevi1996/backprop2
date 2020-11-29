@@ -134,3 +134,10 @@ def test_minimise_reentrant():
     iteration_values = result.get_values("iteration")
     for i in range(1, len(iteration_values)):
         assert iteration_values[i] > iteration_values[i - 1]
+    # Assert that the list of iteration values is exactly what we expect
+    all_iter_vals = (
+        list(range(0, n_iters_1, eval_every_1)) +
+        list(range(n_iters_1, n_iters_1 + n_iters_2, eval_every_2)) +
+        [n_iters_1 + n_iters_2]
+    )
+    assert all_iter_vals == iteration_values
