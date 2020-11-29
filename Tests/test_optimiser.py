@@ -126,6 +126,10 @@ def test_minimise_reentrant():
             evaluator=optimisers.Evaluator(i_interval=eval_every_2),
             result=result
         )
+    # Check values in time column are monotonically increasing
+    time_values = result.get_values("time")
+    for i in range(1, len(time_values)):
+        assert time_values[i] > time_values[i - 1]
     # Check values in iteration column are monotonically increasing
     iteration_values = result.get_values("iteration")
     for i in range(1, len(iteration_values)):
