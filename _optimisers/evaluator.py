@@ -11,11 +11,20 @@ class Evaluator:
         self.t_interval = t_interval
         self.i_interval = i_interval
         self.t_next_print = 0
-        self.i_next_print = 0
     
-    def begin(self):
-        """ Reset the timer """
+    def begin(self, i):
+        """ Reset the timer, and set the next iteration to evaluate. If the
+        current iteration is 0, then we will evaluate during iteration 0,
+        because we want to know the initial performance of the model, before
+        optimisation starts. Otherwise we assume that the current iteration has
+        been evaluated at the end of the last optimisation loop, so the next
+        time we evaluate based on iteration number will be at the next multiple
+        of self.i_interval (if this is not None) """
         self.t_start = perf_counter()
+        if i == 0:
+            self.i_next_print = 0
+        elif self.i_interval is not None:
+            self.i_next_print = i + self.i_interval
     
     def ready_to_evaluate(self, i):
         """
@@ -31,4 +40,9 @@ class Evaluator:
                 self.i_next_print += self.i_interval
                 return True
         
+        return False
+
+class DoNotEvaluate(Evaluator):
+    """ Class for an evaluator which never evaluates """
+    def ready_to_evaluate(self, i):
         return False

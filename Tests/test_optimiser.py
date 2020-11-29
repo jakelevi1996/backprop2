@@ -85,4 +85,59 @@ def test_pbgn(seed, reuse_block_inds):
     )
     
     results_file.close()
-    
+
+def test_minimise_reentrant():
+    """ Test that the minimise function is re-entrant, IE that the function can
+    return, and be called again, and the columns in the result object are as
+    expected (the output from the result object can be found in the
+    corresponding output file) """
+    # Set parameters for number of iterations and evaluation frequency
+    n_iters_1       = 23
+    eval_every_1    = 5
+    n_iters_2       = 31
+    eval_every_2    = 3
+    # Create model and data
+    np.random.seed(6307)
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
+    # Open result file
+    results_filename = "Test minimise function re-entrant.txt"
+    results_path = os.path.join(output_dir, results_filename)
+    with open(results_path, "w") as results_file:
+        # Create Result object
+        result = optimisers.Result(
+            name="SGD without line search", 
+            verbose=True,
+            file=results_file
+        )
+        # Call gradient descent function twice
+        result_ls = optimisers.gradient_descent(
+            model,
+            sin_data,
+            terminator=optimisers.Terminator(i_lim=n_iters_1),
+            evaluator=optimisers.Evaluator(i_interval=eval_every_1),
+            result=result,
+            display_summary=False
+        )
+        result_ls = optimisers.gradient_descent(
+            model,
+            sin_data,
+            terminator=optimisers.Terminator(i_lim=n_iters_2),
+            evaluator=optimisers.Evaluator(i_interval=eval_every_2),
+            result=result
+        )
+    # Check values in time column are monotonically increasing
+    time_values = result.get_values("time")
+    for i in range(1, len(time_values)):
+        assert time_values[i] > time_values[i - 1]
+    # Check values in iteration column are monotonically increasing
+    iteration_values = result.get_values("iteration")
+    for i in range(1, len(iteration_values)):
+        assert iteration_values[i] > iteration_values[i - 1]
+    # Assert that the list of iteration values is exactly what we expect
+    all_iter_vals = (
+        list(range(0, n_iters_1, eval_every_1)) +
+        list(range(n_iters_1, n_iters_1 + n_iters_2, eval_every_2)) +
+        [n_iters_1 + n_iters_2]
+    )
+    assert all_iter_vals == iteration_values

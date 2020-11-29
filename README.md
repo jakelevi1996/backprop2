@@ -87,6 +87,11 @@ Tests\test_result.py ......................                                     
 
 ## TODO (yes, these to-do lists should be on Jira, and no, I don't intend to copy them over in the near future)
 
+### 2020-11-29
+
+- In Column objects, instead of having a title name and a name, just have a single name attribute
+- When getting columns from a Result object dictionary, get the column using the type of the column, rather than the name attribute?
+
 ### 2020-10-25
 
 - Write a script to find the best parameters for each of the initialisers, DBS, linesearch, PBGN, etc
