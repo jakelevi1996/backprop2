@@ -53,7 +53,8 @@ def minimise(
     w = model.get_parameter_vector()
     i = 0
 
-    result.begin()
+    if not result.begun:
+        result.begin()
     evaluator.begin()
     terminator.begin()
 

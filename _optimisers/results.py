@@ -35,6 +35,7 @@ class Result():
         self.verbose = verbose
         self._column_list = list()
         self._column_dict = dict()
+        self.begun = False
         if add_default_columns:
             self._add_default_columns()
 
@@ -66,6 +67,7 @@ class Result():
             self._display_headers()
         
         self._start_time = perf_counter()
+        self.begun = True
     
     def _time_elapsed(self):
         return perf_counter() - self._start_time
