@@ -41,3 +41,8 @@ class Evaluator:
                 return True
         
         return False
+
+class DoNotEvaluate(Evaluator):
+    """ Class for an evaluator which never evaluates """
+    def ready_to_evaluate(self, i):
+        return False
