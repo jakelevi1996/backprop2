@@ -114,3 +114,19 @@ def test_line_search_column(seed):
             result.update()
         
         assert np.all(result.get_values(col.name) == step_sizes)
+
+def test_result_column_names():
+    # Create result object
+    result = results.Result()
+    # Test the has_column method for columns which it does and doesn't have
+    assert result.has_column("iteration")
+    assert not result.has_column("step size")
+    # Add a new column and check that the has_column method is correct
+    result.add_column(results.columns.StepSize(LineSearch()))
+    assert result.has_column("step_size")
+    # Test getting the values from the new column
+    result.get_values("step_size")
+    # Test trying to get the values of a column that doesn't exist
+    assert not result.has_column("This is not a valid column name")
+    with pytest.raises(KeyError):
+        result.get_values("This is not a valid column name")

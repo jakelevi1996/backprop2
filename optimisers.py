@@ -4,7 +4,7 @@ _optimisers directory. See unit tests and scripts for usage examples.
 """
 from _optimisers.gradient_descent import gradient_descent
 from _optimisers.generalised_newton import generalised_newton
-from _optimisers.evaluator import Evaluator
+from _optimisers.evaluator import Evaluator, DoNotEvaluate
 from _optimisers.terminator import Terminator
 from _optimisers.linesearch import LineSearch
 from _optimisers import results

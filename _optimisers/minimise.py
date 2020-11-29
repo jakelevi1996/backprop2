@@ -16,7 +16,8 @@ def minimise(
     terminator=None,
     line_search=None,
     result=None,
-    batch_getter=None
+    batch_getter=None,
+    display_summary=True
 ):
     """
     Abstract minimisation function, containing code which is common to all
@@ -50,11 +51,19 @@ def minimise(
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
-    i = 0
+    reentering = (
+        result.has_column("iteration")
+        and len(result.get_values("iteration")) > 0
+    )
+    if reentering:
+        i = result.get_values("iteration")[-1]
+    else:
+        i = 0
 
-    result.begin()
-    evaluator.begin()
-    terminator.begin()
+    if not result.begun:
+        result.begin()
+    evaluator.begin(i)
+    terminator.begin(i)
 
     while True:
         # Evaluate the model
@@ -91,7 +100,7 @@ def minimise(
         
     # Evaluate final performance
     result.update(model=model, dataset=dataset, iteration=i)
-    if result.verbose:
+    if display_summary and result.verbose:
         result.display_summary(i)
 
     return result
