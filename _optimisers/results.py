@@ -55,10 +55,18 @@ class Result():
         self._column_list.append(column)
         self._column_dict[column.name] = column
     
+    def has_column(self, name):
+        """ Given the input string name, return, return True if this Result
+        object has a Column with the same name, otherwise return False """
+        return name in self._column_dict
+    
     def get_values(self, name):
         """
         Given the input string name, return the list of values for the column
         with the matching name.
+
+        Raises KeyError if this Result object does not have a Column with a
+        matching name.
         """
         return self._column_dict[name].value_list
     
