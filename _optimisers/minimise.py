@@ -16,7 +16,8 @@ def minimise(
     terminator=None,
     line_search=None,
     result=None,
-    batch_getter=None
+    batch_getter=None,
+    display_summary=True
 ):
     """
     Abstract minimisation function, containing code which is common to all
@@ -91,7 +92,7 @@ def minimise(
         
     # Evaluate final performance
     result.update(model=model, dataset=dataset, iteration=i)
-    if result.verbose:
+    if display_summary and result.verbose:
         result.display_summary(i)
 
     return result

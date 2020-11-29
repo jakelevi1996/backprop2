@@ -116,7 +116,8 @@ def test_minimise_reentrant():
             sin_data,
             terminator=optimisers.Terminator(i_lim=n_iters_1),
             evaluator=optimisers.Evaluator(i_interval=eval_every_1),
-            result=result
+            result=result,
+            display_summary=False
         )
         result_ls = optimisers.gradient_descent(
             model,
