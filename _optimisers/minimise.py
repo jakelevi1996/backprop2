@@ -51,11 +51,12 @@ def minimise(
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
-    if (
+    reentering = (
         result.has_column("iteration")
         and len(result.get_values("iteration")) > 0
-    ):
-        i = result.get_values("iteration")[-1] + 1
+    )
+    if reentering:
+        i = result.get_values("iteration")[-1]
     else:
         i = 0
 
