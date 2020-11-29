@@ -51,7 +51,13 @@ def minimise(
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
-    i = 0
+    if (
+        result.has_column("iteration")
+        and len(result.get_values("iteration")) > 0
+    ):
+        i = result.get_values("iteration")[-1] + 1
+    else:
+        i = 0
 
     if not result.begun:
         result.begin()
