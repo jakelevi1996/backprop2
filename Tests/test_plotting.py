@@ -192,3 +192,9 @@ def test_plot_result_attribute_subplots():
         line_style="",
         log_axes_attributes={"train_error", "test_error", ls_column.name}
     )
+
+def test_plot_error_reductions_vs_batch_size():
+    """ Test function which plots statistics for the reduction in the mean error
+    in the test set after a single minimisation iteration as a function of the
+    batch size used for the iteration """
+    pass

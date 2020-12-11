@@ -456,3 +456,38 @@ def plot_result_attributes_subplots(
         os.makedirs(dir_name)
     fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
     plt.close(fig)
+
+def plot_error_reductions_vs_batch_size(
+    plot_name,
+    dir_name,
+    batch_size_list,
+    reduction_list_list,
+    fig_size=[10, 6]
+):
+    """ Function to plot statistics for the reduction in the mean error in the
+    test set after a single minimisation iteration as a function of the batch
+    size used for the iteration. This information is represented in two
+    subplots, one for the reduction in the test set error, and one for the ratio
+    of the reduction in the test set error to the batch size used for the
+    iteration, which indicates the "efficiency" of the iteration. The motivation
+    for plotting this information is that typically over the course of
+    minimisation, we want to reduce the mean test set error as much as possible
+    as fast as possible; using a large batch size will give more reliably large
+    reductions, however will also take longer for each iteration.
+
+    Inputs:
+    -   plot_name: name of the plot, also used as the filename
+    -   dir_name: name of the directory to save the plot in
+    -   batch_size_list: list of batch sizes used in this plot (this is plotted
+        on the x axis)
+    -   reduction_list_list: this list should have the same length as
+        batch_size_list, and each element should be a list, in which each
+        element is the reduction in the mean test error for one repeat of the
+        corresponding batch size (typically smaller batch sizes will have more
+        repeats, because they are quicker, and also typically more variable)
+    -   fig_size: size of the figure in inches
+
+    Example usage: see function test_plot_error_reductions_vs_batch_size in
+    Tests/test_plotting.py
+    """
+    pass
