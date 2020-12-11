@@ -6,6 +6,7 @@ training curves is tested in the test module for the optimiser module.
 """
 import os
 import numpy as np
+from math import ceil
 import pytest
 import plotting, data, optimisers, models
 from .util import get_random_network, get_output_dir
@@ -193,8 +194,61 @@ def test_plot_result_attribute_subplots():
         log_axes_attributes={"train_error", "test_error", ls_column.name}
     )
 
+
 def test_plot_error_reductions_vs_batch_size():
     """ Test function which plots statistics for the reduction in the mean error
     in the test set after a single minimisation iteration as a function of the
     batch size used for the iteration """
-    pass
+    np.random.seed(1753)
+    # Initialise parameters for the test
+    min_batch_size = 5
+    n_batch_sizes = 10
+    input_dim = 1
+    output_dim = 1
+    n_train = 100
+    n_hidden_units = [10]
+    title = "Test plotting error reductions vs batch size"
+
+    # Initialise objects and lists
+    model = models.NeuralNetwork(input_dim, output_dim, n_hidden_units)
+    sin_data = data.Sinusoidal(input_dim, output_dim, n_train)
+    w_0 = model.get_parameter_vector().copy()
+    model.forward_prop(sin_data.x_test)
+    E_0 = model.mean_error(sin_data.y_test)
+    result = optimisers.Result(verbose=False, add_default_columns=False)
+    evaluator = optimisers.DoNotEvaluate()
+    terminator = optimisers.Terminator(i_lim=1)
+    # TODO: logarithmically spaced batch sizes?
+    batch_size_list = np.linspace(min_batch_size, n_train, n_batch_sizes)
+    reduction_list_list = []
+    # Iterate through batch sizes
+    for batch_size in batch_size_list:
+        # Set number of repeats and initialise results list
+        n_repeats = ceil(n_train / batch_size)
+        reduction_list_list.append([])
+        batch_getter = optimisers.batch.ConstantBatchSize(int(batch_size))
+        # Iterate through repeats
+        for _ in range(n_repeats):
+            # Reset parameters and perform one iteration of gradients descent
+            model.set_parameter_vector(w_0)
+            result_ls = optimisers.gradient_descent(
+                model,
+                sin_data,
+                batch_getter=batch_getter,
+                terminator=terminator,
+                evaluator=evaluator,
+                result=result,
+                display_summary=False
+            )
+            # Calculate new error and add the reduction to the list
+            model.forward_prop(sin_data.x_test)
+            error_reduction = E_0 - model.mean_error(sin_data.y_test)
+            reduction_list_list[-1].append(error_reduction)
+
+    # Call function being tested
+    plotting.plot_error_reductions_vs_batch_size(
+        title,
+        output_dir,
+        batch_size_list,
+        reduction_list_list
+    )
