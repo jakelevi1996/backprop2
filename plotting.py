@@ -489,5 +489,15 @@ def plot_error_reductions_vs_batch_size(
 
     Example usage: see function test_plot_error_reductions_vs_batch_size in
     Tests/test_plotting.py
+
+    TODO: logarithmic x-axis (batch size)?
+    """
+    pass
+
+def make_gif(output_filename, output_dir, input_filename_list, input_dir):
+    """ See documentation:
+    -   https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html#gif
+    -   https://note.nkmk.me/en/python-pillow-gif/
+    -   https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
     """
     pass
