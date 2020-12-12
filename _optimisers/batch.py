@@ -34,14 +34,19 @@ class FullTrainingSet(BatchGetter):
         return dataset.x_train, dataset.y_train
 
 class ConstantBatchSize(BatchGetter):
-    def __init__(self, batch_size):
+    def __init__(self, batch_size, replace=True):
         if type(batch_size) is not int:
             raise TypeError("batch_size argument must be an integer")
 
         self.batch_size = batch_size
+        self.replace = replace
     
     def get_batch(self, dataset):
-        batch_inds = np.random.choice(dataset.n_train, size=self.batch_size)
+        batch_inds = np.random.choice(
+            dataset.n_train,
+            size=self.batch_size,
+            replace=self.replace
+        )
         return dataset.x_train[:, batch_inds], dataset.y_train[:, batch_inds]
 
 class DynamicBatchSize(BatchGetter, Terminator):
