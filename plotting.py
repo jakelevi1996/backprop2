@@ -541,10 +541,8 @@ def plot_error_reductions_vs_batch_size(
         a.grid(True)
         a.set_xlim(0, max(batch_size_list))
         a.set_xlabel("Batch size")
-    if y_lim_left is not None:
-        axes[0].set_ylim(y_lim_left)
-    if y_lim_right is not None:
-        axes[1].set_ylim(y_lim_right)
+    axes[0].set_ylim(y_lim_left)
+    axes[1].set_ylim(y_lim_right)
     axes[0].set_ylabel("Mean test set error reduction")
     axes[1].set_ylabel(
         "$\\frac{\\mathrm{Mean\\/test\\/set\\/error\\/reduction}}"
@@ -569,12 +567,22 @@ def make_gif(
     input_path_list,
     duration=0.1,
     optimise=False,
-    file_ext="png",
 ):
-    """ See documentation:
-    -   https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html#gif
-    -   https://note.nkmk.me/en/python-pillow-gif/
-    -   https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
+    """ Make gif using pre-existing image files, and save to disk. The gif will
+    loop indefinitely.
+
+    Inputs:
+    -   output_name: filename for the output gif (not including .gif file
+        extension)
+    -   output_dir: directory that the output gif will be saved to
+    -   input_path_list: list of file names of images, each of which will form a
+        single frame of the gif, in the order that they're specifed in the list.
+        The file names should include the file extension (EG .png), as well as
+        the directory name (if not in the current directory)
+    -   duration: the duration each frame of the gif should last for, in
+        seconds. Default is 0.1 seconds
+    -   optimise: if True, attempt to compress the palette by eliminating unused
+        colors. Default is False
     """
     first_frame = PIL.Image.open(input_path_list[0])
     if not os.path.isdir(output_dir):
@@ -585,5 +593,8 @@ def make_gif(
         output_path,
         format="gif",
         save_all=True,
-        append_images=[PIL.Image.open(f) for f in input_path_list[1:]]
+        append_images=[PIL.Image.open(f) for f in input_path_list[1:]],
+        loop=0,
+        duration=duration,
+        optimise=optimise
     )
