@@ -32,17 +32,9 @@ def min_and_max(*input_arrays):
     return min_elem, max_elem
 
 def simple_plot(x, y, x_label, y_label, plot_name, dir_name, alpha):
-    # Create figure
+    # Create figure and plot
     plt.figure(figsize=[8, 6])
-    # Test if all x-values are ints or floats
-    all_numeric = all(type(x_i) in [int, float] for x_i in x)
-    # If all x-values are ints or floats, then plot normally
-    if all_numeric:
         plt.plot(x, y, "bo", alpha=alpha)
-    # Otherwise, format x-values as strings before plotting
-    else:
-        fmt = lambda x_i: repr(x_i).replace("activation function", "").rstrip()
-        plt.plot([fmt(x_i) for x_i in x], y, "bo", alpha=alpha)
     # Format, save and close the figure
     plt.title(plot_name)
     plt.xlabel(x_label)

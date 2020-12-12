@@ -102,6 +102,19 @@ def run_all_experiments(
             h_line = "*" * 50
             msg = "Plotting result for {}".format(var_param_name)
             print("", h_line, msg, h_line, "", sep="\n")
+        # Test if all x-values are ints or floats (NOTE: elements of numpy
+        # arrays are SUBCLASSES of float, but comparing the type directly to
+        # float or int will return False!!!)
+        all_numeric = all(
+            type(x) in [int, float, np.float64]
+            for x in results_param_val_list
+        )
+        # If not all x-values are ints or floats, then format as strings
+        if not all_numeric:
+            results_param_val_list = [
+                repr(x).replace("activation function", "").rstrip()
+                for x in results_param_val_list
+            ]
         plotting.simple_plot(
             results_param_val_list,
             results_min_error_list,
