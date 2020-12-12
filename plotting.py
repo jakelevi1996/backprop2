@@ -554,8 +554,8 @@ def plot_error_reductions_vs_batch_size(
         axes[1].set_ylim(y_lim_right)
     axes[0].set_ylabel("Mean test set error reduction")
     axes[1].set_ylabel(
-        "$\\frac{\\mathrm{Mean\/test\/set\/error\/reduction}}"
-        "{\\mathrm{Batch\/size}}$"
+        "$\\frac{\\mathrm{Mean\\/test\\/set\\/error\\/reduction}}"
+        "{\\mathrm{Batch\\/size}}$"
     )
     axes[1].legend(
         handles=[
