@@ -462,7 +462,9 @@ def plot_error_reductions_vs_batch_size(
     dir_name,
     batch_size_list,
     reduction_list_list,
-    fig_size=[10, 6]
+    figsize=[16, 6],
+    y_lim_left=None,
+    y_lim_right=None
 ):
     """ Function to plot statistics for the reduction in the mean error in the
     test set after a single minimisation iteration as a function of the batch
@@ -486,13 +488,67 @@ def plot_error_reductions_vs_batch_size(
         corresponding batch size (typically smaller batch sizes will have more
         repeats, because they are quicker, and also typically more variable)
     -   fig_size: size of the figure in inches
+    -   y_lim_left: limits for y axes for the left subplot
+    -   y_lim_right: limits for y axes for the right subplot
 
     Example usage: see function test_plot_error_reductions_vs_batch_size in
     Tests/test_plotting.py
 
     TODO: logarithmic x-axis (batch size)?
     """
-    pass
+    fig, axes = plt.subplots(1, 2, sharex=True, figsize=figsize)
+    # Calculate mean and standard deviation
+    mean = np.array([np.mean(e_list) for e_list in reduction_list_list])
+    std = np.array([np.std(e_list) for e_list in reduction_list_list])
+    # Plot the standard deviations
+    axes[0].fill_between(
+        batch_size_list,
+        mean + 2*std,
+        mean - 2*std,
+        color="b",
+        alpha=0.3,
+        zorder=10
+    )
+    # Plot each individual data point using a semi-transparent marker
+    b_list_repeated, r_list_unpacked = zip(*[
+        [b, r]
+        for b, r_list in zip(batch_size_list, reduction_list_list)
+        for r in r_list
+    ])
+    axes[0].plot(b_list_repeated, r_list_unpacked, "ko", alpha=0.5, zorder=20)
+    # axes[1].plot(
+    #     b_list_repeated,
+    #     [r / b for r, b in zip(r_list_unpacked, b_list_repeated)],
+    #     "ko",
+    #     alpha=0.5,
+    #     zorder=20
+    # )
+
+    # Plot the means
+    axes[0].plot(batch_size_list, mean, "b--", zorder=30)
+
+    # Format, save and close
+    fig.suptitle(plot_name, fontsize=15)
+    for a in axes:
+        a.grid(True)
+        a.set_xlim(0, max(batch_size_list))
+        a.set_xlabel("Batch size")
+    if y_lim_left is not None:
+        axes[0].set_ylim(y_lim_left)
+    if y_lim_right is not None:
+        axes[1].set_ylim(y_lim_right)
+    axes[0].set_ylabel("Mean test set error reduction")
+    axes[1].set_ylabel(
+        "$\\frac{\\mathrm{Mean\/test\/set\/error\/reduction}}"
+        "{\\mathrm{Batch\/size}}$"
+    )
+    # axes[1].legend(handles=[...])
+    fig.tight_layout(rect=[0, 0.05, 1, 0.95])
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
+    plt.close(fig)
+
 
 def make_gif(output_filename, output_dir, input_filename_list, input_dir):
     """ See documentation:
