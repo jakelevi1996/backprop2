@@ -509,6 +509,14 @@ def plot_error_reductions_vs_batch_size(
         alpha=0.3,
         zorder=10
     )
+    axes[1].fill_between(
+        batch_size_list,
+        (mean + 2*std) / batch_size_list,
+        (mean - 2*std) / batch_size_list,
+        color="b",
+        alpha=0.3,
+        zorder=10
+    )
     # Plot each individual data point using a semi-transparent marker
     b_list_repeated, r_list_unpacked = zip(*[
         [b, r]
@@ -516,16 +524,17 @@ def plot_error_reductions_vs_batch_size(
         for r in r_list
     ])
     axes[0].plot(b_list_repeated, r_list_unpacked, "ko", alpha=0.5, zorder=20)
-    # axes[1].plot(
-    #     b_list_repeated,
-    #     [r / b for r, b in zip(r_list_unpacked, b_list_repeated)],
-    #     "ko",
-    #     alpha=0.5,
-    #     zorder=20
-    # )
+    axes[1].plot(
+        b_list_repeated,
+        np.array(r_list_unpacked) / np.array(b_list_repeated),
+        "ko",
+        alpha=0.5,
+        zorder=20
+    )
 
     # Plot the means
     axes[0].plot(batch_size_list, mean, "b--", zorder=30)
+    axes[1].plot(batch_size_list, mean / batch_size_list, "b--", zorder=30)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=15)
