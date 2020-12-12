@@ -8,6 +8,20 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 import data
 
+def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
+    """ Save and close the figure, first creating the output directory if it
+    doesn't exist """
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    file_name = "%s.%s" % (plot_name, file_ext)
+    full_path = os.path.join(dir_name, file_name)
+    if fig is None:
+        plt.savefig(full_path)
+        plt.close()
+    else:
+        fig.savefig(full_path)
+        plt.close(fig)
+
 def min_and_max(*input_arrays):
     """
     min_and_max: given a variable number of np.ndarrays, return the smallest and
@@ -35,8 +49,7 @@ def simple_plot(x, y, x_label, y_label, plot_name, dir_name, alpha):
     plt.ylabel(y_label)
     plt.tight_layout()
     plt.grid(True)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name))
-    plt.close()
+    save_and_close(plot_name, dir_name)
 
 def plot_1D_regression(
     plot_name,
@@ -82,10 +95,7 @@ def plot_1D_regression(
     plt.xlabel("x")
     plt.ylabel("y")
     plt.grid(True)
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name))
-    plt.close()
+    save_and_close(plot_name, dir_name)
 
 def plot_2D_nD_regression(
     plot_name,
@@ -186,10 +196,7 @@ def plot_2D_nD_regression(
     fig.suptitle(plot_name, fontsize=16)
     if tight_layout:
         fig.tight_layout(rect=[0, 0, 1, 0.95])
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name))
-    plt.close()
+    save_and_close(plot_name, dir_name, fig)
 
 def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
     """
@@ -283,10 +290,7 @@ def plot_training_curves(
     axes[2].legend(handles=handles)
     fig.suptitle(plot_name)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
-    plt.close()
+    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
 def plot_speed_trials():
     pass
@@ -304,9 +308,7 @@ def plot_act_func(act_func, dir_name, xlims, npoints):
     plt.legend(["$y(x)$", "$\\frac{dy}{dx}(x)$", "$\\frac{d^2y}{dx^2}(x)$"])
     plt.title(act_func.name)
     plt.grid(True)
-    filename = os.path.join(dir_name, act_func.name) + ".png"
-    plt.savefig(filename)
-    plt.close()
+    save_and_close(act_func.name, dir_name)
 
 def plot_error_func(error_func, dir_name, xlims, npoints):
     """
@@ -330,9 +332,7 @@ def plot_error_func(error_func, dir_name, xlims, npoints):
     ])
     plt.title(error_func.name)
     plt.grid(True)
-    filename = os.path.join(dir_name, error_func.name) + ".png"
-    plt.savefig(filename)
-    plt.close()
+    save_and_close(error_func.name, dir_name)
 
 def plot_result_attribute(
     plot_name,
@@ -373,10 +373,7 @@ def plot_result_attribute(
         for c, name in zip(colour_list, unique_names_list)
     ])
     plt.grid(True)
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    plt.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
-    plt.close()
+    save_and_close(plot_name.replace("\n", ", "), dir_name)
 
 def plot_result_attributes_subplots(
     plot_name,
@@ -453,10 +450,7 @@ def plot_result_attributes_subplots(
         ]
     )
     axes.flat[legend_subplot_index].axis("off")
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
-    plt.close(fig)
+    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
 def plot_error_reductions_vs_batch_size(
     plot_name,
@@ -573,10 +567,7 @@ def plot_error_reductions_vs_batch_size(
         loc="upper right"
     )
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    fig.savefig("{}/{}.png".format(dir_name, plot_name.replace("\n", ", ")))
-    plt.close(fig)
+    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
 
 def make_gif(output_filename, output_dir, input_filename_list, input_dir):
