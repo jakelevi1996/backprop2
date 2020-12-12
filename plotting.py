@@ -6,6 +6,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
+import PIL
 import data
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
@@ -34,7 +35,7 @@ def min_and_max(*input_arrays):
 def simple_plot(x, y, x_label, y_label, plot_name, dir_name, alpha):
     # Create figure and plot
     plt.figure(figsize=[8, 6])
-        plt.plot(x, y, "bo", alpha=alpha)
+    plt.plot(x, y, "bo", alpha=alpha)
     # Format, save and close the figure
     plt.title(plot_name)
     plt.xlabel(x_label)
@@ -562,10 +563,27 @@ def plot_error_reductions_vs_batch_size(
     save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
 
-def make_gif(output_filename, output_dir, input_filename_list, input_dir):
+def make_gif(
+    output_name,
+    output_dir,
+    input_path_list,
+    duration=0.1,
+    optimise=False,
+    file_ext="png",
+):
     """ See documentation:
     -   https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html#gif
     -   https://note.nkmk.me/en/python-pillow-gif/
     -   https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
     """
-    pass
+    first_frame = PIL.Image.open(input_path_list[0])
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    output_filename = "%s.gif" % output_name
+    output_path = os.path.join(output_dir, output_filename)
+    first_frame.save(
+        output_path,
+        format="gif",
+        save_all=True,
+        append_images=[PIL.Image.open(f) for f in input_path_list[1:]]
+    )

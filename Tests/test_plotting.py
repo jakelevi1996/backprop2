@@ -261,12 +261,14 @@ def test_make_gif():
     x = np.linspace(0, 1, 100)
     t = np.linspace(0, 1, n_frames, endpoint=False)
     dir_name = os.path.join(output_dir, "Test make gif")
-    plot_name_list = []
+    image_path_list = []
     # First of all, save some image files to disk
     for t_i in t:
         y = np.sin(2 * np.pi * (x - t_i))
         plot_name = "Test make gif, t = %.2f" % t_i
         plotting.simple_plot(x, y, "x", "y", plot_name, dir_name, 1)
-        plot_name_list.append(plot_name)
+        output_filename = "%s.png" % plot_name
+        output_path = os.path.join(dir_name, output_filename)
+        image_path_list.append(output_path)
     # Now turn image files into a gif
-    plotting.make_gif("Test make gif", dir_name, plot_name_list, dir_name)
+    plotting.make_gif("Test make gif", dir_name, image_path_list)

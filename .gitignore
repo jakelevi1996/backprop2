@@ -2,6 +2,7 @@
 *.npz
 *.pyc
 *.txt
+*.gif
 
 temp.py
 .vscode
