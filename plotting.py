@@ -3,6 +3,7 @@ from math import ceil, sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 import data
@@ -464,7 +465,8 @@ def plot_error_reductions_vs_batch_size(
     reduction_list_list,
     figsize=[16, 6],
     y_lim_left=None,
-    y_lim_right=None
+    y_lim_right=None,
+    n_sigma=2
 ):
     """ Function to plot statistics for the reduction in the mean error in the
     test set after a single minimisation iteration as a function of the batch
@@ -490,6 +492,8 @@ def plot_error_reductions_vs_batch_size(
     -   fig_size: size of the figure in inches
     -   y_lim_left: limits for y axes for the left subplot
     -   y_lim_right: limits for y axes for the right subplot
+    -   n_sigma: number of standard deviations away from the mean to plot.
+        Default is 2
 
     Example usage: see function test_plot_error_reductions_vs_batch_size in
     Tests/test_plotting.py
@@ -501,21 +505,23 @@ def plot_error_reductions_vs_batch_size(
     mean = np.array([np.mean(e_list) for e_list in reduction_list_list])
     std = np.array([np.std(e_list) for e_list in reduction_list_list])
     # Plot the standard deviations
+    std_fmt = {
+        "color": "b",
+        "alpha": 0.3,
+        "zorder": 10,
+        "label": "$\\pm%i\\sigma$" % n_sigma
+    }
     axes[0].fill_between(
         batch_size_list,
-        mean + 2*std,
-        mean - 2*std,
-        color="b",
-        alpha=0.3,
-        zorder=10
+        mean + n_sigma*std,
+        mean - n_sigma*std,
+        **std_fmt
     )
     axes[1].fill_between(
         batch_size_list,
-        (mean + 2*std) / batch_size_list,
-        (mean - 2*std) / batch_size_list,
-        color="b",
-        alpha=0.3,
-        zorder=10
+        (mean + n_sigma*std) / batch_size_list,
+        (mean - n_sigma*std) / batch_size_list,
+        **std_fmt
     )
     # Plot each individual data point using a semi-transparent marker
     b_list_repeated, r_list_unpacked = zip(*[
@@ -523,22 +529,28 @@ def plot_error_reductions_vs_batch_size(
         for b, r_list in zip(batch_size_list, reduction_list_list)
         for r in r_list
     ])
-    axes[0].plot(b_list_repeated, r_list_unpacked, "ko", alpha=0.5, zorder=20)
-    axes[1].plot(
-        b_list_repeated,
-        np.array(r_list_unpacked) / np.array(b_list_repeated),
-        "ko",
-        alpha=0.5,
-        zorder=20
-    )
+    r_over_b_list = np.array(r_list_unpacked) / np.array(b_list_repeated)
+    data_point_fmt = {
+        "color": "k",
+        "marker": "o",
+        "ls": "",
+        "label": "Single data point",
+        "alpha": 0.5,
+        "zorder": 20
+    }
+    axes[0].plot(b_list_repeated, r_list_unpacked, **data_point_fmt)
+    axes[1].plot(b_list_repeated, r_over_b_list, **data_point_fmt)
 
     # Plot the means
-    axes[0].plot(batch_size_list, mean, "b--", zorder=30)
-    axes[1].plot(batch_size_list, mean / batch_size_list, "b--", zorder=30)
+    mean_fmt = {"c": "b", "ls": "--", "label": "Mean reduction", "zorder": 30}
+    axes[0].plot(batch_size_list, mean, **mean_fmt)
+    axes[1].plot(batch_size_list, mean / batch_size_list, **mean_fmt)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=15)
+    no_reduction_fmt = {"color": "r", "ls": "-", "label": "No reduction"}
     for a in axes:
+        a.axhline(0, **no_reduction_fmt)
         a.grid(True)
         a.set_xlim(0, max(batch_size_list))
         a.set_xlabel("Batch size")
@@ -551,7 +563,15 @@ def plot_error_reductions_vs_batch_size(
         "$\\frac{\\mathrm{Mean\/test\/set\/error\/reduction}}"
         "{\\mathrm{Batch\/size}}$"
     )
-    # axes[1].legend(handles=[...])
+    axes[1].legend(
+        handles=[
+            Line2D([], [], **data_point_fmt),
+            Line2D([], [], **mean_fmt),
+            Patch(**std_fmt),
+            Line2D([], [], **no_reduction_fmt),
+        ],
+        loc="upper right"
+    )
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
