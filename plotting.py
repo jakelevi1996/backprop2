@@ -166,7 +166,7 @@ def plot_2D_nD_regression(
             vmin=y_min,
             vmax=y_max
         )
-        axes[2][i].set_xlabel(r"$y_{}$".format(i))
+        axes[2][i].set_xlabel("$y_{}$".format(i))
     # Format, save and close
     axes[0][0].set_ylabel("Training data")
     axes[1][0].set_ylabel("Test data")
@@ -300,7 +300,7 @@ def plot_act_func(act_func, dir_name, xlims, npoints):
     d2ydx2 = act_func.d2ydx2(x)
     plt.figure(figsize=[8, 6])
     plt.plot(x, y, 'b', x, dydx, 'r', x, d2ydx2, 'g', alpha=0.75)
-    plt.legend([r"$y(x)$", r"$\frac{dy}{dx}(x)$", r"$\frac{d^2y}{dx^2}(x)$"])
+    plt.legend(["$y(x)$", "$\\frac{dy}{dx}(x)$", "$\\frac{d^2y}{dx^2}(x)$"])
     plt.title(act_func.name)
     plt.grid(True)
     filename = os.path.join(dir_name, act_func.name) + ".png"
@@ -322,10 +322,10 @@ def plot_error_func(error_func, dir_name, xlims, npoints):
     plt.plot(y.ravel(), d2Edy2.ravel(), 'g', alpha=0.75)
     plt.axvline(0, c="k", ls="--", alpha=0.75)
     plt.legend([
-        r"$E(y, t)$",
-        r"$\frac{dE}{dy}(y, t)$",
-        r"$\frac{d^2E}{dy^2}(y, t)$",
-        r"Target $t = 0.0$"
+        "$E(y, t)$",
+        "$\\frac{dE}{dy}(y, t)$",
+        "$\\frac{d^2E}{dy^2}(y, t)$",
+        "Target $t = 0.0$"
     ])
     plt.title(error_func.name)
     plt.grid(True)
