@@ -224,7 +224,7 @@ def test_plot_error_reductions_vs_batch_size():
     # Iterate through batch sizes
     for batch_size in batch_size_list:
         # Set number of repeats and initialise results list
-        n_repeats = ceil(n_train / batch_size)
+        n_repeats = 10
         reduction_list_list.append([])
         batch_getter = optimisers.batch.ConstantBatchSize(int(batch_size))
         # Iterate through repeats
@@ -250,5 +250,23 @@ def test_plot_error_reductions_vs_batch_size():
         title,
         output_dir,
         batch_size_list,
-        reduction_list_list
+        reduction_list_list,
+        y_lim_right=[-0.01, 0.01]
     )
+
+def test_make_gif():
+    """ Test making a gif out of pre-existing image files """
+    np.random.seed(1344)
+    n_frames = 10
+    x = np.linspace(0, 1, 100)
+    t = np.linspace(0, 1, n_frames, endpoint=False)
+    dir_name = os.path.join(output_dir, "Test make gif")
+    plot_name_list = []
+    # First of all, save some image files to disk
+    for t_i in t:
+        y = np.sin(2 * np.pi * (x - t_i))
+        plot_name = "Test make gif, t = %.2f" % t_i
+        plotting.simple_plot(x, y, "x", "y", plot_name, dir_name, 1)
+        plot_name_list.append(plot_name)
+    # Now turn image files into a gif
+    plotting.make_gif("Test make gif", dir_name, plot_name_list, dir_name)
