@@ -11,7 +11,7 @@ import data
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
     """ Save and close the figure, first creating the output directory if it
-    doesn't exist """
+    doesn't exist, and return the path to the output file """
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
     file_name = "%s.%s" % (plot_name, file_ext)
@@ -22,6 +22,8 @@ def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
     else:
         fig.savefig(full_path)
         plt.close(fig)
+
+    return full_path
 
 def min_and_max(*input_arrays):
     """
@@ -558,7 +560,8 @@ def plot_error_reductions_vs_batch_size(
         loc="upper right"
     )
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
-    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
+    full_path = save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
+    return full_path
 
 
 def make_gif(
