@@ -22,7 +22,7 @@ class LineSearch:
         delta_dot_dEdw = np.dot(delta, dEdw)
 
         # Check initial backtrack condition
-        if self._backtrack_condition(E_new, E_0, delta_dot_dEdw):
+        if self._must_backtrack(E_new, E_0, delta_dot_dEdw):
             # Reduce step size until reduction is good and stops decreasing
             for _ in range(self.max_its):
                 self.s *= self.beta
@@ -31,7 +31,7 @@ class LineSearch:
                 E_new = model.mean_error(y, x)
 
                 if (
-                    (not self._backtrack_condition(E_new, E_0, delta_dot_dEdw))
+                    (not self._must_backtrack(E_new, E_0, delta_dot_dEdw))
                     and E_new >= E_old
                 ):
                     break
@@ -52,7 +52,7 @@ class LineSearch:
 
         return self.s
 
-    def _backtrack_condition(self, E_new, E_0, delta_dot_dEdw):
+    def _must_backtrack(self, E_new, E_0, delta_dot_dEdw):
         """
         Compares the actual reduction in the objective function to that which is
         expected from a first-order Taylor expansion. Returns True if a
