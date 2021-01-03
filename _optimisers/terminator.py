@@ -10,14 +10,14 @@ class Terminator:
     def __init__(self, t_lim=None, i_lim=None, e_lim=None):
         """ Initialise a Terminator object """
         self.t_lim = t_lim
-        self.i_lim = i_lim
         self.e_lim = e_lim
+        self.i_lim_init = i_lim
     
     def begin(self, i):
         """ Reset the timer, and update the iteration limit depending on the
         starting iteration number """
         self.t_start = perf_counter()
-        self.i_lim += i
+        self.i_lim = i + self.i_lim_init
     
     def ready_to_terminate(self, i=None, error=None):
         """
