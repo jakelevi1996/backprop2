@@ -568,7 +568,7 @@ def make_gif(
     output_name,
     output_dir,
     input_path_list,
-    duration=0.1,
+    duration=100,
     optimise=False,
 ):
     """ Make gif using pre-existing image files, and save to disk. The gif will
@@ -583,7 +583,7 @@ def make_gif(
         The file names should include the file extension (EG .png), as well as
         the directory name (if not in the current directory)
     -   duration: the duration each frame of the gif should last for, in
-        seconds. Default is 0.1 seconds
+        milliseconds. Default is 100 seconds
     -   optimise: if True, attempt to compress the palette by eliminating unused
         colors. Default is False
     """
