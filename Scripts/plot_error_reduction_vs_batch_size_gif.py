@@ -15,9 +15,9 @@ TODO:
 
 Below are some examples for calling this script:
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i1 -o1 -n100 -b50 -t1 -u10 -l0 -g 0.02 -r3
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i1 -o1 -n100 -u10
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i2 -o3 -n2500 -b50 -t10 -u 20,20 -l0 -g4 -r3
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i2 -o3 -n2500 -u 20,20
 
 Running each of the above examples requires 12.858 s and 121.004 s respectively.
 
@@ -73,7 +73,8 @@ def main(
     n_iters_per_plot = int(n_iters / n_plots)
 
     model = models.NeuralNetwork(input_dim, output_dim, num_hidden_units)
-    sin_data = data.Sinusoidal(input_dim, output_dim, n_train, freq=1)
+    freq = 1 if (input_dim == 1) else None
+    sin_data = data.Sinusoidal(input_dim, output_dim, n_train, freq=freq)
 
     batch_size_list = np.linspace(min_batch_size, n_train, n_batch_sizes)
     
