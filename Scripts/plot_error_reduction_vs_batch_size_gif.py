@@ -1,25 +1,30 @@
-""" Make gif which plots the reduction in error function vs batch size at at
+""" Make gif which plots the reduction in error function vs batch size at
 regular stages during training (each frame in the gif, corresponding to a
 different iteration during training, is also saved as an individual image).
-TODO: add red circle and vertical line in right hand subplot for the best mean
-ratio of reduction to batch size, and plot the optimum batch size throughout
-training in separate plot.
+
+TODO:
+-   Put output files into parameter-specific subfolder (NB: kwarg dict can be
+    formatted into a string using the expression `", ".join("%i = %i" % (k, v)
+    for k, v in kwarg.items())`)
+-   Add red circle and vertical line in right hand subplot for the best mean
+    ratio of reduction to batch size, and plot the optimum batch size throughout
+    training in separate plot.
+-   Test 2 dimensional sine data (first need to determine sensible parameters
+    from the test; will need to run other scripts to plot learning curve to
+    determine this)
 
 Below are some examples for calling this script:
 
-    python Scripts\plot_error_function_vs_batch_size_gif.py -i1 -o1 -n100 -b50 -t1 -u10 -l0 -g 0.02 -r3
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i1 -o1 -n100 -b50 -t1 -u10 -l0 -g 0.02 -r3
 
-    python Scripts\plot_error_function_vs_batch_size_gif.py -i2 -o3 -n2500 -b50 -t10 -u 20,20 -l0 -g4 -r3
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i2 -o3 -n2500 -b50 -t10 -u 20,20 -l0 -g4 -r3
 
 Running each of the above examples requires 12.858 s and 121.004 s respectively.
 
 To get help information for the available arguments, use the following command:
 
-    python Scripts\plot_error_function_vs_batch_size_gif.py -h
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -h
 
-TODO: add red circle and vertical line in right hand subplot for the best mean
-ratio of reduction to batch size, and plot the optimum batch size throughout
-training in separate plot.
 """
 import os
 from argparse import ArgumentParser
@@ -34,7 +39,13 @@ def main(
     output_dim,
     n_train,
     num_hidden_units,
-    n_repeats
+    n_repeats,
+    n_iters,
+    n_plots,
+    n_batch_sizes,
+    min_batch_size,
+    ylims,
+    seed
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -45,15 +56,21 @@ def main(
     -   n_train: positive integer number of points in the training set
     -   num_hidden_units: list of positive integers, number of hidden units in
         each hidden layer of the NeuralNetwork, EG [10] or [20, 20]
-    -   n_repeats: positive integer number of repeats to perform of each
-        experiment
+    -   n_repeats: positive integer number of repeats to perform of each batch
+        size test
+    -   n_iters: total number of iterations to perform
+    -   n_plots: number of frames of the gif
+    -   n_batch_sizes: the number of different batch sizes to test for each
+        iteration
+    -   min_batch_size: the smallest batch size to test
+    -   ylims: limits for the y-axes of each subplot of the output gif. Should
+        be an iteratble containing 4 floats, the first 2 are the lower and upper
+        axis limits for the left subplot, and the second 2 are the lower and
+        upper axis limits for the right subplot
+    -   seed: random seed to use for the experiment
     """
-    np.random.seed(1913)
-    n_iters_per_plot = 10000 / 20
-    n_plots = 20
-    n_batch_sizes = 30
-    min_batch_size = 5
-    ylims = [-0.05, 0.05, -0.01, 0.01]
+    np.random.seed(seed)
+    n_iters_per_plot = int(n_iters / n_plots)
 
     model = models.NeuralNetwork(input_dim, output_dim, num_hidden_units)
     sin_data = data.Sinusoidal(input_dim, output_dim, n_train, freq=1)
@@ -150,8 +167,9 @@ def main(
 if __name__ == "__main__":
     
     # Define CLI using argparse
-    parser = ArgumentParser(
-        description="Compare generalised Newton's method vs gradient descent"
+    parser = ArgumentParser(description=
+        "Make gif which plots the reduction in error function vs batch size "
+        "at regular stages during training"
     )
 
     parser.add_argument(
@@ -185,8 +203,47 @@ if __name__ == "__main__":
     parser.add_argument(
         "-r",
         "--n_repeats",
-        help="Number of repeats to perform of each experiment",
+        help="Number of repeats to perform of each batch size test",
         default=100,
+        type=int
+    )
+    parser.add_argument(
+        "--n_iters",
+        help="Total number of iterations to perform",
+        default=10000,
+        type=int
+    )
+    parser.add_argument(
+        "--n_plots",
+        help="Number of frames of the gif",
+        default=20,
+        type=int
+    )
+    parser.add_argument(
+        "--n_batch_sizes",
+        help="The number of different batch sizes to test for each iteration",
+        default=30,
+        type=int
+    )
+    parser.add_argument(
+        "--min_batch_size",
+        help="The smallest batch size to test",
+        default=5,
+        type=int
+    )
+    parser.add_argument(
+        "--ylims",
+        help=(
+            "Comma separated list of floats describing the limits to use for "
+            "the y axes; see main function docstring for more info",
+        ),
+        default="-0.05,0.05,-0.01,0.01",
+        type=str
+    )
+    parser.add_argument(
+        "--seed",
+        help="Random seed to use for the experiment",
+        default=1913,
         type=int
     )
 
@@ -195,6 +252,7 @@ if __name__ == "__main__":
 
     # Convert comma-separated string to list of ints
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
+    ylims = [float(f) for f in args.ylims.split(",")]
 
     # Call main function using command-line arguments
     t_start = perf_counter()
@@ -204,5 +262,11 @@ if __name__ == "__main__":
         args.n_train,
         num_hidden_units,
         args.n_repeats,
+        args.n_iters,
+        args.n_plots,
+        args.n_batch_sizes,
+        args.min_batch_size,
+        ylims,
+        args.seed
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
