@@ -69,6 +69,8 @@ def main(
     batch_getter_optimise = optimisers.batch.FullTrainingSet(sin_data)
     terminator_optimise = optimisers.Terminator(i_lim=n_iters_per_plot)
     terminator_test_batch = optimisers.Terminator(i_lim=1)
+    line_search_optimise = optimisers.LineSearch()
+    line_search_test_batch = optimisers.LineSearch()
 
     # Get output dir (TODO: make specific to the script parameters)
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +88,7 @@ def main(
             evaluator=evaluator,
             result=result_optimise,
             display_summary=False,
-            line_search=optimisers.LineSearch()
+            line_search=line_search_optimise
         )
 
         # Get parameters and current test error
@@ -102,6 +104,7 @@ def main(
             # Iterate through repeats
             for _ in range(n_repeats):
                 # Perform one iteration of gradient descent
+                line_search_test_batch.s = line_search_optimise.s
                 optimisers.gradient_descent(
                     model,
                     sin_data,
@@ -110,9 +113,10 @@ def main(
                     evaluator=evaluator,
                     result=result_test_batch,
                     display_summary=False,
-                    line_search=optimisers.LineSearch()
+                    line_search=line_search_test_batch
                 )
-                # Calculate new error and add the reduction to the list
+                # Calculate new error and add the reduction to the list TODO:
+                # could this test set error be taken from result_test_batch?
                 model.forward_prop(sin_data.x_test)
                 error_reduction = E_0 - model.mean_error(sin_data.y_test)
                 reduction_list_list[-1].append(error_reduction)
