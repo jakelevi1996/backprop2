@@ -1,10 +1,12 @@
 import numpy as np
 
 class LineSearch:
-    def __init__(self, s0=1.0, alpha=0.5, beta=0.5):
+    def __init__(self, s0=1.0, alpha=0.5, beta=0.5, max_its=10):
+        """ ... """
         self.s = s0
         self.alpha = alpha
         self.beta = beta
+        self.max_its = max_its
             
     def get_step_size(self, model, x, y, w, delta, dEdw):
         """
@@ -18,34 +20,33 @@ class LineSearch:
         E_new = model.mean_error(y, x)
         
         delta_dot_dEdw = np.dot(delta, dEdw)
-        bt_params = (E_0, delta_dot_dEdw)
 
         # Check initial backtrack condition
-        if self._backtrack_condition(E_new, *bt_params):
+        if self._backtrack_condition(E_new, E_0, delta_dot_dEdw):
             # Reduce step size until reduction is good and stops decreasing
-            self.s *= self.beta
-            E_old = E_new
-            model.set_parameter_vector(w + self.s * delta)
-            E_new = model.mean_error(y, x)
-
-            while self._backtrack_condition(E_new, *bt_params) or E_new < E_old:
+            for _ in range(self.max_its):
                 self.s *= self.beta
                 E_old = E_new
                 model.set_parameter_vector(w + self.s * delta)
                 E_new = model.mean_error(y, x)
+
+                if (
+                    (not self._backtrack_condition(E_new, E_0, delta_dot_dEdw))
+                    and E_new >= E_old
+                ):
+                    break
             if E_new > E_old:
                 self.s /= self.beta
         else:
             # Track forwards until objective function stops decreasing
-            self.s /= self.beta
-            E_old = E_new
-            model.set_parameter_vector(w + self.s * delta)
-            E_new = model.mean_error(y, x)
-            while E_new < E_old:
+            for _ in range(self.max_its):
                 self.s /= self.beta
                 E_old = E_new
                 model.set_parameter_vector(w + self.s * delta)
                 E_new = model.mean_error(y, x)
+
+                if E_new >= E_old:
+                    break
             if E_new > E_old:
                 self.s *= self.beta
 
