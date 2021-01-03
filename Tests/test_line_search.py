@@ -21,7 +21,9 @@ def test_gradient_descent_line_search(seed):
     n_iters = np.random.randint(10, 20)
     n = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
-    results_filename = "Test gradient descent with line-search.txt"
+    results_filename = (
+        "Test gradient descent with line-search, seed = %i.txt" % seed
+    )
     results_path = os.path.join(output_dir, results_filename)
     results_file = open(results_path, "w")
     result = optimisers.Result(
@@ -30,7 +32,7 @@ def test_gradient_descent_line_search(seed):
         file=results_file
     )
     # Add step size column to result
-    ls = optimisers.LineSearch()
+    ls = optimisers.LineSearch(max_its=int(1e10))
     result.add_column(optimisers.results.columns.StepSize(ls))
     # Call gradient descent function
     result_ls = optimisers.gradient_descent(
