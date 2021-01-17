@@ -64,9 +64,10 @@ class TrainError(_Column):
     
     def update(self, kwargs):
         dataset = kwargs["dataset"]
-        self.value_list.append(
-            kwargs["model"].mean_error(dataset.y_train, dataset.x_train)
-        )
+        model = kwargs["model"]
+        model.forward_prop(dataset.x_train)
+        train_error = model.mean_error(dataset.y_train)
+        self.value_list.append(train_error)
 
 class TestError(_Column):
     def __init__(
@@ -79,9 +80,10 @@ class TestError(_Column):
     
     def update(self, kwargs):
         dataset = kwargs["dataset"]
-        self.value_list.append(
-            kwargs["model"].mean_error(dataset.y_test, dataset.x_test)
-        )
+        model = kwargs["model"]
+        model.forward_prop(dataset.x_test)
+        test_error = model.mean_error(dataset.y_test)
+        self.value_list.append(test_error)
 
 class StepSize(_Column):
     def __init__(

@@ -78,11 +78,10 @@ def test_get_gradient_vector(seed):
     # Change the weights and calculate the change in error
     dw_max = 1e-7
     tol = 1e-5
-    E_0 = n.mean_error(t, x)
+    E_0 = n(x, t)
     w = n.get_parameter_vector()
     dw = np.random.uniform(-dw_max, dw_max, grad_0.shape)
-    n.set_parameter_vector(w + dw)
-    E_1 = n.mean_error(t, x)
+    E_1 = n(x, t, w + dw)
     dE = E_1 - E_0
 
     # Calculate relative error based on approximate Taylor series
@@ -207,7 +206,8 @@ def test_mean_error(seed):
     and outputs, and multiple data points
     """
     n, x, t, _ = get_random_network_inputs_targets(seed)
-    mean_error = n.mean_error(t, x)
+    n.forward_prop(x)
+    mean_error = n.mean_error(t)
     assert mean_error.shape == ()
     assert mean_error.size == 1
 

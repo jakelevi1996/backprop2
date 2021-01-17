@@ -55,11 +55,10 @@ for dw_max_exp in range(-20, 0):
     grad_0 = n.get_gradient_vector(x, t).copy()
 
     # Change the weights and calculate the change in error function
-    E_0 = n.mean_error(t, x)
+    E_0 = n(x, t)
     w = n.get_parameter_vector()
     dw = np.random.uniform(-dw_max, dw_max, grad_0.shape)
-    n.set_parameter_vector(w + dw)
-    E_1 = n.mean_error(t, x)
+    E_1 = n(x, t, w + dw)
     dE = E_1 - E_0
 
     if use_mean_gradient:

@@ -44,11 +44,8 @@ class LineSearch:
         -   dEdw: gradient of the error function at the current parameters
         """
         # Calculate initial parameters
-        E_0 = model.mean_error(y, x)
-        E_old = E_0
-        model.set_parameter_vector(w + self.s * delta)
-        E_new = model.mean_error(y, x)
-        
+        E_old = E_0 = model(x, y)
+        E_new = model(x, y, w + self.s * delta)
         delta_dot_dEdw = np.dot(delta, dEdw)
 
         # Check initial backtrack condition
@@ -57,8 +54,7 @@ class LineSearch:
             for _ in range(self.max_its):
                 self.s *= self.beta
                 E_old = E_new
-                model.set_parameter_vector(w + self.s * delta)
-                E_new = model.mean_error(y, x)
+                E_new = model(x, y, w + self.s * delta)
 
                 if (
                     (not self._must_backtrack(E_new, E_0, delta_dot_dEdw))
@@ -73,8 +69,7 @@ class LineSearch:
             for _ in range(self.max_its):
                 self.s /= self.beta
                 E_old = E_new
-                model.set_parameter_vector(w + self.s * delta)
-                E_new = model.mean_error(y, x)
+                E_new = model(x, y, w + self.s * delta)
 
                 if E_new >= E_old:
                     break

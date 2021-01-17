@@ -37,7 +37,7 @@ def test_propagation(seed, error_func):
     n.forward_prop(x)
     n.back_prop(x, t)
     n.back_prop2(x, t)
-    n.mean_error(t, x)
+    n.mean_error(t)
 
 @pytest.mark.parametrize("seed", [5331, 3475, 9941])
 @pytest.mark.parametrize("error_func", error_func_list)

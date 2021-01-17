@@ -135,9 +135,8 @@ class NeuralNetwork():
         raise NotImplementedError
 
     def forward_prop(self, x):
-        """
-        forward_prop: propogate an input forward through the network, and store
-        and return the output from the network.
+        """ Propogate an input forward through the network, and store and return
+        the output from the network.
 
         Inputs:
         -   x: input to the neural network. Should be a numpy array with shape
@@ -157,7 +156,7 @@ class NeuralNetwork():
             layer_output = layer.activate(layer_output)
         # Store and return network output
         self.y = layer_output
-        return self.y
+        return layer_output
 
     def back_prop(self, x, target):
         """
@@ -403,37 +402,20 @@ class NeuralNetwork():
             )
             i += layer.num_bias
 
-    def mean_error(self, t, x=None):
-        """
-        mean_error: calculate the mean (across all data points) of the error
-        between the given targets and the network's predictions. If a set of
-        inputs is provided then the network predictions are calculated using
-        these inputs; otherwise the most recently calculated network predictions
-        are used, in which case the targets provided to this function must have
-        the same number of data points (axis 1 of the numpy array).
+    def mean_error(self, t):
+        """ Calculate the mean (across all data points) of the error between the
+        given targets and the network's predictions for the most recent set of
+        inputs that were propagated through the network.
 
         Inputs:
         -   t: targets that the neural network is trying to predict. Should be a
-            numpy array with shape (output_dim, N_D)
-        -   x (optional): input to the neural network, in a numpy array with
-            shape (input_dim, N_D). If x == None (default value), then the most
-            recently calculated network predictions are used, in which case the
-            targets provided to this function must have the same number of data
-            points (axis 1 of the numpy array)
-
-        TODO: input order should be x, t, with no default for x. Could also wrap
-        this into the __call__ method, with optional arguments t and w; if w is
-        given, then call self.set_parameter_vector before calling
-        self.mean_error
+            numpy array with shape (output_dim, N_D), where N_D is the number of
+            data points (size of dimension 1) of the most recent set of inputs
+            that were propagated through the network
 
         Outputs:
         -   e: mean error across all data points, as a numpy float64 scalar
         """
-        if x is not None:
-            self.forward_prop(x)
-        else:
-            assert self.y.shape[1] == t.shape[1]
-
         return self._error_func(self.y, t).mean()
 
     def save_model(self, filename, filename_prepend_timestamp=True):
@@ -479,8 +461,8 @@ class NeuralNetwork():
         -   w (optional): new parameters to apply to the model
         """
         # Update parameter vector, if new parameters are provided
-            if w is not None:
-                self.set_parameter_vector(w)
+        if w is not None:
+            self.set_parameter_vector(w)
         # Propagate inputs through the network
         y = self.forward_prop(x)
         # If targets are provided, then calculate and return the mean error

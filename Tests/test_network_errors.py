@@ -75,15 +75,17 @@ def test_invalid_error_function(seed):
     n = NeuralNetwork(error_func=models.errors._SumOfSquares)
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
+    n.forward_prop(x)
     with pytest.raises(TypeError):
         # Network is initialised with the SumOfSquares class, not an instance
-        n.mean_error(t, x)
+        n.mean_error(t)
 
     n = NeuralNetwork(error_func=sum)
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
+    n.forward_prop(x)
     # Error function sum is callable, so mean_error is okay
-    n.mean_error(t, x)
+    n.mean_error(t)
     with pytest.raises(AttributeError):
         # Error function sum has no dydx method, so backprop fails
         n.back_prop(x, t)
