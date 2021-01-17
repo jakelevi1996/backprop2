@@ -49,17 +49,6 @@ def test_constant_batch_size_non_integer_fail():
     with pytest.raises(TypeError):
         batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
 
-def test_invalid_xlim():
-    """
-    Test that initialising a DataSet with x-limits that don't broadcast to the
-    size of x_train and x_test raises a ValueError
-    """
-    with pytest.raises(ValueError):
-        d = data.Sinusoidal(input_dim=3, x_lo=[1, 2])
-    
-    with pytest.raises(ValueError):
-        d = data.Sinusoidal(input_dim=4, x_hi=[3, 4, 5, 6])
-
 @pytest.mark.parametrize(
     "seed, dataset_str",
     zip([5802, 5496, 5922, 8948], dataset_list)

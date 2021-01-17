@@ -41,6 +41,17 @@ def test_print_data(seed, dataset_str):
     with open(path, "w") as f:
         dataset.print_data(file=f)
 
+def test_invalid_xlim():
+    """
+    Test that initialising a DataSet with x-limits that don't broadcast to the
+    size of x_train and x_test raises a ValueError
+    """
+    with pytest.raises(ValueError):
+        d = data.Sinusoidal(input_dim=3, x_lo=[1, 2])
+    
+    with pytest.raises(ValueError):
+        d = data.Sinusoidal(input_dim=4, x_hi=[3, 4, 5, 6], n_train=10)
+    
 def test_invalid_freq_shape():
     """
     Test that initialising a DataSet with a frequency that doesn't broadcast to
