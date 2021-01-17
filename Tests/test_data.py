@@ -41,17 +41,32 @@ def test_print_data(seed, dataset_str):
     with open(path, "w") as f:
         dataset.print_data(file=f)
 
+def test_valid_xlim():
+    """ Test initialising a DataSet with valid single- and multi-dimensional
+    x-limits """
+    # Test single-dimensional x-limits
+    d = data.Sinusoidal(input_dim=4, x_hi=7.5, n_train=10)
+
+    # Test multi-dimensional x-limits
+    x_hi = np.array([3, 4, 5, 6]).reshape(-1, 1)
+    d = data.Sinusoidal(input_dim=4, x_hi=x_hi, n_train=10)
+
 def test_invalid_xlim():
-    """
-    Test that initialising a DataSet with x-limits that don't broadcast to the
-    size of x_train and x_test raises a ValueError
-    """
+    """ Test that a ValueError is raised when initialising a DataSet with
+    x-limits that don't broadcast to the size of x_train and x_test.
+
+    As stated in the docstring for the data.Sinusoidal initialiser, x_hi "should
+    be a float, or a numpy array with shape [input_dim, 1]". """
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=3, x_lo=[1, 2])
     
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=4, x_hi=[3, 4, 5, 6], n_train=10)
     
+    with pytest.raises(ValueError):
+        x_hi = np.array([3, 4, 5, 6]).reshape(1, -1)
+        d = data.Sinusoidal(input_dim=4, x_hi=x_hi, n_train=10)
+
 def test_invalid_freq_shape():
     """
     Test that initialising a DataSet with a frequency that doesn't broadcast to
