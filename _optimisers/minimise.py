@@ -19,26 +19,24 @@ def minimise(
     batch_getter=None,
     display_summary=True
 ):
-    """
-    Abstract minimisation function, containing code which is common to all
+    """ Abstract minimisation function, containing code which is common to all
     minimisation routines. Specific minimisation functions should call this
     function with a get_step callable, which should take a model and a dataset
     object, and return a step vector and a gradient vector.
 
     Inputs:
     -   ...
+    -   get_step: callable which accepts the model and a batch of training data
+        inputs and matching outputs, and returns delta (the suggested change in
+        the parameters) and the vector of partial derivatives of the error
+        function with respect to the parameters. It is assumed that this
+        function propagates the inputs from the batch of training data forwards
+        through the network, as well as calculating the gradient (which is
+        needed if a line-search is used)
+    -   ...
 
     TODO:
-    -   Use batches
     -   Make this function private with a leading underscore
-    -   Add `break_condition` method to Result class, and `while` loop here
-        instead of `for` loop, so iteration can end based on one of several
-        criteria EG iteration number, error function, time taken, DBS, etc.
-        Breaking out of the optimisation loop could be handled by a Terminator
-        class
-    -   Evaluate the model every fixed time period, instead of every fixed
-        iteration period? Could make this configurable with an input argument,
-        and handled by an Evaluator class
     """
     if terminator is None:
         terminator = Terminator(i_lim=1000)

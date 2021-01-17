@@ -44,7 +44,7 @@ class LineSearch:
         -   dEdw: gradient of the error function at the current parameters
         """
         # Calculate initial parameters
-        E_old = E_0 = model(x, y)
+        E_old = E_0 = model.mean_error(y)
         E_new = model(x, y, w + self.s * delta)
         delta_dot_dEdw = np.dot(delta, dEdw)
 
