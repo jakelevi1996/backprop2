@@ -465,21 +465,30 @@ class NeuralNetwork():
                 "-" * 50, sep="\n", file=file
             )
 
-    def __call__(self, x):
-        """
-        Wrapper for the forward_prop method. TODO: add optional arguments t and
-        w, which are used to calculate mean error, and optionally set the
-        parameter vector first. Could be used to tidy up the optimisers module.
+    def __call__(self, x, t=None, w=None):
+        """ Wrapper for the forward_prop method, and optionally also the
+        set_parameter_vector and mean_error methods. If parameters are provided,
+        then they are first set as the model parameters. Next, the inputs are
+        propagated through the network. Finally, if targets are provided, then
+        the mean error between the network output and the targets is calculated
+        and returned. Otherwise the network output is returned.
 
-        def __call__(self, x=None, t=None, w=None):
+        Inputs:
+        -   x: inputs to be propagated through the network
+        -   t (optional): targets, used to calculate mean error
+        -   w (optional): new parameters to apply to the model
+        """
+        # Update parameter vector, if new parameters are provided
             if w is not None:
                 self.set_parameter_vector(w)
-            if x is not None and t is None:
-                return return self.forward_prop(x)
-            elif x is not None and t is not None:
-                return self.mean_error(t, x) # swap round t and x
-        """
-        return self.forward_prop(x)
+        # Propagate inputs through the network
+        y = self.forward_prop(x)
+        # If targets are provided, then calculate and return the mean error
+        if t is not None:
+            return self.mean_error(t)
+        # Otherwise return the network output
+        else:
+            return y
 
 def load_network(filename, dir_name):
     raise NotImplementedError()
