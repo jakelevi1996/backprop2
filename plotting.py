@@ -34,10 +34,22 @@ def min_and_max(*input_arrays):
     max_elem = max([array.max() for array in input_arrays])
     return min_elem, max_elem
 
-def simple_plot(x, y, x_label, y_label, plot_name, dir_name, alpha):
+def simple_plot(
+    x,
+    y,
+    x_label,
+    y_label,
+    plot_name,
+    dir_name,
+    alpha=0.5,
+    fmt="bo"
+):
+    """ Make a simple plot, with x and y data, axis labels, a title,
+    configurable transparency and marker/line format, and save in an image file
+    with the same name as the title, in the specified directory """
     # Create figure and plot
     plt.figure(figsize=[8, 6])
-    plt.plot(x, y, "bo", alpha=alpha)
+    plt.plot(x, y, fmt, alpha=alpha)
     # Format, save and close the figure
     plt.title(plot_name)
     plt.xlabel(x_label)
@@ -573,6 +585,8 @@ def make_gif(
 ):
     """ Make gif using pre-existing image files, and save to disk. The gif will
     loop indefinitely.
+
+    Usage example: see Tests/test_plotting.py
 
     Inputs:
     -   output_name: filename for the output gif (not including .gif file
