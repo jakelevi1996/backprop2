@@ -61,12 +61,20 @@ class Result():
         return column_type in self._column_dict
     
     def get_values(self, column_type):
-        """ Given a type of column, return the list of values for the column
+        """ Given the type of column, return the list of values for the column
         with the matching type.
 
         Raises KeyError if this Result object does not have a Column with a
         matching type. """
         return self._column_dict[column_type].value_list
+    
+    def get_column_name(self, column_type):
+        """ Given the type of column, return the name of the column with the
+        matching type.
+
+        Raises KeyError if this Result object does not have a Column with a
+        matching type. """
+        return self._column_dict[column_type].name
     
     def begin(self):
         if self.verbose:

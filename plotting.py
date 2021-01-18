@@ -352,7 +352,10 @@ def plot_result_attribute(
     line_style=None
 ):
     """ Function to plot a specific attribute stored in the Result class, for
-    example the step size, or the DBS, during each iteration. """
+    example the step size, or the DBS, during each iteration. attribute should
+    be the type of the attribute which will be retrieved from the Result object,
+    and should be a subclass of optimisers.results.columns._Column, EG
+    optimisers.results.columns.StepSize """
     plt.figure(figsize=figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
@@ -372,7 +375,7 @@ def plot_result_attribute(
     # Format, save and close
     plt.title(plot_name)
     plt.xlabel("Iteration")
-    plt.ylabel(attribute)
+    plt.ylabel(result_list[0].get_column_name(attribute))
     plt.legend(handles=[
         Line2D([], [], color=c, label=name)
         for c, name in zip(colour_list, unique_names_list)
@@ -393,13 +396,13 @@ def plot_result_attributes_subplots(
     line_style=None,
     log_axes_attributes=None
 ):
-    """
-    Similar to the plot_result_attribute function, except accept a list of
-    attribute names, and use a different subplot for each attribute (and one
+    """ Similar to the plot_result_attribute function, except accept a list of
+    attribute types, and use a different subplot for each attribute (and one
     also for the legend). If num_rows or num_cols are not set, then they are
     chosen to make the plot as square as possible. If present,
-    log_axes_attributes should be an iterable (EG a set) containing the names of
-    any plots which should have logarithmic y axes.
+    log_axes_attributes should be an iterable (EG a set) containing the types of
+    any attributes for which the corresponding subplot should have logarithmic y
+    axes.
 
     Raises a ValueError if num_rows * num_cols < len(attribute_list) + 1.
     """
@@ -440,7 +443,7 @@ def plot_result_attributes_subplots(
                 ls=line_style
             )
         ax.set_xlabel("Iteration")
-        ax.set_ylabel(attribute)
+        ax.set_ylabel(result_list[0].get_column_name(attribute))
         ax.grid(which="major", ls="-")
         ax.grid(which="minor", ls=":", alpha=0.5)
 
