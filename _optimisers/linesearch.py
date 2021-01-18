@@ -43,7 +43,10 @@ class LineSearch:
         -   delta: direction in which to take a step
         -   dEdw: gradient of the error function at the current parameters
         """
-        # Calculate initial parameters
+        # Calculate initial parameters (NOTE: we are not propagating the input
+        # through the network again, because we are assuming it has just been
+        # propagated while calling get_step in minimise.py for the same batch of
+        # training data)
         E_old = E_0 = model.mean_error(y)
         E_new = model(x, y, w + self.s * delta)
         delta_dot_dEdw = np.dot(delta, dEdw)
