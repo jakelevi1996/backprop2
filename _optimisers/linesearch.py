@@ -34,6 +34,13 @@ class LineSearch:
         for the current batch of training data. This function is called by the
         minimise function (if a valid LineSearch object is passed to it).
 
+        Note that at the beginning of this method we do not propagate the input
+        x through the network again, because we are assuming it has just been
+        propagated while calling get_step in minimise.py for the same batch of
+        training data and the same set of parameters, therefore we call
+        model.mean_error(y) straight away, without first propagating the data
+        through the network.
+
         Inputs:
         -   model: instance of NeuralNetwork to be optimised
         -   x: inputs for the current batch of training data
@@ -43,10 +50,7 @@ class LineSearch:
         -   delta: direction in which to take a step
         -   dEdw: gradient of the error function at the current parameters
         """
-        # Calculate initial parameters (NOTE: we are not propagating the input
-        # through the network again, because we are assuming it has just been
-        # propagated while calling get_step in minimise.py for the same batch of
-        # training data)
+        # Calculate initial parameters
         E_old = E_0 = model.mean_error(y)
         E_new = model(x, y, w + self.s * delta)
         delta_dot_dEdw = np.dot(delta, dEdw)
