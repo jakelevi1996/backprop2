@@ -1,4 +1,4 @@
-from _optimisers.minimise import minimise, Result
+from _optimisers.minimise import _minimise, Result
 
 def get_gradient_descent_step(model, x_batch, y_batch, learning_rate):
     """ Method to get the descent step during each iteration of gradient-descent
@@ -37,7 +37,7 @@ def gradient_descent(
     if result is None:
         result = Result("Gradient descent")
 
-    result = minimise(
+    result = _minimise(
         model,
         dataset,
         get_step,

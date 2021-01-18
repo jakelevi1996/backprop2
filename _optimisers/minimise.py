@@ -8,7 +8,7 @@ from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
 from _optimisers.batch import FullTrainingSet
 
-def minimise(
+def _minimise(
     model,
     dataset,
     get_step,
@@ -34,9 +34,6 @@ def minimise(
         through the network, as well as calculating the gradient (which is
         needed if a line-search is used)
     -   ...
-
-    TODO:
-    -   Make this function private with a leading underscore
     """
     if terminator is None:
         terminator = Terminator(i_lim=1000)

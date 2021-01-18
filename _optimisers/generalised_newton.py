@@ -1,5 +1,5 @@
 import numpy as np
-from _optimisers.minimise import minimise, Result
+from _optimisers.minimise import _minimise, Result
 
 class NewtonStepCalculator():
     def __init__(
@@ -94,6 +94,6 @@ def generalised_newton(
     if result is None:
         result = Result("Generalised Newton")
 
-    result = minimise(model, dataset, get_step, result=result, **kwargs)
+    result = _minimise(model, dataset, get_step, result=result, **kwargs)
 
     return result
