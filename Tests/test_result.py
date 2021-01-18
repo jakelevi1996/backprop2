@@ -10,7 +10,7 @@ import pytest
 import numpy as np
 from optimisers import results, LineSearch
 from .util import get_random_network, get_output_dir
-import data
+import data, optimisers
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Result")
@@ -45,10 +45,10 @@ def test_update(seed, result=None):
         result.update(model=n, dataset=d, iteration=i)
     
     # Check that value lists for the default columns have non-zero length
-    assert len(result.get_values("train_error")) > 0
-    assert len(result.get_values("test_error")) > 0
-    assert len(result.get_values("iteration")) > 0
-    assert len(result.get_values("time")) > 0
+    assert len(result.get_values(optimisers.results.columns.TrainError)) > 0
+    assert len(result.get_values(optimisers.results.columns.TestError)) > 0
+    assert len(result.get_values(optimisers.results.columns.Iteration)) > 0
+    assert len(result.get_values(optimisers.results.columns.Time)) > 0
     
     return result
 
@@ -113,20 +113,20 @@ def test_line_search_column(seed):
             ls.s = s
             result.update()
         
-        assert np.all(result.get_values(col.name) == step_sizes)
+        assert np.all(result.get_values(type(col)) == step_sizes)
 
 def test_result_column_names():
     # Create result object
-    result = results.Result()
-    # Test the has_column method for columns which it does and doesn't have
-    assert result.has_column("iteration")
-    assert not result.has_column("step size")
-    # Add a new column and check that the has_column method is correct
+    result = results.Result(add_default_columns=True)
+    # Test the has_column_type method for columns which it does/doesn't have
+    assert result.has_column_type(results.columns.Iteration)
+    assert not result.has_column_type(results.columns.StepSize)
+    # Add a new column and check that the has_column_type method is correct
     result.add_column(results.columns.StepSize(LineSearch()))
-    assert result.has_column("step_size")
+    assert result.has_column_type(results.columns.StepSize)
     # Test getting the values from the new column
-    result.get_values("step_size")
+    result.get_values(results.columns.StepSize)
     # Test trying to get the values of a column that doesn't exist
-    assert not result.has_column("This is not a valid column name")
+    assert not result.has_column_type("This is not a valid column type")
     with pytest.raises(KeyError):
-        result.get_values("This is not a valid column name")
+        result.get_values("This is not a valid column type")

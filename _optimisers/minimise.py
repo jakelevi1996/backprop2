@@ -7,6 +7,7 @@ from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
 from _optimisers.batch import FullTrainingSet
+from _optimisers.columns import Iteration
 
 def _minimise(
     model,
@@ -46,12 +47,11 @@ def _minimise(
 
     # Set initial parameters and iteration counter
     w = model.get_parameter_vector()
-    reentering = (
-        result.has_column("iteration")
-        and len(result.get_values("iteration")) > 0
-    )
-    if reentering:
-        i = result.get_values("iteration")[-1]
+    if (
+        result.has_column_type(Iteration)
+        and len(result.get_values(Iteration)) > 0
+    ):
+        i = result.get_values(Iteration)[-1]
     else:
         i = 0
 

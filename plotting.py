@@ -7,7 +7,7 @@ from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 import PIL
-import data
+import data, optimisers
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
     """ Save and close the figure, first creating the output directory if it
@@ -253,10 +253,10 @@ def plot_training_curves(
         # Get line colour, depending on the name of the experiment
         colour = colour_dict[result.name]
         # Get values from Result object
-        times = result.get_values("time")
-        train_errors = result.get_values("train_error")
-        test_errors = result.get_values("test_error")
-        iters = result.get_values("iteration")
+        times = result.get_values(optimisers.results.columns.Time)
+        train_errors = result.get_values(optimisers.results.columns.TrainError)
+        test_errors = result.get_values(optimisers.results.columns.TestError)
+        iters = result.get_values(optimisers.results.columns.Iteration)
         # Plot errors against time
         axes[0].plot(times, train_errors,   c=colour, ls="--",  alpha=tp)
         axes[0].plot(times, test_errors,    c=colour, ls="-",   alpha=tp)
@@ -351,10 +351,8 @@ def plot_result_attribute(
     marker=None,
     line_style=None
 ):
-    """
-    Function to plot a specific attribute stored in the Result class, for
-    example the step size, or the DBS, during each iteration.
-    """
+    """ Function to plot a specific attribute stored in the Result class, for
+    example the step size, or the DBS, during each iteration. """
     plt.figure(figsize=figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
@@ -364,7 +362,7 @@ def plot_result_attribute(
     colour_dict = dict(zip(unique_names_list, colour_list))
     for result in result_list:
         plt.plot(
-            result.get_values("iteration"),
+            result.get_values(optimisers.results.columns.Iteration),
             result.get_values(attribute),
             c=colour_dict[result.name],
             alpha=alpha,
@@ -434,7 +432,7 @@ def plot_result_attributes_subplots(
             ax_plot_func = lambda *args, **kwargs: ax.plot(*args, **kwargs)
         for result in result_list:
             ax_plot_func(
-                result.get_values("iteration"),
+                result.get_values(optimisers.results.columns.Iteration),
                 result.get_values(attribute),
                 c=colour_dict[result.name],
                 alpha=alpha,

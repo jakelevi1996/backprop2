@@ -95,8 +95,10 @@ def main(
             prob_correct_direction=p_c,
             min_batch_size=min_batch_size
         )
-        result.add_column(optimisers.results.columns.BatchSize(batch_getter))
-        result.add_column(optimisers.results.columns.DbsMetric())
+        batch_col = optimisers.results.columns.BatchSize(batch_getter)
+        dbs_col = optimisers.results.columns.DbsMetric()
+        result.add_column(batch_col)
+        result.add_column(dbs_col)
         result = optimisers.gradient_descent(
             model,
             sin_data,
@@ -125,14 +127,14 @@ def main(
         this_test_output_dir,
         e_lims=e_lims
     )
-    for attr_name in ["dbs_metric", "batch_size"]:
-        plot_name = "%s against iteration for dynamic batch size" % attr_name
+    for col in [dbs_col, batch_col]:
+        plot_name = "%s against iteration for dynamic batch size" % col.name
         plot_name += plot_name_suffix
         plotting.plot_result_attribute(
             plot_name,
             this_test_output_dir,
             results_list,
-            attr_name
+            type(col)
         )
 
 if __name__ == "__main__":

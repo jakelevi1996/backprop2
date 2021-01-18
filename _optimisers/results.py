@@ -53,22 +53,20 @@ class Result():
             raise ValueError("A column with this name has already been added")
 
         self._column_list.append(column)
-        self._column_dict[column.name] = column
+        self._column_dict[type(column)] = column
     
-    def has_column(self, name):
-        """ Given the input string name, return, return True if this Result
-        object has a Column with the same name, otherwise return False """
-        return name in self._column_dict
+    def has_column_type(self, column_type):
+        """ Given a type of column, return True if this Result object has a
+        Column with the same type, otherwise return False """
+        return column_type in self._column_dict
     
-    def get_values(self, name):
-        """
-        Given the input string name, return the list of values for the column
-        with the matching name.
+    def get_values(self, column_type):
+        """ Given a type of column, return the list of values for the column
+        with the matching type.
 
         Raises KeyError if this Result object does not have a Column with a
-        matching name.
-        """
-        return self._column_dict[name].value_list
+        matching type. """
+        return self._column_dict[column_type].value_list
     
     def begin(self):
         if self.verbose:
@@ -81,13 +79,12 @@ class Result():
         return perf_counter() - self._start_time
     
     def update(self, **kwargs):
-        """
-        Update all the columns in this Result object with new values. Depending
-        on the columns used by this object, certain keyword arguments will be
-        required; if the default columns are used, then the keyword arguments
-        model, dataset, and iteration will be required. The begin method must be
-        called before the update method, otherwise an AttributeError is raised.
-        """
+        """ Update all the columns in this Result object with new values.
+        Depending on the columns used by this object, certain keyword arguments
+        will be required; if the default columns are used, then the keyword
+        arguments model, dataset, and iteration will be required. The begin
+        method must be called before the update method, otherwise an
+        AttributeError is raised. """
         kwargs["time"] = self._time_elapsed()
 
         for col in self._column_list:

@@ -140,7 +140,7 @@ def test_plot_result_attribute():
         "test_plot_result_attribute_linesearch",
         output_dir,
         results_list,
-        attribute=ls_column.name,
+        attribute=type(ls_column),
         marker="o",
         line_style=""
     )
@@ -178,11 +178,11 @@ def test_plot_result_attribute_subplots():
         results_list.append(result)
     
     attribute_list = [
-        "train_error",
-        "test_error",
-        "time",
-        ls_column.name,
-        dbs_metric_column.name
+        optimisers.results.columns.TrainError,
+        optimisers.results.columns.TestError,
+        optimisers.results.columns.Time,
+        type(ls_column),
+        type(dbs_metric_column)
     ]
     plotting.plot_result_attributes_subplots(
         "test_plot_result_attribute_subplots",
@@ -191,7 +191,11 @@ def test_plot_result_attribute_subplots():
         attribute_list,
         marker="o",
         line_style="",
-        log_axes_attributes={"train_error", "test_error", ls_column.name}
+        log_axes_attributes={
+            optimisers.results.columns.TrainError,
+            optimisers.results.columns.TestError,
+            type(ls_column)
+        }
     )
 
 

@@ -65,5 +65,5 @@ plotting.plot_result_attribute(
     "Gradient descent DBS metric for 2D-%iD sinusoid" % output_dim,
     output_dir,
     [result],
-    dbs_column.name
+    type(dbs_column)
 )

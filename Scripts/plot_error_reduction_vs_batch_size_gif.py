@@ -143,9 +143,9 @@ def main(
             print(".", end="", flush=True)
 
         # Make plot of batch size vs gif
-        title = "Error reduction vs batch size, iteration = %05i" % (
-            result_optimise.get_values("iteration")[-1]
-        )
+        iter_col_type = optimisers.results.columns.Iteration
+        last_iter = result_optimise.get_values(iter_col_type)[-1]
+        title = "Error reduction vs batch size, iteration = %05i" % last_iter
         full_path = plotting.plot_error_reductions_vs_batch_size(
             title,
             output_dir,
