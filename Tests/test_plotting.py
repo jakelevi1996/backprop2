@@ -190,7 +190,7 @@ def test_plot_result_attribute_subplots():
         results_list,
         attribute_list,
         marker="o",
-        line_style="",
+        line_style="--",
         log_axes_attributes={
             optimisers.results.columns.TrainError,
             optimisers.results.columns.TestError,

@@ -377,7 +377,7 @@ def plot_result_attribute(
     plt.xlabel("Iteration")
     plt.ylabel(result_list[0].get_column_name(attribute))
     plt.legend(handles=[
-        Line2D([], [], color=c, label=name)
+        Line2D([], [], color=c, label=name, marker=marker, ls=line_style)
         for c, name in zip(colour_list, unique_names_list)
     ])
     plt.grid(True)
@@ -453,7 +453,7 @@ def plot_result_attributes_subplots(
     axes.flat[legend_subplot_index].legend(
         loc="center",
         handles=[
-            Line2D([], [], color=c, label=name)
+            Line2D([], [], color=c, label=name, marker=marker, ls=line_style)
             for c, name in zip(colour_list, unique_names_list)
         ]
     )
