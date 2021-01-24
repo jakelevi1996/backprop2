@@ -22,7 +22,7 @@ import numpy as np
 if __name__ == "__main__":
     import __init__
 from models import NeuralNetwork
-import activations, data, optimisers
+import models, data, optimisers
 from run_all_experiments import run_all_experiments
 
 # Get name of output directory
@@ -40,19 +40,19 @@ all_experiments_dict = {
     "alpha":                {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
     "beta":                 {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
     "act_func":             {
-        "default": activations.Gaussian(),
+        "default": models.activations.gaussian,
         "range": [
-            activations.Gaussian(),
-            activations.Cauchy(),
-            activations.Logistic(),
-            activations.Relu(),
+            models.activations.gaussian,
+            models.activations.cauchy,
+            models.activations.logistic,
+            models.activations.relu,
         ]
     },
 }
 
 # Initialise data set
 np.random.seed(6763)
-sin_data = data.SinusoidalDataSet1D1D(xlim=[-2, 2], freq=1)
+sin_data = data.Sinusoidal(x_lo=-2, x_hi=2, freq=1)
 
 # Define function to be run for each experiment
 def run_experiment(
@@ -69,14 +69,14 @@ def run_experiment(
         input_dim=1,
         output_dim=1,
         num_hidden_units=[num_units for _ in range(num_layers)],
-        act_funcs=[act_func, activations.Identity()]
+        act_funcs=[act_func, models.activations.identity]
     )
     result = optimisers.gradient_descent(
         n,
         dataset,
         learning_rate=pow(10, log10_learning_rate),
         terminator=optimisers.Terminator(t_lim=3),
-        evaluator=optimisers.Evaluator(t_interval=0.1),
+        evaluator=optimisers.Evaluator(t_interval=0.5),
         line_search=optimisers.LineSearch(
             s0=pow(10, log10_s0), 
             alpha=alpha, 

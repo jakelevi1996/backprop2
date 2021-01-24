@@ -11,7 +11,7 @@ from time import perf_counter
 import numpy as np
 if __name__ == "__main__":
     import __init__
-import plotting
+import optimisers, plotting
 
 def print_error_details(experiment_dict):
     """
@@ -81,7 +81,7 @@ def run_all_experiments(
         }
         # Initialise results lists
         results_param_val_list = []
-        results_min_error_list = []
+        results_final_error_list = []
 
         # Iterate through each value of the parameter under test
         for var_param_value in var_param_dict["range"]:
@@ -93,7 +93,10 @@ def run_all_experiments(
                 try:
                     result = run_experiment(dataset, **this_experiment_dict)
                     results_param_val_list.append(var_param_value)
-                    results_min_error_list.append(result.test_errors[-1])
+                    test_errors = result.get_values(
+                        optimisers.results.columns.TestError
+                    )
+                    results_final_error_list.append(test_errors[-1])
                 except:
                     print_error_details(this_experiment_dict)
 
@@ -117,9 +120,9 @@ def run_all_experiments(
             ]
         plotting.simple_plot(
             results_param_val_list,
-            results_min_error_list,
+            results_final_error_list,
             var_param_name,
-            "Minimum test error",
+            "Final test error",
             "Varying parameter {}".format(var_param_name),
             output_dir,
             alpha_plotting
