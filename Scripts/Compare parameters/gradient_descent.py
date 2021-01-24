@@ -35,7 +35,6 @@ if not os.path.isdir(output_dir):
 all_experiments_dict = {
     "num_units":            {"default": 10,    "range": [5, 10, 15, 20]},
     "num_layers":           {"default": 1,     "range": [1, 2, 3]},
-    "log10_learning_rate":  {"default": -1,    "range": np.linspace(-3, 1, 5)},
     "log10_s0":             {"default": 0,     "range": np.linspace(-1, 3, 5)},
     "alpha":                {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
     "beta":                 {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
@@ -59,7 +58,6 @@ def run_experiment(
     dataset,
     num_units,
     num_layers,
-    log10_learning_rate,
     log10_s0,
     alpha,
     beta,
@@ -74,7 +72,6 @@ def run_experiment(
     result = optimisers.gradient_descent(
         n,
         dataset,
-        learning_rate=pow(10, log10_learning_rate),
         terminator=optimisers.Terminator(t_lim=3),
         evaluator=optimisers.Evaluator(t_interval=0.5),
         line_search=optimisers.LineSearch(
