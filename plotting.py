@@ -624,7 +624,7 @@ def plot_parameter_experiment_results(
     param_name,
     plot_name,
     dir_name,
-    alpha=0.5,
+    n_sigma=2
 ):
     """ Plot the results of running an experiment to find the approximately
     locally optimal values of a parameter, based on "Scripts/Compare
@@ -632,15 +632,52 @@ def plot_parameter_experiment_results(
     dictionary, in which each dictionary-key is a value for the parameter being
     tested, and each dictionary-value is a list of the final test set errors for
     each repeat of the experiment with the corresponding value  """
-    # Create figure and plot
+    # Create figure and format dictionaries
     plt.figure(figsize=[8, 6])
+    std_fmt = {
+        "color": "b",
+        "alpha": 0.3,
+        "zorder": 10,
+        "label": "$\\pm%i\\sigma$" % n_sigma
+    }
+    data_point_fmt = {
+        "color": "k",
+        "marker": "o",
+        "ls": "",
+        "label": "Result",
+        "alpha": 0.5,
+        "zorder": 20
+    }
+    mean_fmt = {"c": "b", "ls": "--", "label": "Mean", "zorder": 30}
+    
+    # Calculate mean and standard deviation
+    val_list = list(experiment_results.keys())
+    mean = np.array([np.mean(experiment_results[val]) for val in val_list])
+    std  = np.array([np.std( experiment_results[val]) for val in val_list])
+
+    # Plot data
     for val, error_list in experiment_results.items():
         for error in error_list:
-            plt.plot(val, error, "bo", alpha=alpha)
+            plt.plot(val, error, **data_point_fmt)
+    plt.plot(val_list, mean, **mean_fmt)
+    plt.fill_between(
+        val_list,
+        mean + n_sigma*std,
+        mean - n_sigma*std,
+        **std_fmt
+    )
+    
     # Format, save and close the figure
     plt.title(plot_name)
     plt.xlabel(param_name)
     plt.ylabel("Final test set error")
+    plt.legend(
+        handles=[
+            Line2D([], [], **data_point_fmt),
+            Line2D([], [], **mean_fmt),
+            Patch(**std_fmt),
+        ],
+    )
     plt.tight_layout()
     plt.grid(True)
     save_and_close(plot_name, dir_name)

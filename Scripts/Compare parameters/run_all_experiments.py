@@ -119,7 +119,6 @@ def run_all_experiments(
             var_param_name,
             "Varying parameter {}".format(var_param_name),
             output_dir,
-            alpha_plotting
         )
 
     # If verbose, then print total time taken to run all experiments
