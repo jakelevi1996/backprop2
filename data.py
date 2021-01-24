@@ -155,7 +155,7 @@ class Sinusoidal(DataSet):
         """
         # Set unspecified parameters
         if n_train is None:
-            n_train = pow(100, input_dim)
+            n_train = pow(50, input_dim)
         if n_test is None:
             n_test = n_train
         if phase is None:
