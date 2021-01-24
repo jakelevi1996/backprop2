@@ -73,56 +73,50 @@ def run_all_experiments(
 
     # Iterate through each experiment (one parameter is varied per experiment)
     for var_param_name, var_param_dict in all_experiments_dict.items():
-        # Initialise dictionary for this experiment using default parameters
-        this_experiment_dict = {
+        # Initialise parameter dictionary for this experiment using defaults
+        experiment_params = {
             param_name: param_dict["default"]
             for param_name, param_dict
             in all_experiments_dict.items()
         }
-        # Initialise results lists
-        results_param_val_list = []
-        results_final_error_list = []
+        # Initialise results dictionary
+        experiment_results = {}
 
         # Iterate through each value of the parameter under test
         for var_param_value in var_param_dict["range"]:
             # Set the value of the parameter under test for this experiment
-            this_experiment_dict[var_param_name] = var_param_value
+            experiment_params[var_param_name] = var_param_value
+            # Initialise the list of results for this parameter value
+            experiment_results[var_param_value] = []
             # Run experiment and store the results
             for i in range(n_repeats):
                 np.random.seed(i)
                 try:
-                    result = run_experiment(dataset, **this_experiment_dict)
-                    results_param_val_list.append(var_param_value)
+                    result = run_experiment(dataset, **experiment_params)
                     test_errors = result.get_values(
                         optimisers.results.columns.TestError
                     )
-                    results_final_error_list.append(test_errors[-1])
+                    experiment_results[var_param_value].append(test_errors[-1])
                 except:
-                    print_error_details(this_experiment_dict)
+                    print_error_details(experiment_params)
 
         # Plot results for experiment with this parameter
         if verbose:
             h_line = "*" * 50
             msg = "Plotting result for {}".format(var_param_name)
             print("", h_line, msg, h_line, "", sep="\n")
-        # Test if all x-values are ints or floats (NOTE: elements of numpy
-        # arrays are SUBCLASSES of float, but comparing the type directly to
-        # float or int will return False!!!)
-        all_numeric = all(
-            type(x) in [int, float, np.float64]
-            for x in results_param_val_list
-        )
-        # If not all x-values are ints or floats, then format as strings
+        # Test if all x-values are numeric
+        is_numeric = lambda x: isinstance(x, int) or isinstance(x, float)
+        all_numeric = all(is_numeric(x) for x in experiment_results.keys())
+        # If not all x-values are numeric, then format as strings
         if not all_numeric:
-            results_param_val_list = [
-                repr(x).replace("activation function", "").rstrip()
-                for x in results_param_val_list
-            ]
-        plotting.simple_plot(
-            results_param_val_list,
-            results_final_error_list,
+            experiment_results = {
+                str(val).replace("activation function", "").rstrip(): e_list
+                for val, e_list in experiment_results.items()
+            }
+        plotting.plot_parameter_experiment_results(
+            experiment_results,
             var_param_name,
-            "Final test error",
             "Varying parameter {}".format(var_param_name),
             output_dir,
             alpha_plotting

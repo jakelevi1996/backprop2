@@ -1,3 +1,5 @@
+""" Module to contain all of the various plotting functions used in this
+repository """
 import os
 from math import ceil, sqrt
 import numpy as np
@@ -616,3 +618,29 @@ def make_gif(
         duration=duration,
         optimise=optimise
     )
+
+def plot_parameter_experiment_results(
+    experiment_results,
+    param_name,
+    plot_name,
+    dir_name,
+    alpha=0.5,
+):
+    """ Plot the results of running an experiment to find the approximately
+    locally optimal values of a parameter, based on "Scripts/Compare
+    parameters/run_all_experiments.py". experiment_results should be a
+    dictionary, in which each dictionary-key is a value for the parameter being
+    tested, and each dictionary-value is a list of the final test set errors for
+    each repeat of the experiment with the corresponding value  """
+    # Create figure and plot
+    plt.figure(figsize=[8, 6])
+    for val, error_list in experiment_results.items():
+        for error in error_list:
+            plt.plot(val, error, "bo", alpha=alpha)
+    # Format, save and close the figure
+    plt.title(plot_name)
+    plt.xlabel(param_name)
+    plt.ylabel("Final test set error")
+    plt.tight_layout()
+    plt.grid(True)
+    save_and_close(plot_name, dir_name)
