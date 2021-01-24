@@ -17,7 +17,10 @@ class Terminator:
         """ Reset the timer, and update the iteration limit depending on the
         starting iteration number """
         self.t_start = perf_counter()
-        self.i_lim = i + self.i_lim_init
+        if self.i_lim_init is not None:
+            self.i_lim = i + self.i_lim_init
+        else:
+            self.i_lim = None
     
     def ready_to_terminate(self, i=None, error=None):
         """
