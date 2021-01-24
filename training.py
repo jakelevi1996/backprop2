@@ -1,4 +1,9 @@
 """
+
+***
+THIS MODULE IS DEPRECATED AND WILL BE REMOVED
+***
+
 Module to contain network training experiments.
 
 TODO: some of these experiments could probably be removed.
