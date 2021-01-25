@@ -2,9 +2,8 @@
 Find best parameters for gradient descent with line-search, by trying different
 combinations and plotting the results. The different parameters that are
 compared are:
--   number of units
--   number of layers
--   learning_rate
+-   Number of units
+-   Number of layers
 -   s0 (initial step size)
 -   alpha (threshold for backtracking)
 -   beta (ratio of changes in step size)
@@ -16,9 +15,13 @@ allowed for optimisation.
 This script has a command-line interface. Below are some examples for calling
 this script:
 
+    python "Scripts\Compare parameters\gradient_descent.py"
+
     python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3
 
     python "Scripts\Compare parameters\gradient_descent.py" -t"0.1"
+
+    python "Scripts\Compare parameters\gradient_descent.py" -b
 
 To get help information for the available arguments, use the following command:
 
@@ -33,7 +36,15 @@ from models import NeuralNetwork
 import models, data, optimisers
 from run_all_experiments import run_all_experiments
 
-def main(input_dim, output_dim, n_train, t_lim, t_eval):
+def main(
+    input_dim,
+    output_dim,
+    n_train,
+    t_lim,
+    t_eval,
+    n_repeats,
+    find_best_params
+):
     # Get name of output directory
     param_str = (
         "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f" % (
@@ -92,6 +103,7 @@ def main(input_dim, output_dim, n_train, t_lim, t_eval):
         beta,
         act_func
     ):
+        print(num_units, num_layers, log10_s0, alpha, beta, act_func)
         n = NeuralNetwork(
             input_dim=1,
             output_dim=1,
@@ -119,7 +131,9 @@ def main(input_dim, output_dim, n_train, t_lim, t_eval):
         all_experiments_dict,
         run_experiment,
         sin_data,
-        output_dir
+        output_dir,
+        n_repeats,
+        find_best_parameters=find_best_params
     )
 
 if __name__ == "__main__":
@@ -153,7 +167,7 @@ if __name__ == "__main__":
         "-t",
         "--t_lim",
         help="How long to run each experiment for in seconds",
-        default=3,
+        default=.03,
         type=float
     )
     parser.add_argument(
@@ -166,9 +180,30 @@ if __name__ == "__main__":
         default=0.5,
         type=float
     )
+    parser.add_argument(
+        "-r",
+        "--n_repeats",
+        help="Number of repeats to perform of each experiment",
+        default=5,
+        type=int
+    )
+    parser.add_argument(
+        "-b",
+        "--find_best_params",
+        help="Number of repeats to perform of each experiment",
+        action="store_true"
+    )
 
     # Parse arguments
     args = parser.parse_args()
 
     # Call main function using command-line arguments
-    main(args.input_dim, args.output_dim, args.n_train, args.t_lim, args.t_eval)
+    main(
+        args.input_dim,
+        args.output_dim,
+        args.n_train,
+        args.t_lim,
+        args.t_eval,
+        args.n_repeats,
+        args.find_best_params
+    )
