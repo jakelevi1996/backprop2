@@ -47,11 +47,14 @@ def main(
 ):
     # Get name of output directory
     param_str = (
-        "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f" % (
+        "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f, "
+        "num_repeats = %i, find_best_params = %s" % (
             input_dim,
             output_dim,
             n_train,
-            t_lim
+            t_lim,
+            n_repeats,
+            find_best_params
         )
     )
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -71,6 +74,7 @@ def main(
         "log10_s0":     {"default": 0,     "range": np.linspace(-1, 3, 5)},
         "alpha":        {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
         "beta":         {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
+        "max_steps":    {"default": 10,    "range": [5, 10, 15, 20]},
         "act_func":     {
             "default": models.activations.gaussian,
             "range": [
@@ -101,7 +105,8 @@ def main(
         log10_s0,
         alpha,
         beta,
-        act_func
+        act_func,
+        max_steps
     ):
         print(num_units, num_layers, log10_s0, alpha, beta, act_func)
         n = NeuralNetwork(
@@ -118,7 +123,8 @@ def main(
             line_search=optimisers.LineSearch(
                 s0=pow(10, log10_s0), 
                 alpha=alpha, 
-                beta=beta
+                beta=beta,
+                max_its=max_steps
             )
         )
         return result
