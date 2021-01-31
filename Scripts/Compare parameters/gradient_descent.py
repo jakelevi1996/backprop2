@@ -29,12 +29,13 @@ To get help information for the available arguments, use the following command:
 """
 import os
 import argparse
+from time import perf_counter
 import numpy as np
 if __name__ == "__main__":
     import __init__
 from models import NeuralNetwork
 import models, data, optimisers
-from run_all_experiments import run_all_experiments
+from run_all_experiments import Experiment, Parameter
 
 def main(
     input_dim,
@@ -45,7 +46,7 @@ def main(
     n_repeats,
     find_best_params
 ):
-    # Get name of output directory
+    # Get name of output directory, and create it if it doesn't exist
     param_str = (
         "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f, "
         "num_repeats = %i, find_best_params = %s" % (
@@ -67,25 +68,6 @@ def main(
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # Initialise dictionary of parameter names, default values, values to test
-    all_experiments_dict = {
-        "num_units":    {"default": 10,    "range": [5, 10, 15, 20]},
-        "num_layers":   {"default": 1,     "range": [1, 2, 3]},
-        "log10_s0":     {"default": 0,     "range": np.linspace(-1, 3, 5)},
-        "alpha":        {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
-        "beta":         {"default": 0.5,   "range": np.arange(0.5, 1, 0.1)},
-        "max_steps":    {"default": 10,    "range": [5, 10, 15, 20]},
-        "act_func":     {
-            "default": models.activations.gaussian,
-            "range": [
-                models.activations.gaussian,
-                models.activations.cauchy,
-                models.activations.logistic,
-                models.activations.relu,
-            ]
-        },
-    }
-
     # Initialise data set
     np.random.seed(6763)
     sin_data = data.Sinusoidal(
@@ -99,7 +81,6 @@ def main(
 
     # Define function to be run for each experiment
     def run_experiment(
-        dataset,
         num_units,
         num_layers,
         log10_s0,
@@ -109,15 +90,17 @@ def main(
         max_steps
     ):
         print(num_units, num_layers, log10_s0, alpha, beta, act_func)
-        n = NeuralNetwork(
+        # Initialise network
+        model = NeuralNetwork(
             input_dim=1,
             output_dim=1,
             num_hidden_units=[num_units for _ in range(num_layers)],
             act_funcs=[act_func, models.activations.identity]
         )
+        # Perform gradient descent
         result = optimisers.gradient_descent(
-            n,
-            dataset,
+            model,
+            sin_data,
             terminator=optimisers.Terminator(t_lim=t_lim),
             evaluator=optimisers.Evaluator(t_interval=t_eval),
             line_search=optimisers.LineSearch(
@@ -127,20 +110,42 @@ def main(
                 max_its=max_steps
             )
         )
-        return result
+        # Return the final test error
+        TestError = optimisers.results.columns.TestError
+        final_test_error = result.get_values(TestError)[-1]
+        return final_test_error
+
+    # Initialise the Experiment object, and add parameters
+    experiment = Experiment(run_experiment, output_dir, n_repeats)
+    addp = lambda *args: experiment.add_parameter(Parameter(*args))
+    addp("num_units",   10,     [5, 10, 15, 20]                         )
+    addp("num_layers",  1,      [1, 2, 3]                               )
+    addp("log10_s0",    0,      np.linspace(-1, 3, 5)                   )
+    addp("alpha",       0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
+    addp("beta",        0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
+    addp("max_steps",   10,     [5, 10, 15, 20]                         )
+    addp(
+        "act_func",
+        models.activations.gaussian,
+        [
+            models.activations.gaussian,
+            models.activations.cauchy,
+            models.activations.logistic,
+            models.activations.relu,
+        ]
+    )
 
     # Call warmup function
     optimisers.warmup()
 
     # Call function to run all experiments
-    run_all_experiments(
-        all_experiments_dict,
-        run_experiment,
-        sin_data,
-        output_dir,
-        n_repeats,
-        find_best_parameters=find_best_params
-    )
+    if find_best_params:
+        experiment.find_best_parameters()
+    else:
+        experiment.sweep_all_parameters()
+    
+    # Write the results of all experiments to a text file
+    experiment.save_results_as_text()
 
 if __name__ == "__main__":
     # Define CLI using argparse
@@ -173,7 +178,7 @@ if __name__ == "__main__":
         "-t",
         "--t_lim",
         help="How long to run each experiment for in seconds",
-        default=.03,
+        default=3,
         type=float
     )
     parser.add_argument(
@@ -204,6 +209,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Call main function using command-line arguments
+    t_start = perf_counter()
     main(
         args.input_dim,
         args.output_dim,
@@ -213,3 +219,8 @@ if __name__ == "__main__":
         args.n_repeats,
         args.find_best_params
     )
+
+    # Print time taken
+    t_total = perf_counter() - t_start
+    mins, secs = divmod(t_total, 60)
+    print("\n\nScript ran in %i mins, %.3f secs" % (mins, secs))

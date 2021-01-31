@@ -375,7 +375,7 @@ class Experiment:
                 self._has_updated_any_parameters = True
         
         if plot:
-            self._print("Plotting results for parameter %r" % parameter.name)
+            self._print("Plotting results for parameter %r..." % parameter.name)
             # Format the dictionary keys
             param_sweep_results = self._format_result_keys(param_sweep_results)
             # Call plotting function
@@ -398,7 +398,7 @@ class Experiment:
         This method can be called as a public method, and is also called by the
         find_best_parameters public method. """
         for parameter in self._param_list:
-            self._print("Sweeping over parameter %r" % parameter.name)
+            self._print("Sweeping over parameter %r..." % parameter.name)
             self.sweep_parameter(parameter, plot, update_parameters)
     
     def find_best_parameters(self, plot=True):
@@ -442,8 +442,7 @@ class Experiment:
         corresponding list of results) to disk as a text file """
         with open(os.path.join(self._output_dir, "Results.txt"), "w") as f:
             for tup, results_list in self._params_to_results_dict.items():
-                # print("%s\n\t%s\n" % (tup, results_list), file=f)
-                print(", ".join("%s = %s" % (k, v) for (k, v) in tup), file=f)
+                print(", ".join("%r = %s" % (k, v) for (k, v) in tup), file=f)
                 print("\t%s\n" % results_list, file=f)
 
     def _get_default_dictionary(self):
@@ -479,7 +478,7 @@ class Experiment:
         self._print(
             "Running an experiment with parameters: " +
             ", ".join(
-                "%r: %s" % (name, value)
+                "%r = %s" % (name, value)
                 for (name, value) in experiment_params.items()
             )
         )
