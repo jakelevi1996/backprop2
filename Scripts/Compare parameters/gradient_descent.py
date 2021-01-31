@@ -7,6 +7,7 @@ compared are:
 -   s0 (initial step size)
 -   alpha (threshold for backtracking)
 -   beta (ratio of changes in step size)
+-   The maximum number of steps taken during each iteration of line search
 -   Activation function
 
 Results are compared by plotting final performance after a fixed length of time
@@ -201,7 +202,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "-b",
         "--find_best_params",
-        help="Number of repeats to perform of each experiment",
+        help=(
+            "Iterate experiments and update parameters until the best "
+            "parameters have been found"
+        ),
         action="store_true"
     )
 
