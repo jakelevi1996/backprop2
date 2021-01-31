@@ -619,19 +619,28 @@ def make_gif(
         optimise=optimise
     )
 
-def plot_parameter_experiment_results(
+def plot_parameter_sweep_results(
     experiment_results,
     param_name,
     plot_name,
     dir_name,
     n_sigma=2
 ):
-    """ Plot the results of running an experiment to find the approximately
-    locally optimal values of a parameter, based on "Scripts/Compare
-    parameters/run_all_experiments.py". experiment_results should be a
-    dictionary, in which each dictionary-key is a value for the parameter being
-    tested, and each dictionary-value is a list of the final test set errors for
-    each repeat of the experiment with the corresponding value  """
+    """ Plot the results of running experiments to sweep over various different
+    values of a parameter, with multuple repeats of each experiment.
+
+    Inputs:
+    -   experiment_results: a dictionary in which each dictionary-key is a value
+        for the parameter-under-test, and each dictionary-value is a list of the
+        final test set errors for each repeat of the experiment with
+        parameter-under-test taking the corresponding value
+    -   param_name: name of the parameter under test (used as the x-axis label)
+    -   plot_name: title for the plot, and filename that the output image is
+        saved to
+    -   dir_name: directory in which to save the output image
+    -   n_sigma: number of standard deviations to plot (as a semi-transparent
+        polygon) above and below the mean
+    """
     # Create figure and format dictionaries
     plt.figure(figsize=[8, 6])
     std_fmt = {
@@ -650,7 +659,7 @@ def plot_parameter_experiment_results(
     }
     mean_fmt = {"c": "b", "ls": "--", "label": "Mean", "zorder": 30}
     
-    # Calculate mean and standard deviation
+    # Calculate mean and standard deviation, in ordered numpy arrays
     val_list = list(experiment_results.keys())
     mean = np.array([np.mean(experiment_results[val]) for val in val_list])
     std  = np.array([np.std( experiment_results[val]) for val in val_list])
