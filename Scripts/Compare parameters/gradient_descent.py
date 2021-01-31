@@ -36,7 +36,7 @@ if __name__ == "__main__":
     import __init__
 from models import NeuralNetwork
 import models, data, optimisers
-from run_all_experiments import Experiment, Parameter
+from experiment import Experiment, Parameter
 
 def main(
     input_dim,
