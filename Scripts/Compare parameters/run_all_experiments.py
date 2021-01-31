@@ -439,11 +439,25 @@ class Experiment:
 
     def save_results_as_text(self):
         """ Save each set of parameters which has been tested (along with the
-        corresponding list of results) to disk as a text file """
+        corresponding list of results) and the final default parameter values to
+        disk as a text file """
         with open(os.path.join(self._output_dir, "Results.txt"), "w") as f:
+            # Iterate through each experiment that was run
             for tup, results_list in self._params_to_results_dict.items():
+                # Print the parameters for the experiment
                 print(", ".join("%r = %s" % (k, v) for (k, v) in tup), file=f)
+                # Print the results for the experiment
                 print("\t%s\n" % results_list, file=f)
+            # Print the final default parameter values
+            print(
+                "\n\nFinal default parameter values:",
+                "\n".join(
+                    "%r: %s" % (param.name, param.default)
+                    for param in self._param_list
+                ),
+                sep="\n",
+                file=f
+            )
 
     def _get_default_dictionary(self):
         """ Return a dictionary in which the keys are the names of each of the
