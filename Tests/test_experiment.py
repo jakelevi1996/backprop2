@@ -39,7 +39,8 @@ def test_find_best_parameters(seed, plot):
     # Get the output directory name, and create it if it doesn't exist already
     test_output_dir = os.path.join(
         output_dir,
-        "test_find_best_parameters, seed = %i" % seed
+        "test_find_best_parameters",
+        "seed = %i" % seed
     )
     if not os.path.isdir(test_output_dir):
         os.makedirs(test_output_dir)
@@ -92,7 +93,8 @@ def test_sweep_all_parameters(seed):
     # Get the output directory name, and create it if it doesn't exist already
     test_output_dir = os.path.join(
         output_dir,
-        "test_sweep_all_parameters, seed = %i" % seed
+        "test_sweep_all_parameters",
+        "seed = %i" % seed
     )
     if not os.path.isdir(test_output_dir):
         os.makedirs(test_output_dir)
@@ -134,3 +136,53 @@ def test_sweep_all_parameters(seed):
         param_defaults_new = experiment._get_default_dictionary()
         # Assert that this time the parameter defaults HAVE changed
         assert param_defaults_new != param_defaults_original
+
+
+@pytest.mark.parametrize("seed", [4176, 1959, 2518])
+def test_save_results_as_text(seed):
+    """ Test calling the Experiment.save_results_as_text method """
+    # Set the random seed
+    np.random.seed(seed)
+    # Set the number of parameters
+    num_params = np.random.randint(5, 10)
+
+    # Define the function that will be called by the Experiment object
+    def run_experiment(**kwargs):
+        """ Function that will be called by the Experiment object """
+        # Check that we have the right number of inputs
+        assert len(kwargs) == num_params
+        # Return the norm of the input values
+        return np.linalg.norm(list(kwargs.values()))
+    
+    # Get the output directory name, and create it if it doesn't exist already
+    test_output_dir = os.path.join(
+        output_dir,
+        "test_save_results_as_text",
+        "seed = %i" % seed
+    )
+    if not os.path.isdir(test_output_dir):
+        os.makedirs(test_output_dir)
+    # Get the output filename and open it
+    output_filename = os.path.join(test_output_dir, "output.txt")
+    with open(output_filename, "w") as f:
+        # Initialise the experiment object
+        experiment = Experiment(run_experiment, test_output_dir, output_file=f)
+        
+        # Define shortcut expression for adding parameters
+        addp = lambda *args: experiment.add_parameter(Parameter(*args))
+        # Iterate through each parameter
+        for i in range(num_params):
+            # Choose a unique and valid parameter name
+            name = string.ascii_letters[i]
+            # Choose a random number of values, range of values, and default
+            num_values = np.random.randint(5, 10)
+            val_range = np.random.normal(size=num_values)
+            default = np.random.choice(val_range)
+            # Add the parameter to the Experiment object
+            addp(name, default, val_range)
+
+        # Find the best parameter values
+        experiment.find_best_parameters(plot=False)
+    
+    # Write the results of all experiments to a text file
+    experiment.save_results_as_text()
