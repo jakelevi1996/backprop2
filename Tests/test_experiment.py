@@ -50,4 +50,8 @@ def test_find_best_parameters(seed, plot):
 
     f.close()
 
-    # TODO: check that parameter defaults take the best values
+    for param in experiment._param_list:
+        # Find the minimum absolute parameter value
+        min_abs_val = min(abs(x) for x in param.val_range)
+        # Check that the default parameter value is the best one
+        assert abs(param.default) == min_abs_val
