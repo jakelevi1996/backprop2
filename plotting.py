@@ -660,7 +660,7 @@ def plot_parameter_sweep_results(
     mean_fmt = {"c": "b", "ls": "--", "label": "Mean", "zorder": 30}
     
     # Calculate mean and standard deviation, in ordered numpy arrays
-    val_list = list(experiment_results.keys())
+    val_list = sorted(list(experiment_results.keys()))
     mean = np.array([np.mean(experiment_results[val]) for val in val_list])
     std  = np.array([np.std( experiment_results[val]) for val in val_list])
 
