@@ -20,7 +20,7 @@ def test_full_training_set_batch(seed, dataset_str):
     """
     np.random.seed(seed)
     dataset = get_dataset(dataset_str)
-    batch_getter = optimisers.batch.FullTrainingSet(dataset)
+    batch_getter = optimisers.batch.FullTrainingSet()
     x_batch, y_batch = batch_getter.get_batch(dataset)
     assert x_batch.shape == dataset.x_train.shape
     assert y_batch.shape == dataset.y_train.shape

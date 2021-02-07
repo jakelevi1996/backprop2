@@ -1,5 +1,8 @@
 """
-TODO
+Module to contain batch-getters, which are classes containing a get_batch
+method, called in _optimisers/minimise.py; this method accepts a dataset object,
+and returns x_batch and y_batch, which are taken from the dataset object and
+used as the inputs and outputs for one iteration of training a model.
 
 TODO:
 -   Add docstrings
@@ -22,18 +25,26 @@ import numpy as np
 from scipy.stats import norm
 from _optimisers.terminator import Terminator
 
-class BatchGetter():
+class _BatchGetter():
+    """ Abstract parent class for batch-getters, containing the get_batch
+    method. This class should be subclassed by public subclasses, which
+    implement different strategies for choosing a batch from a data-set"""
     def get_batch(self, dataset):
+        """ Get a batch of data, used for one iteration of training. This method
+        is called by _optimisers/minimise.py """
         raise NotImplementedError
 
-class FullTrainingSet(BatchGetter):
-    def __init__(self, dataset):
-        self.batch_size = dataset.n_train
-
+class FullTrainingSet(_BatchGetter):
+    """ Class for a batch-getter which returns the full training set as a batch.
+    This is useful when the size of the data-set is small, EG on the order of
+    100 data-points, especially with data-sets that have one-dimensional inputs
+    """
     def get_batch(self, dataset):
         return dataset.x_train, dataset.y_train
 
-class ConstantBatchSize(BatchGetter):
+class ConstantBatchSize(_BatchGetter):
+    """ Class for a batch-getter which returns a randomly-selected batch of a
+    constant size. This size is specified when this object is initialised. """
     def __init__(self, batch_size, replace=True):
         if type(batch_size) is not int:
             raise TypeError("batch_size argument must be an integer")
@@ -49,7 +60,7 @@ class ConstantBatchSize(BatchGetter):
         )
         return dataset.x_train[:, batch_inds], dataset.y_train[:, batch_inds]
 
-class DynamicBatchSize(BatchGetter, Terminator):
+class DynamicBatchSize(_BatchGetter, Terminator):
     def __init__(
         self,
         model,
