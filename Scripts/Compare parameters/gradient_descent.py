@@ -22,7 +22,7 @@ this script:
 
     python "Scripts\Compare parameters\gradient_descent.py" -t"0.1"
 
-    python "Scripts\Compare parameters\gradient_descent.py" -b
+    python "Scripts\Compare parameters\gradient_descent.py" -f
 
 To get help information for the available arguments, use the following command:
 
@@ -45,7 +45,8 @@ def main(
     t_lim,
     t_eval,
     n_repeats,
-    find_best_params
+    find_best_params,
+    batch_size
 ):
     # Get name of output directory, and create it if it doesn't exist
     param_str = (
@@ -69,7 +70,7 @@ def main(
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # Initialise data set
+    # Initialise data set and batch getter
     np.random.seed(6763)
     sin_data = data.Sinusoidal(
         input_dim,
@@ -79,6 +80,11 @@ def main(
         x_hi=2,
         freq=1
     )
+    if batch_size < n_train:
+        batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
+    else:
+        batch_getter = optimisers.batch.FullTrainingSet()
+
 
     # Define function to be run for each experiment
     def run_experiment(
@@ -90,7 +96,6 @@ def main(
         act_func,
         max_steps
     ):
-        print(num_units, num_layers, log10_s0, alpha, beta, act_func)
         # Initialise network
         model = NeuralNetwork(
             input_dim=1,
@@ -109,7 +114,8 @@ def main(
                 alpha=alpha, 
                 beta=beta,
                 max_its=max_steps
-            )
+            ),
+            batch_getter=batch_getter
         )
         # Return the final test error
         TestError = optimisers.results.columns.TestError
@@ -200,13 +206,23 @@ if __name__ == "__main__":
         type=int
     )
     parser.add_argument(
-        "-b",
+        "-f",
         "--find_best_params",
         help=(
             "Iterate experiments and update parameters until the best "
             "parameters have been found"
         ),
         action="store_true"
+    )
+    parser.add_argument(
+        "-b",
+        "--batch_size",
+        help=(
+            "Batch size to use in optimisation (only used if less than the "
+            "number of data points in the training set)"
+        ),
+        default=100,
+        type=int
     )
 
     # Parse arguments
@@ -221,7 +237,8 @@ if __name__ == "__main__":
         args.t_lim,
         args.t_eval,
         args.n_repeats,
-        args.find_best_params
+        args.find_best_params,
+        args.batch_size
     )
 
     # Print time taken
