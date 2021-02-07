@@ -13,7 +13,17 @@ import plotting
 def dict_to_tuple(d):
     """ Convert a dictionary to a tuple (this tuple can then be used as the key
     for a dictionary, because it is hashable) """
-    return tuple(sorted(list(d.items())))
+    return tuple(sorted(d.items()))
+
+def set_seed(i, experiment_params):
+    """ Given the iteration number i, and a dictionary of parameters for an
+    experiment, set an almost-surely-unique random seed for the experiment. The
+    input to np.random.seed "must be between 0 and 2**32 - 1", hence a 32-bit
+    mask is applied to the seed """
+    experiment_descriptor = (i, dict_to_tuple(experiment_params))
+    mask = (1 << 32) - 1
+    seed = hash(experiment_descriptor) & mask
+    np.random.seed(seed)
 
 class Parameter:
     """ Class to represent parameters that are swept over by the Experiment
@@ -258,7 +268,7 @@ class Experiment:
         results_list = []
         # Run experiment and store the results
         for i in range(self._n_repeats):
-            np.random.seed(i)
+            set_seed(i, experiment_params)
             try:
                 score = self._func(**experiment_params)
                 results_list.append(score)
