@@ -585,6 +585,7 @@ def make_gif(
     input_path_list,
     duration=100,
     optimise=False,
+    loop=0
 ):
     """ Make gif using pre-existing image files, and save to disk. The gif will
     loop indefinitely.
@@ -603,20 +604,24 @@ def make_gif(
         milliseconds. Default is 100 seconds
     -   optimise: if True, attempt to compress the palette by eliminating unused
         colors. Default is False
+    -   loop: integer number of times the GIF should loop. 0 means that it will
+        loop forever. If None, then the image will not loop at all. By default,
+        the image will loop forever
     """
     first_frame = PIL.Image.open(input_path_list[0])
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     output_filename = "%s.gif" % output_name
     output_path = os.path.join(output_dir, output_filename)
+    loop_kwarg = dict() if (loop is None) else {"loop": loop}
     first_frame.save(
         output_path,
         format="gif",
         save_all=True,
         append_images=[PIL.Image.open(f) for f in input_path_list[1:]],
-        loop=0,
         duration=duration,
-        optimise=optimise
+        optimise=optimise,
+        **loop_kwarg
     )
 
 def plot_parameter_sweep_results(
