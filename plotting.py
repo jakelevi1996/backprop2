@@ -465,8 +465,7 @@ def plot_result_attributes_subplots(
 def plot_error_reductions_vs_batch_size(
     plot_name,
     dir_name,
-    batch_size_list,
-    reduction_list_list,
+    reduction_dict,
     figsize=[16, 6],
     y_lim_left=None,
     y_lim_right=None,
@@ -486,13 +485,8 @@ def plot_error_reductions_vs_batch_size(
     Inputs:
     -   plot_name: name of the plot, also used as the filename
     -   dir_name: name of the directory to save the plot in
-    -   batch_size_list: list of batch sizes used in this plot (this is plotted
-        on the x axis)
-    -   reduction_list_list: this list should have the same length as
-        batch_size_list, and each element should be a list, in which each
-        element is the reduction in the mean test error for one repeat of the
-        corresponding batch size (typically smaller batch sizes will have more
-        repeats, because they are quicker, and also typically more variable)
+    -   reduction_dict: dictionary in which each key is an integer batch-size,
+        and each value is a corresponding list of test set reductions
     -   fig_size: size of the figure in inches
     -   y_lim_left: limits for y axes for the left subplot
     -   y_lim_right: limits for y axes for the right subplot
@@ -504,17 +498,34 @@ def plot_error_reductions_vs_batch_size(
 
     TODO: logarithmic x-axis (batch size)?
     """
+    # Initialise the figure, axes, and format dictionaries
     fig, axes = plt.subplots(1, 2, sharex=True, figsize=figsize)
-    # Calculate mean and standard deviation
-    mean = np.array([np.mean(e_list) for e_list in reduction_list_list])
-    std = np.array([np.std(e_list) for e_list in reduction_list_list])
-    # Plot the standard deviations
     std_fmt = {
         "color": "b",
         "alpha": 0.3,
         "zorder": 10,
         "label": "$\\pm%i\\sigma$" % n_sigma
     }
+    data_point_fmt = {
+        "color": "k",
+        "marker": "o",
+        "ls": "",
+        "label": "Single data point",
+        "alpha": 0.5,
+        "zorder": 20
+    }
+    mean_fmt = {"c": "b", "ls": "--", "label": "Mean reduction", "zorder": 30}
+    # Calculate mean and standard deviation
+    batch_size_list = np.array(sorted(reduction_dict.keys()))
+    mean = np.array([
+        np.mean(reduction_dict[batch_size])
+        for batch_size in batch_size_list
+    ])
+    std = np.array([
+        np.std(reduction_dict[batch_size])
+        for batch_size in batch_size_list
+    ])
+    # Plot the standard deviations
     axes[0].fill_between(
         batch_size_list,
         mean + n_sigma*std,
@@ -530,23 +541,14 @@ def plot_error_reductions_vs_batch_size(
     # Plot each individual data point using a semi-transparent marker
     b_list_repeated, r_list_unpacked = zip(*[
         [b, r]
-        for b, r_list in zip(batch_size_list, reduction_list_list)
+        for b, r_list in reduction_dict.items()
         for r in r_list
     ])
     r_over_b_list = np.array(r_list_unpacked) / np.array(b_list_repeated)
-    data_point_fmt = {
-        "color": "k",
-        "marker": "o",
-        "ls": "",
-        "label": "Single data point",
-        "alpha": 0.5,
-        "zorder": 20
-    }
     axes[0].plot(b_list_repeated, r_list_unpacked, **data_point_fmt)
     axes[1].plot(b_list_repeated, r_over_b_list, **data_point_fmt)
 
     # Plot the means
-    mean_fmt = {"c": "b", "ls": "--", "label": "Mean reduction", "zorder": 30}
     axes[0].plot(batch_size_list, mean, **mean_fmt)
     axes[1].plot(batch_size_list, mean / batch_size_list, **mean_fmt)
 

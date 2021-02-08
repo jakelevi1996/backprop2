@@ -148,11 +148,11 @@ def main(
         w_0 = model.get_parameter_vector().copy()
         model.forward_prop(sin_data.x_test)
         E_0 = model.mean_error(sin_data.y_test)
-        reduction_list_list = []
+        reduction_dict = dict()
         # Iterate through batch sizes
         for batch_size in batch_size_list:
             # Set number of repeats and initialise results list
-            reduction_list_list.append([])
+            reduction_dict[batch_size] = []
             batch_getter = optimisers.batch.ConstantBatchSize(
                 int(batch_size),
                 replace=use_replacement
@@ -175,7 +175,7 @@ def main(
                 model.forward_prop(sin_data.x_test)
                 E_new = model.mean_error(sin_data.y_test)
                 error_reduction = E_0 - E_new
-                reduction_list_list[-1].append(error_reduction)
+                reduction_dict[batch_size].append(error_reduction)
                 # Reset parameters
                 model.set_parameter_vector(w_0.copy())
             print(".", end="", flush=True)
@@ -187,8 +187,7 @@ def main(
         full_path = plotting.plot_error_reductions_vs_batch_size(
             title,
             frame_dir,
-            batch_size_list,
-            reduction_list_list,
+            reduction_dict,
             y_lim_left=ylims[:2],
             y_lim_right=ylims[2:]
         )
