@@ -17,6 +17,8 @@ Below are some examples for calling this script:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py
 
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py --no_replace
+
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -n300 -b100
@@ -109,9 +111,23 @@ def main(
     line_search_optimise = optimisers.LineSearch()
     line_search_test_batch = optimisers.LineSearch()
 
-    # Get output dir (TODO: make specific to the script parameters)
+    # Get output directory which is specific to the script parameters
+    param_str = ", ".join([
+        "input_dim = %i"            % input_dim,
+        "output_dim = %i"           % output_dim,
+        "n_train = %i"              % n_train,
+        "n_iters = %i"              % n_iters,
+        "batch_size_optimise = %r"  % batch_size_optimise,
+        "use_replacement = %r"      % use_replacement,
+    ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(current_dir, "Outputs", "Error vs batch")
+    output_dir = os.path.join(
+        current_dir,
+        "Outputs",
+        "Error vs batch",
+        param_str
+    )
+    frame_dir = os.path.join(output_dir, "Frames")
     filename_list = []
 
     # Iterate through the frames in the gif
@@ -170,7 +186,7 @@ def main(
         title = "Error reduction vs batch size, iteration = %05i" % last_iter
         full_path = plotting.plot_error_reductions_vs_batch_size(
             title,
-            output_dir,
+            frame_dir,
             batch_size_list,
             reduction_list_list,
             y_lim_left=ylims[:2],
