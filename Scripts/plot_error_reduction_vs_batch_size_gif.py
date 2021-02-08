@@ -15,7 +15,11 @@ TODO:
 
 Below are some examples for calling this script:
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -i1 -o1 -n100 -u10
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py
+
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50
+
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n300 -b100
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -i2 -o3 -n2500 -u 20,20
 
@@ -45,7 +49,9 @@ def main(
     n_batch_sizes,
     min_batch_size,
     ylims,
-    seed
+    seed,
+    batch_size_optimise,
+    no_replace
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -59,7 +65,8 @@ def main(
     -   n_repeats: positive integer number of repeats to perform of each batch
         size test
     -   n_iters: total number of iterations to perform
-    -   n_plots: number of frames of the gif
+    -   n_plots: number of frames of the gif (equal to how many times
+        optimisation will pause in order to sweep over the list of batch sizes)
     -   n_batch_sizes: the number of different batch sizes to test for each
         iteration
     -   min_batch_size: the smallest batch size to test
@@ -68,23 +75,35 @@ def main(
         axis limits for the left subplot, and the second 2 are the lower and
         upper axis limits for the right subplot
     -   seed: random seed to use for the experiment
+    -   batch_size_optimise: batch size to use for standard optimisation
+        iterations (IE not when sweeping over batch sizes). If ommitted, then
+        the full training set is used as a batch during optimisation iterations
+    -   use_replacement: if True, then use replacement when sampling batches
+        from the training set
     """
     np.random.seed(seed)
     n_iters_per_plot = int(n_iters / n_plots)
 
+    # Initialise models, data, and list of batch sizes to test
     model = models.NeuralNetwork(input_dim, output_dim, num_hidden_units)
     freq = 1 if (input_dim == 1) else None
     sin_data = data.Sinusoidal(input_dim, output_dim, n_train, freq=freq)
-
     batch_size_list = np.linspace(min_batch_size, n_train, n_batch_sizes)
     
+    # Initialise objects to use during optimisation and testing batch sizes
     result_optimise = optimisers.Result()
     result_test_batch = optimisers.Result(
         verbose=False,
         add_default_columns=False
     )
     evaluator = optimisers.DoNotEvaluate()
-    batch_getter_optimise = optimisers.batch.FullTrainingSet(sin_data)
+    if batch_size_optimise is None:
+        batch_getter_optimise = optimisers.batch.FullTrainingSet()
+    else:
+        batch_getter_optimise = optimisers.batch.ConstantBatchSize(
+            batch_size_optimise,
+            use_replacement
+        )
     terminator_optimise = optimisers.Terminator(i_lim=n_iters_per_plot)
     terminator_test_batch = optimisers.Terminator(i_lim=1)
     line_search_optimise = optimisers.LineSearch()
@@ -95,7 +114,7 @@ def main(
     output_dir = os.path.join(current_dir, "Outputs", "Error vs batch")
     filename_list = []
 
-
+    # Iterate through the frames in the gif
     for plot_num in range(n_plots):
         # Do initial set of iterations
         optimisers.gradient_descent(
@@ -118,8 +137,11 @@ def main(
         for batch_size in batch_size_list:
             # Set number of repeats and initialise results list
             reduction_list_list.append([])
-            batch_getter = optimisers.batch.ConstantBatchSize(int(batch_size))
-            # Iterate through repeats
+            batch_getter = optimisers.batch.ConstantBatchSize(
+                int(batch_size),
+                replace=use_replacement
+            )
+            # Iterate through repeats of the batch size
             for _ in range(n_repeats):
                 # Perform one iteration of gradient descent
                 line_search_test_batch.s = line_search_optimise.s
@@ -133,18 +155,18 @@ def main(
                     display_summary=False,
                     line_search=line_search_test_batch
                 )
-                # Calculate new error and add the reduction to the list TODO:
-                # could this test set error be taken from result_test_batch?
+                # Calculate new error and add the reduction to the list
                 model.forward_prop(sin_data.x_test)
-                error_reduction = E_0 - model.mean_error(sin_data.y_test)
+                E_new = model.mean_error(sin_data.y_test)
+                error_reduction = E_0 - E_new
                 reduction_list_list[-1].append(error_reduction)
                 # Reset parameters
-                model.set_parameter_vector(w_0)
+                model.set_parameter_vector(w_0.copy())
             print(".", end="", flush=True)
 
-        # Make plot of batch size vs gif
-        iter_col_type = optimisers.results.columns.Iteration
-        last_iter = result_optimise.get_values(iter_col_type)[-1]
+        # Make plot of error reduction vs batch size
+        Iteration = optimisers.results.columns.Iteration
+        last_iter = result_optimise.get_values(Iteration)[-1]
         title = "Error reduction vs batch size, iteration = %05i" % last_iter
         full_path = plotting.plot_error_reductions_vs_batch_size(
             title,
@@ -247,11 +269,28 @@ if __name__ == "__main__":
         default=1913,
         type=int
     )
+    parser.add_argument(
+        "-b",
+        "--batch_size_optimise",
+        help=(
+            "Batch size to use for standard optimisation iterations (IE not "
+            "when sweeping over batch sizes). If ommitted, then the full "
+            "training set is used as a batch during optimisation iterations"
+        ),
+        default=None,
+        type=int
+    )
+    parser.add_argument(
+        "--no_replace",
+        help=(
+            "Don't use replacement when sampling batches from the training set"
+        ),
+        action="store_true"
+    )
 
     # Parse arguments
     args = parser.parse_args()
-
-    # Convert comma-separated string to list of ints
+    use_replacement = not args.no_replace
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
     ylims = [float(f) for f in args.ylims.split(",")]
 
@@ -268,6 +307,8 @@ if __name__ == "__main__":
         args.n_batch_sizes,
         args.min_batch_size,
         ylims,
-        args.seed
+        args.seed,
+        args.batch_size_optimise,
+        use_replacement
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
