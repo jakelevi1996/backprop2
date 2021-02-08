@@ -183,8 +183,10 @@ def main(
         "Error reduction vs batch size",
         output_dir,
         filename_list,
-        duration=500
+        duration=500,
+        loop=None
     )
+    plotting.plot_training_curves([result_optimise], dir_name=output_dir)
     
 
 if __name__ == "__main__":
