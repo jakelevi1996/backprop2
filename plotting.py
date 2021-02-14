@@ -499,7 +499,13 @@ def plot_error_reductions_vs_batch_size(
     TODO: logarithmic x-axis (batch size)?
     """
     # Initialise the figure, axes, and format dictionaries
-    fig, axes = plt.subplots(1, 2, sharex=True, figsize=figsize)
+    fig, axes = plt.subplots(
+        1,
+        3,
+        sharex=True,
+        figsize=figsize,
+        gridspec_kw={"width_ratios": [1, 1, 0.2]}
+    )
     std_fmt = {
         "color": "b",
         "alpha": 0.3,
@@ -599,7 +605,7 @@ def plot_error_reductions_vs_batch_size(
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=15)
-    for a in axes:
+    for a in axes[:2]:
         a.axhline(0, **no_reduction_fmt)
         a.grid(True)
         a.set_xlim(0, max(batch_size_list))
@@ -611,7 +617,7 @@ def plot_error_reductions_vs_batch_size(
         "$\\frac{\\mathrm{Mean\\/test\\/set\\/error\\/reduction}}"
         "{\\mathrm{Batch\\/size}}$"
     )
-    axes[1].legend(
+    axes[2].legend(
         handles=[
             Line2D([], [], **data_point_fmt),
             Line2D([], [], **mean_fmt),
@@ -619,8 +625,9 @@ def plot_error_reductions_vs_batch_size(
             Line2D([], [], **no_reduction_fmt),
             Line2D([], [], **optimal_fmt_legend),
         ],
-        loc="upper right"
+        loc="center"
     )
+    axes[2].axis("off")
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
     full_path = save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
     return full_path
