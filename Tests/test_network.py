@@ -106,7 +106,10 @@ def test_get_hessian_blocks(seed):
     """
 
     # Initialise network, inputs and targets
-    n, x, t, _ = get_random_network_inputs_targets(seed)
+    n, x, t, _ = get_random_network_inputs_targets(
+        seed,
+        act_funcs=[activations.cauchy, activations.identity]
+    )
     
     # Set block inds for get_hessian_blocks method
     max_block_size = np.random.randint(3, 6)
