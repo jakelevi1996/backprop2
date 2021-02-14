@@ -19,7 +19,7 @@ Below are some examples for calling this script:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py --no_replace
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50 --ylims "n1e-3,1e-3,n1e-5,1e-5"
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -n300 -b100
 
@@ -119,6 +119,7 @@ def main(
         "n_iters = %i"              % n_iters,
         "batch_size_optimise = %r"  % batch_size_optimise,
         "use_replacement = %r"      % use_replacement,
+        "ylims = %r"                % ylims
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -198,7 +199,7 @@ def main(
         "Error reduction vs batch size",
         output_dir,
         filename_list,
-        duration=500,
+        duration=1000,
         loop=None
     )
     plotting.plot_training_curves([result_optimise], dir_name=output_dir)
@@ -274,10 +275,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ylims",
         help=(
-            "Comma separated list of floats describing the limits to use for "
-            "the y axes; see main function docstring for more info",
+            "Comma separated list of 4 floats describing the limits to use for "
+            "the y axes. Negative numbers should be prefixed with the "
+            "character 'n' instead of a negative sign, so that this value is "
+            "not confused with another command-line argument. See main "
+            "function docstring for more info"
         ),
-        default="-0.05,0.05,-0.01,0.01",
+        default="n0.05,0.05,n0.01,0.01",
         type=str
     )
     parser.add_argument(
@@ -309,7 +313,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     use_replacement = not args.no_replace
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
-    ylims = [float(f) for f in args.ylims.split(",")]
+    float_fmt = lambda y: -float(y[1:]) if y.startswith("n") else float(y)
+    ylims = [float_fmt(f) for f in args.ylims.split(",")]
+    assert len(ylims) == 4, "Must provide 4 comma-separated values for ylims"
 
     # Call main function using command-line arguments
     t_start = perf_counter()
