@@ -503,18 +503,43 @@ def plot_error_reductions_vs_batch_size(
     std_fmt = {
         "color": "b",
         "alpha": 0.3,
+        "label": "$\\pm%i\\sigma$" % n_sigma,
         "zorder": 10,
-        "label": "$\\pm%i\\sigma$" % n_sigma
+    }
+    no_reduction_fmt = {
+        "color": "r",
+        "ls": "--",
+        "label": "No reduction",
+        "zorder": 20
     }
     data_point_fmt = {
         "color": "k",
         "marker": "o",
         "ls": "",
-        "label": "Single data point",
         "alpha": 0.5,
-        "zorder": 20
+        "label": "Single data point",
+        "zorder": 30
     }
-    mean_fmt = {"c": "b", "ls": "--", "label": "Mean reduction", "zorder": 30}
+    mean_fmt = {"c": "b", "ls": "-", "label": "Mean reduction", "zorder": 40}
+    lime_green = [0, 1, 0]
+    optimal_point_fmt = {
+        "marker": "o",
+        "ms": 15,
+        "mew": 3,
+        "mec": lime_green,
+        "mfc": [0]*4,
+        "zorder": 50
+    }
+    optimal_fmt = {
+        "color": lime_green,
+        "ls": "-",
+        "lw": 3,
+        "label": "Optimal batch size",
+        "zorder": 50
+    }
+    optimal_fmt_legend = dict()
+    optimal_fmt_legend.update(optimal_fmt)
+    optimal_fmt_legend.update(optimal_point_fmt)
     # Calculate mean and standard deviation
     batch_size_list = np.array(sorted(reduction_dict.keys()))
     mean = np.array([
@@ -525,6 +550,12 @@ def plot_error_reductions_vs_batch_size(
         np.std(reduction_dict[batch_size])
         for batch_size in batch_size_list
     ])
+    # Find optimal batch size and reduction
+    mean_over_batch = mean / batch_size_list
+    best_reduction_over_batch = max(mean_over_batch)
+    i_best = list(mean_over_batch).index(best_reduction_over_batch)
+    best_batch_size = batch_size_list[i_best]
+    best_reduction = mean[i_best]
     # Plot the standard deviations
     axes[0].fill_between(
         batch_size_list,
@@ -547,14 +578,27 @@ def plot_error_reductions_vs_batch_size(
     r_over_b_list = np.array(r_list_unpacked) / np.array(b_list_repeated)
     axes[0].plot(b_list_repeated, r_list_unpacked, **data_point_fmt)
     axes[1].plot(b_list_repeated, r_over_b_list, **data_point_fmt)
-
     # Plot the means
     axes[0].plot(batch_size_list, mean, **mean_fmt)
-    axes[1].plot(batch_size_list, mean / batch_size_list, **mean_fmt)
+    axes[1].plot(batch_size_list, mean_over_batch, **mean_fmt)
+    # Plot the optimal batch size
+    axes[0].plot(
+        best_batch_size,
+        best_reduction,
+        **optimal_point_fmt
+    )
+    axes[1].plot(
+        best_batch_size,
+        best_reduction_over_batch,
+        **optimal_point_fmt
+    )
+    axes[0].axvline(best_batch_size, **optimal_fmt)
+    axes[0].axhline(best_reduction, **optimal_fmt)
+    axes[1].axvline(best_batch_size, **optimal_fmt)
+    axes[1].axhline(best_reduction_over_batch, **optimal_fmt)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=15)
-    no_reduction_fmt = {"color": "r", "ls": "-", "label": "No reduction"}
     for a in axes:
         a.axhline(0, **no_reduction_fmt)
         a.grid(True)
@@ -573,6 +617,7 @@ def plot_error_reductions_vs_batch_size(
             Line2D([], [], **mean_fmt),
             Patch(**std_fmt),
             Line2D([], [], **no_reduction_fmt),
+            Line2D([], [], **optimal_fmt_legend),
         ],
         loc="upper right"
     )
