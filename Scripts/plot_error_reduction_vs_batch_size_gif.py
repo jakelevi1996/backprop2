@@ -19,7 +19,7 @@ Below are some examples for calling this script:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py --no_replace
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50 --ylims "n1e-3,1e-3,n1e-5,1e-5"
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50 --ylims "n1e-3,1e-3,n1e-5,1e-5" --n_plots 50
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -n300 -b100
 
@@ -53,7 +53,8 @@ def main(
     ylims,
     seed,
     batch_size_optimise,
-    no_replace
+    use_replacement,
+    gif_duration
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -82,6 +83,8 @@ def main(
         the full training set is used as a batch during optimisation iterations
     -   use_replacement: if True, then use replacement when sampling batches
         from the training set
+    -   gif_duration: time in seconds that the output gif should last for in
+        total
     """
     np.random.seed(seed)
     n_iters_per_plot = int(n_iters / n_plots)
@@ -119,7 +122,8 @@ def main(
         "n_iters = %i"              % n_iters,
         "batch_size_optimise = %r"  % batch_size_optimise,
         "use_replacement = %r"      % use_replacement,
-        "ylims = %r"                % ylims
+        "ylims = %r"                % ylims,
+        "n_plots = %i"              % n_plots,
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -195,11 +199,13 @@ def main(
         filename_list.append(full_path)
         print("")
     
+    # Make gif out of the inidividual image frames
+    frame_duration_ms = 1000 * gif_duration / n_plots
     plotting.make_gif(
         "Error reduction vs batch size",
         output_dir,
         filename_list,
-        duration=1000,
+        duration=frame_duration_ms,
         loop=None
     )
     plotting.plot_training_curves([result_optimise], dir_name=output_dir)
@@ -308,6 +314,12 @@ if __name__ == "__main__":
         ),
         action="store_true"
     )
+    parser.add_argument(
+        "--gif_duration",
+        help="Time in seconds that the output gif should last for in total",
+        default=20,
+        type=float
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -332,6 +344,7 @@ if __name__ == "__main__":
         ylims,
         args.seed,
         args.batch_size_optimise,
-        use_replacement
+        use_replacement,
+        args.gif_duration
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
