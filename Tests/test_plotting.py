@@ -224,12 +224,12 @@ def test_plot_error_reductions_vs_batch_size():
     terminator = optimisers.Terminator(i_lim=1)
     # TODO: logarithmically spaced batch sizes?
     batch_size_list = np.linspace(min_batch_size, n_train, n_batch_sizes)
-    reduction_list_list = []
+    reduction_dict = dict()
     # Iterate through batch sizes
     for batch_size in batch_size_list:
         # Set number of repeats and initialise results list
         n_repeats = 10
-        reduction_list_list.append([])
+        reduction_dict[batch_size] = []
         batch_getter = optimisers.batch.ConstantBatchSize(int(batch_size))
         # Iterate through repeats
         for _ in range(n_repeats):
@@ -247,14 +247,13 @@ def test_plot_error_reductions_vs_batch_size():
             # Calculate new error and add the reduction to the list
             model.forward_prop(sin_data.x_test)
             error_reduction = E_0 - model.mean_error(sin_data.y_test)
-            reduction_list_list[-1].append(error_reduction)
+            reduction_dict[batch_size].append(error_reduction)
 
     # Call function being tested
     plotting.plot_error_reductions_vs_batch_size(
         title,
         output_dir,
-        batch_size_list,
-        reduction_list_list,
+        reduction_dict,
         y_lim_right=[-0.01, 0.01]
     )
 
