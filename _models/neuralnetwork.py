@@ -71,14 +71,14 @@ class NeuralNetwork():
         Outputs: initialised network
 
         TODO: instead of having num_hidden_units and act_funcs arguments as
-        lists, should add layers one by one with an add_layer argument, and
+        lists, should add layers one by one with an add_layer method, and
         initialise weights once all the layers have been added?
         """
         # Set default number of hidden units and activation and error functions
         if num_hidden_units is None:
             num_hidden_units = [10]
         if act_funcs is None:
-            act_funcs = [activations.logistic, activations.identity]
+            act_funcs = [activations.gaussian, activations.identity]
         if error_func is None:
             error_func = errors.sum_of_squares
         if initialiser is None:
