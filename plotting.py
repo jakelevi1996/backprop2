@@ -493,6 +493,16 @@ def plot_error_reductions_vs_batch_size(
     -   n_sigma: number of standard deviations away from the mean to plot.
         Default is 2
 
+    Outputs:
+    -   full_path: full path to the output image. This could be useful, EG to
+        pass to the plotting.make_gif function, as an element in the
+        input_path_list argument
+    -   best_batch_size: the batch size that has the best ratio of mean
+        reduction in error function over batch size (which is expected to give
+        the fastest rate of reduction in the error function)
+    -   best_reduction_rate: the best ratio of mean reduction in error function
+        over batch size corresponding to best_batch_size
+
     Example usage: see function test_plot_error_reductions_vs_batch_size in
     Tests/test_plotting.py
 
@@ -558,8 +568,8 @@ def plot_error_reductions_vs_batch_size(
     ])
     # Find optimal batch size and reduction
     mean_over_batch = mean / batch_size_list
-    best_reduction_over_batch = max(mean_over_batch)
-    i_best = list(mean_over_batch).index(best_reduction_over_batch)
+    best_reduction_rate = max(mean_over_batch)
+    i_best = list(mean_over_batch).index(best_reduction_rate)
     best_batch_size = batch_size_list[i_best]
     best_reduction = mean[i_best]
     # Plot the standard deviations
@@ -595,13 +605,13 @@ def plot_error_reductions_vs_batch_size(
     )
     axes[1].plot(
         best_batch_size,
-        best_reduction_over_batch,
+        best_reduction_rate,
         **optimal_point_fmt
     )
     axes[0].axvline(best_batch_size, **optimal_fmt)
     axes[0].axhline(best_reduction, **optimal_fmt)
     axes[1].axvline(best_batch_size, **optimal_fmt)
-    axes[1].axhline(best_reduction_over_batch, **optimal_fmt)
+    axes[1].axhline(best_reduction_rate, **optimal_fmt)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=15)
@@ -630,7 +640,7 @@ def plot_error_reductions_vs_batch_size(
     axes[2].axis("off")
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
     full_path = save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
-    return full_path
+    return full_path, best_batch_size, best_reduction_rate
 
 
 def make_gif(
@@ -749,3 +759,44 @@ def plot_parameter_sweep_results(
     plt.tight_layout()
     plt.grid(True)
     save_and_close(plot_name, dir_name)
+
+def plot_optimal_batch_sizes(
+    plot_name,
+    dir_name,
+    best_batch_size_list,
+    best_reduction_rate_list,
+    result,
+    figsize=[15, 6],
+):
+    """ TODO """
+    fig, axes = plt.subplots(1, 3)
+    fig.set_size_inches(figsize)
+    # Get values from Result object
+    iters = result.get_values(optimisers.results.columns.Iteration)
+    train_errors = result.get_values(optimisers.results.columns.TrainError)
+    test_errors = result.get_values(optimisers.results.columns.TestError)
+    # Plot optimal batch size against iteration
+    axes[0].plot(iters, best_batch_size_list, "b-")
+    axes[0].set_ylabel("Optimal batch size")
+    # Plot optimal error function reduction rate against iteration
+    axes[1].plot(iters, best_reduction_rate_list, "b-")
+    axes[1].set_ylabel("Optimal rate of reduction of error function")
+    # Plot training and test error against iteration
+    axes[2].plot(iters, train_errors, "b--")
+    axes[2].plot(iters, test_errors, "b-")
+    axes[2].set_ylabel("Eror function")
+
+    # Format, save and close
+    x_lo, x_hi = min(iters), max(iters)
+    for a in axes:
+        a.set_xlabel("Iteration")
+        a.set_xlim(x_lo, x_hi)
+        a.grid(True)
+    handles = [
+        Line2D([], [], c="b", ls="--", label="Train error"),
+        Line2D([], [], c="b", ls="-", label="Test error")
+    ]
+    axes[2].legend(handles=handles)
+    fig.suptitle(plot_name)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)

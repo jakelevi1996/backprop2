@@ -25,8 +25,6 @@ Below are some examples for calling this script:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -i2 -o3 -n2500 -u 20,20
 
-Running each of the above examples requires 12.858 s and 121.004 s respectively.
-
 To get help information for the available arguments, use the following command:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -h
@@ -133,7 +131,10 @@ def main(
         param_str
     )
     frame_dir = os.path.join(output_dir, "Frames")
+    # Initialise lists for filenames and results
     filename_list = []
+    best_batch_size_list = []
+    best_reduction_rate_list = []
 
     # Iterate through the frames in the gif
     for plot_num in range(n_plots):
@@ -189,14 +190,21 @@ def main(
         Iteration = optimisers.results.columns.Iteration
         last_iter = result_optimise.get_values(Iteration)[-1]
         title = "Error reduction vs batch size, iteration = %05i" % last_iter
-        full_path = plotting.plot_error_reductions_vs_batch_size(
+        (
+            full_path,
+            best_batch_size,
+            best_reduction_rate
+        ) = plotting.plot_error_reductions_vs_batch_size(
             title,
             frame_dir,
             reduction_dict,
             y_lim_left=ylims[:2],
             y_lim_right=ylims[2:]
         )
+        # Store the filename, and best batch and reduction over batch
         filename_list.append(full_path)
+        best_batch_size_list.append(best_batch_size)
+        best_reduction_rate_list.append(best_reduction_rate)
         print("")
     
     # Make gif out of the inidividual image frames
@@ -209,6 +217,13 @@ def main(
         loop=None
     )
     plotting.plot_training_curves([result_optimise], dir_name=output_dir)
+    plotting.plot_optimal_batch_sizes(
+        "Optimal batch size",
+        output_dir,
+        best_batch_size_list,
+        best_reduction_rate_list,
+        result_optimise,
+    )
     
 
 if __name__ == "__main__":
