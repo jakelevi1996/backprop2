@@ -768,13 +768,34 @@ def plot_optimal_batch_sizes(
     result,
     figsize=[15, 6],
 ):
-    """ TODO """
+    """ Create a figure containing 3 subplots, in which the first subplot shows
+    the optimal batch size (IE the batch size that minimises the rate of
+    reduction of the test set error for that iteration), the second subplot
+    shows the rate of reduction of the test set error from using the optimal
+    batch size, and the third subplot shows the training and test errors. All 3
+    subplots have the iteration number during training on the x-axis.
+
+    Inputs:
+    -   plot_name: string, name to use for the title of the plot, and for the
+        file name
+    -   dir_name: string, name of the directory in which to save the plot. This
+        directory is created if it doesn't exist
+    -   best_batch_size_list: list of optimal batch sizes during different
+        iterations in training, in which each element should be an int
+    -   best_reduction_rate_list: list of rates of reduction in test set error
+        when using the corresponding optimal batch size during the corresponding
+        iteration, in which each element should be a float
+    -   result: Result object, which should conatin Iteration, TrainError, and
+        TestError columns
+    -   figsize: list of 2 numbers, describing the size of the figure in inches
+    """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
     # Get values from Result object
-    iters = result.get_values(optimisers.results.columns.Iteration)
-    train_errors = result.get_values(optimisers.results.columns.TrainError)
-    test_errors = result.get_values(optimisers.results.columns.TestError)
+    columns = optimisers.results.columns
+    iters = result.get_values(columns.Iteration)
+    train_errors = result.get_values(columns.TrainError)
+    test_errors = result.get_values(columns.TestError)
     # Plot optimal batch size against iteration
     axes[0].plot(iters, best_batch_size_list, "b-")
     axes[0].set_ylabel("Optimal batch size")
@@ -784,7 +805,7 @@ def plot_optimal_batch_sizes(
     # Plot training and test error against iteration
     axes[2].plot(iters, train_errors, "b--")
     axes[2].plot(iters, test_errors, "b-")
-    axes[2].set_ylabel("Eror function")
+    axes[2].set_ylabel("Error function")
 
     # Format, save and close
     x_lo, x_hi = min(iters), max(iters)
@@ -799,4 +820,4 @@ def plot_optimal_batch_sizes(
     axes[2].legend(handles=handles)
     fig.suptitle(plot_name)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
+    save_and_close(plot_name, dir_name, fig)
