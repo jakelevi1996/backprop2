@@ -8,11 +8,11 @@ printing
 """
 
 import numpy as np
-from _optimisers.batch import ConstantBatchSize
-from _optimisers.linesearch import LineSearch
-from _optimisers.terminator import Terminator
-from _optimisers.evaluator import DoNotEvaluate
-from _optimisers.results import Result
+from _optimisers.batch import ConstantBatchSize as _ConstantBatchSize
+from _optimisers.linesearch import LineSearch as _LineSearch
+from _optimisers.terminator import Terminator as _Terminator
+from _optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
+from _optimisers.results import Result as _Result
 
 class _Column:
     def __init__(self, name, format_spec, width=0):
@@ -115,7 +115,11 @@ class OptimalBatchSize(_Column):
         name="Optimal Batch size",
         format_spec="d",
     ):
-        """ TODO """
+        """ TODO 
+
+        Is it necessary to initiate with model and dataset? Can get these in
+        update method from kwargs
+        """
         # Initialise results dictionaries
         self.reduction_dict_dict        = dict()
         self.mean_dict                  = dict()
@@ -130,14 +134,14 @@ class OptimalBatchSize(_Column):
         self._optimise_func             = optimise_func
         self._n_repeats                 = n_repeats
         self._use_replacement           = use_replacement
-        self._terminator                = Terminator(i_lim=1)
-        self._evaluator                 = DoNotEvaluate()
-        self._result = Result(verbose=False, add_default_columns=False)
+        self._terminator                = _Terminator(i_lim=1)
+        self._evaluator                 = _DoNotEvaluate()
+        self._result = _Result(verbose=False, add_default_columns=False)
         if line_search is None:
             self._line_search = None
             self._reference_line_search = None
         else:
-            self._line_search = LineSearch(
+            self._line_search = _LineSearch(
                 alpha=line_search.alpha,
                 beta=line_search.beta,
                 max_its=line_search.max_its
@@ -176,7 +180,7 @@ class OptimalBatchSize(_Column):
         for batch_size in self.batch_size_list:
             # Initialise results list and batch-getter
             reduction_dict[batch_size] = []
-            batch_getter = ConstantBatchSize(
+            batch_getter = _ConstantBatchSize(
                 int(batch_size),
                 replace=self._use_replacement
             )
@@ -203,7 +207,7 @@ class OptimalBatchSize(_Column):
                 # Reset parameters
                 self._model.set_parameter_vector(w_0.copy())
 
-        # Calculate mean and standard deviation reductions
+        # Calculate arrays of mean and standard deviation reductions
         mean = np.array([
             np.mean(reduction_dict[batch_size])
             for batch_size in self.batch_size_list
