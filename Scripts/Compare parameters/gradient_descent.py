@@ -191,10 +191,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-e",
         "--t_eval",
-        help=(
-            "How frequently to evaluate the performance of each model in "
-            "seconds"
-        ),
+        help="How frequently to evaluate the performance of each model in "
+        "seconds",
         default=0.5,
         type=float
     )
@@ -208,19 +206,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--find_best_params",
-        help=(
-            "Iterate experiments and update parameters until the best "
-            "parameters have been found"
-        ),
+        help="Iterate experiments and update parameters until the best "
+        "parameters have been found",
         action="store_true"
     )
     parser.add_argument(
         "-b",
         "--batch_size",
-        help=(
-            "Batch size to use in optimisation (only used if less than the "
-            "number of data points in the training set)"
-        ),
+        help="Batch size to use in optimisation (only used if less than the "
+        "number of data points in the training set)",
         default=100,
         type=int
     )
