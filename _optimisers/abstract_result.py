@@ -8,19 +8,17 @@ class AbstractResult:
     more efficient than initiating a new result (and new column objects etc)
     every time the optimisation function is called """
     def __init__(self):
-        """ Initialise an AbstractResult object, which by default is not verbose
-        """
+        """ Initialise an AbstractResult object, which by default is not
+        verbose, and has already "begun" (so that there is no need for a "begin"
+        method) """
         self.verbose = False
+        self.begun = True
 
     def has_column_type(self, col_type):
         """ Called by _optimisers.minimise.minimise when determining the initial
         iteration number """
         return False
 
-    def begin(self):
-        """ Called by _optimisers.minimise.minimise before the optimisation loop
-        begins """
-
-    def update(self):
+    def update(self, **kwargs):
         """ Called by _optimisers.minimise.minimise during and after the
         optimisation loop """
