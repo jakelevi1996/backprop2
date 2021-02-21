@@ -12,7 +12,7 @@ from _optimisers.batch import ConstantBatchSize as _ConstantBatchSize
 from _optimisers.linesearch import LineSearch as _LineSearch
 from _optimisers.terminator import Terminator as _Terminator
 from _optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
-from _optimisers.results import Result as _Result
+from _optimisers.abstract_result import AbstractResult as _AbstractResult
 
 class _Column:
     def __init__(self, name, format_spec, width=0):
@@ -136,7 +136,7 @@ class OptimalBatchSize(_Column):
         self._use_replacement           = use_replacement
         self._terminator                = _Terminator(i_lim=1)
         self._evaluator                 = _DoNotEvaluate()
-        self._result = _Result(verbose=False, add_default_columns=False)
+        self._result = _AbstractResult()
         if line_search is None:
             self._line_search = None
             self._reference_line_search = None

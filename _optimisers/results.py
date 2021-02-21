@@ -2,8 +2,9 @@ import os
 from time import perf_counter
 import numpy as np
 from _optimisers import columns
+from _optimisers.abstract_result import AbstractResult
 
-class Result():
+class Result(AbstractResult):
     """
     Class to store the results of optimisation in a single object which can be
     passed directly to plotting and/or analysis functions. Also contains methods
