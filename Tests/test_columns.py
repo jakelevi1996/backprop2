@@ -94,8 +94,6 @@ def test_optimal_batch_size_column():
     np.random.seed(2231)
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
-    n_repeats = np.random.randint(5, 10)
-    n_batch_sizes = np.random.randint(5, 10)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     # Initialise output file and Result object
@@ -108,6 +106,8 @@ def test_optimal_batch_size_column():
             add_default_columns=True
         )
         # Initialise line-search and column object, and add to the result
+        n_batch_sizes = np.random.randint(3, 6)
+        n_repeats = np.random.randint(3, 6)
         line_search = optimisers.LineSearch()
         columns = optimisers.results.columns
         optimal_batch_size_col = columns.OptimalBatchSize(
@@ -115,8 +115,8 @@ def test_optimal_batch_size_column():
             sin_data,
             line_search,
             optimisers.gradient_descent,
-            n_repeats=3,
-            n_batch_sizes=4
+            n_repeats=n_repeats,
+            n_batch_sizes=n_batch_sizes
         )
         result.add_column(optimal_batch_size_col)
         # Call optimisation function
@@ -128,4 +128,11 @@ def test_optimal_batch_size_column():
             terminator=optimisers.Terminator(i_lim=n_its),
             evaluator=optimisers.Evaluator(i_interval=1),
         )
-
+    # Test that the OptimalBatchSize object attributes are as expected
+    batch_size_list = optimal_batch_size_col.batch_size_list
+    assert len(optimal_batch_size_col.reduction_dict_dict) == (n_its + 1)
+    for reduction_dict in optimal_batch_size_col.reduction_dict_dict.values():
+        assert len(reduction_dict) == n_batch_sizes
+        assert set(reduction_dict.keys()) == set(batch_size_list)
+        for reduction_list in reduction_dict.values():
+            assert len(reduction_list) == n_repeats
