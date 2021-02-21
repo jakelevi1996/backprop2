@@ -229,9 +229,9 @@ def main(
 if __name__ == "__main__":
     
     # Define CLI using argparse
-    parser = ArgumentParser(description=
-        "Make gif which plots the reduction in error function vs batch size "
-        "at regular stages during training"
+    parser = ArgumentParser(
+        description="Make gif which plots the reduction in error function vs "
+        "batch size at regular stages during training"
     )
 
     parser.add_argument(
@@ -295,13 +295,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ylims",
-        help=(
-            "Comma separated list of 4 floats describing the limits to use for "
-            "the y axes. Negative numbers should be prefixed with the "
-            "character 'n' instead of a negative sign, so that this value is "
-            "not confused with another command-line argument. See main "
-            "function docstring for more info"
-        ),
+        help="Comma separated list of 4 floats describing the limits to use "
+        "for the y axes. Negative numbers should be prefixed with the "
+        "character 'n' instead of a negative sign, so that this value is not "
+        "confused with another command-line argument. See main function "
+        "docstring for more info",
         default="n0.05,0.05,n0.01,0.01",
         type=str
     )
@@ -314,19 +312,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "-b",
         "--batch_size_optimise",
-        help=(
-            "Batch size to use for standard optimisation iterations (IE not "
-            "when sweeping over batch sizes). If ommitted, then the full "
-            "training set is used as a batch during optimisation iterations"
-        ),
+        help="Batch size to use for standard optimisation iterations (IE not "
+        "when sweeping over batch sizes). If ommitted, then the full training "
+        "set is used as a batch during optimisation iterations",
         default=None,
         type=int
     )
     parser.add_argument(
         "--no_replace",
-        help=(
-            "Don't use replacement when sampling batches from the training set"
-        ),
+        help="Don't use replacement when sampling batches from the training "
+        "set",
         action="store_true"
     )
     parser.add_argument(
