@@ -104,10 +104,9 @@ class OptimalBatchSize(_Column):
     """ TODO """
     def __init__(
         self,
-        model,
-        dataset,
-        line_search,
+        max_batch_size,
         optimise_func,
+        line_search,
         n_repeats=100,
         n_batch_sizes=30,
         min_batch_size=5,
@@ -115,11 +114,7 @@ class OptimalBatchSize(_Column):
         name="Optimal Batch size",
         format_spec="d",
     ):
-        """ TODO 
-
-        Is it necessary to initiate with model and dataset? Can get these in
-        update method from kwargs
-        """
+        """ TODO """
         # Initialise results dictionaries
         self.reduction_dict_dict        = dict()
         self.mean_dict                  = dict()
@@ -128,8 +123,6 @@ class OptimalBatchSize(_Column):
         self.best_reduction_rate_dict   = dict()
         self.best_reduction_dict        = dict()
         # Store attributes that will be used in the update method
-        self._model                     = model
-        self._dataset                   = dataset
         self._reference_line_search     = line_search
         self._optimise_func             = optimise_func
         self._n_repeats                 = n_repeats
@@ -152,7 +145,7 @@ class OptimalBatchSize(_Column):
         while True:
             batch_size_list = np.linspace(
                 min_batch_size,
-                dataset.n_train,
+                max_batch_size,
                 n_batch_sizes
             )
             batch_size_list = set(int(b) for b in batch_size_list)
@@ -160,7 +153,7 @@ class OptimalBatchSize(_Column):
                 n_batch_sizes += 1
             else:
                 break
-            if n_batch_sizes > dataset.n_train:
+            if n_batch_sizes > max_batch_size:
                 break
         self.batch_size_list = np.array(sorted(batch_size_list))
 
@@ -172,9 +165,9 @@ class OptimalBatchSize(_Column):
         dataset = kwargs["dataset"]
         iteration = kwargs["iteration"]
         # Get parameters and current test error
-        w_0 = self._model.get_parameter_vector().copy()
-        self._model.forward_prop(self._dataset.x_test)
-        E_0 = self._model.mean_error(self._dataset.y_test)
+        w_0 = model.get_parameter_vector().copy()
+        model.forward_prop(dataset.x_test)
+        E_0 = model.mean_error(dataset.y_test)
         reduction_dict = dict()
         # Iterate through batch sizes
         for batch_size in self.batch_size_list:
@@ -190,8 +183,8 @@ class OptimalBatchSize(_Column):
                 if self._line_search is not None:
                     self._line_search.s = self._reference_line_search.s
                 self._optimise_func(
-                    self._model,
-                    self._dataset,
+                    model,
+                    dataset,
                     line_search=self._line_search,
                     terminator=self._terminator,
                     evaluator=self._evaluator,
@@ -200,12 +193,12 @@ class OptimalBatchSize(_Column):
                     display_summary=False,
                 )
                 # Calculate new error and add the reduction to the list
-                self._model.forward_prop(self._dataset.x_test)
-                E_new = self._model.mean_error(self._dataset.y_test)
+                model.forward_prop(dataset.x_test)
+                E_new = model.mean_error(dataset.y_test)
                 error_reduction = E_0 - E_new
                 reduction_dict[batch_size].append(error_reduction)
                 # Reset parameters
-                self._model.set_parameter_vector(w_0.copy())
+                model.set_parameter_vector(w_0.copy())
 
         # Calculate arrays of mean and standard deviation reductions
         mean = np.array([

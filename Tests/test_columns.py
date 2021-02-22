@@ -111,10 +111,9 @@ def test_optimal_batch_size_column():
         line_search = optimisers.LineSearch()
         columns = optimisers.results.columns
         optimal_batch_size_col = columns.OptimalBatchSize(
-            model,
-            sin_data,
-            line_search,
+            sin_data.n_train,
             optimisers.gradient_descent,
+            line_search,
             n_repeats=n_repeats,
             n_batch_sizes=n_batch_sizes
         )
