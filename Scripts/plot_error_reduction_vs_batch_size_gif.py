@@ -13,7 +13,7 @@ Below are some examples for calling this script:
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py --no_replace
 
-    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50 --ylims "n1e-3,1e-3,n1e-5,1e-5" --n_plots 50
+    python Scripts\plot_error_reduction_vs_batch_size_gif.py -n100 -b50 --n_plots 50
 
     python Scripts\plot_error_reduction_vs_batch_size_gif.py -n300 -b100
 
@@ -66,9 +66,10 @@ def main(
         iteration
     -   min_batch_size: the smallest batch size to test
     -   ylims: limits for the y-axes of each subplot of the output gif. Should
-        be an iteratble containing 4 floats, the first 2 are the lower and upper
-        axis limits for the left subplot, and the second 2 are the lower and
-        upper axis limits for the right subplot
+        be None, in which case the axis limits are calculated automatically, or
+        an iterable containing 4 floats, in which the first 2 are the lower and
+        upper axis limits for the left subplot, and the second 2 are the lower
+        and upper axis limits for the right subplot
     -   seed: random seed to use for the experiment
     -   batch_size_optimise: batch size to use for standard optimisation
         iterations (IE not when sweeping over batch sizes). If ommitted, then
@@ -140,14 +141,21 @@ def main(
     )
 
     # Make output plots
+    print("Plotting output plots in \"%s\"..." % output_dir)
     plotting.plot_training_curves([result], dir_name=output_dir)
     frame_duration_ms = 1000 * gif_duration / n_plots
+    if ylims is None:
+        y_lim_left = None
+        y_lim_right = None
+    else:
+        y_lim_left = ylims[:2]
+        y_lim_right = ylims[2:]
     plotting.plot_error_reductions_vs_batch_size_gif(
         result,
         optimal_batch_size_col,
         output_dir,
-        y_lim_left=ylims[:2],
-        y_lim_right=ylims[2:],
+        y_lim_left=y_lim_left,
+        y_lim_right=y_lim_right,
         duration=frame_duration_ms,
         loop=None
     )
@@ -231,9 +239,10 @@ if __name__ == "__main__":
         help="Comma separated list of 4 floats describing the limits to use "
         "for the y axes. Negative numbers should be prefixed with the "
         "character 'n' instead of a negative sign, so that this value is not "
-        "confused with another command-line argument. See main function "
-        "docstring for more info",
-        default="n0.05,0.05,n0.01,0.01",
+        "confused with another command-line argument, EG "
+        "\"n0.05,0.05,n0.01,0.01\". Default is automatically-calculated axis "
+        "limits. See main function docstring for more info",
+        default=None,
         type=str
     )
     parser.add_argument(
@@ -268,9 +277,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     use_replacement = not args.no_replace
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
-    float_fmt = lambda y: -float(y[1:]) if y.startswith("n") else float(y)
-    ylims = [float_fmt(f) for f in args.ylims.split(",")]
-    assert len(ylims) == 4, "Must provide 4 comma-separated values for ylims"
+    if args.ylims is not None:
+        float_fmt = lambda y: -float(y[1:]) if y.startswith("n") else float(y)
+        args.ylims = [float_fmt(f) for f in args.ylims.split(",")]
+        error_msg = "Must provide 4 comma-separated values for ylims"
+        assert len(args.ylims) == 4, error_msg
 
     # Call main function using command-line arguments
     t_start = perf_counter()
@@ -284,7 +295,7 @@ if __name__ == "__main__":
         args.n_plots,
         args.n_batch_sizes,
         args.min_batch_size,
-        ylims,
+        args.ylims,
         args.seed,
         args.batch_size_optimise,
         use_replacement,
