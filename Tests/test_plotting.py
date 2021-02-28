@@ -231,22 +231,21 @@ def test_plot_error_reductions_vs_batch_size_gif():
     model-optimisation """
     # Set random seed and initialise network and dataset
     np.random.seed(102)
-    n_train = np.random.randint(10, 20)
-    n_its = np.random.randint(10, 20)
+    n_train = 10
+    n_its = 2
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     # Initialise Result, LineSearch and OptimalBatchSize column objects
     result = optimisers.Result(verbose=False)
-    n_batch_sizes = np.random.randint(3, 6)
-    n_repeats = np.random.randint(3, 6)
     line_search = optimisers.LineSearch()
     columns = optimisers.results.columns
     optimal_batch_size_col = columns.OptimalBatchSize(
         sin_data.n_train,
         optimisers.gradient_descent,
         line_search,
-        n_repeats=n_repeats,
-        n_batch_sizes=n_batch_sizes
+        n_repeats=3,
+        n_batch_sizes=3,
+        min_batch_size=2
     )
     result.add_column(optimal_batch_size_col)
     # Call optimisation function
