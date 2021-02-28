@@ -658,7 +658,7 @@ def plot_error_reductions_vs_batch_size_gif(
     """
     # Initialise list of filenames, and output directory for frame images
     filename_list = []
-    frame_dir = os.path.join(dir_name, "Frames")
+    frame_dir = os.path.join(dir_name, "Error vs batch-size frames")
     columns = optimisers.results.columns
     # Calculate custom y-axis limits, if none are given
     if y_lim_left is None:
