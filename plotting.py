@@ -809,9 +809,8 @@ def plot_parameter_sweep_results(
 def plot_optimal_batch_sizes(
     plot_name,
     dir_name,
-    best_batch_size_list,
-    best_reduction_rate_list,
     result,
+    optimal_batch_size_col,
     figsize=[15, 6],
 ):
     """ Create a figure containing 3 subplots, in which the first subplot shows
@@ -837,11 +836,17 @@ def plot_optimal_batch_sizes(
     """
     fig, axes = plt.subplots(1, 3)
     fig.set_size_inches(figsize)
-    # Get values from Result object
+    # Get values from Result and OptimalBatchSize objects
     columns = optimisers.results.columns
     iters = result.get_values(columns.Iteration)
     train_errors = result.get_values(columns.TrainError)
     test_errors = result.get_values(columns.TestError)
+    best_batch_size_list = [
+        optimal_batch_size_col.best_batch_dict[i] for i in iters
+    ]
+    best_reduction_rate_list = [
+        optimal_batch_size_col.best_reduction_rate_dict[i] for i in iters
+    ]
     # Plot optimal batch size against iteration
     axes[0].plot(iters, best_batch_size_list, "b-")
     axes[0].set_ylabel("Optimal batch size")
