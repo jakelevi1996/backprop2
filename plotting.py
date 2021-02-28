@@ -656,9 +656,20 @@ def plot_error_reductions_vs_batch_size_gif(
     -   logarithmic x-axis (batch size)?
     -   calculate ylims automatically if not provided
     """
+    # Initialise list of filenames, and output directory for frame images
     filename_list = []
     frame_dir = os.path.join(dir_name, "Frames")
     columns = optimisers.results.columns
+    # Calculate custom y-axis limits, if none are given
+    if y_lim_left is None:
+        y_left = optimal_batch_size_column.best_reduction_dict.values()
+        y_hi_left = 1.2 * max(abs(r) for r in y_left)
+        y_lim_left = [-y_hi_left, y_hi_left]
+    if y_lim_right is None:
+        y_right = optimal_batch_size_column.best_reduction_rate_dict.values()
+        y_hi_right = 1.2 * max(abs(r) for r in y_right)
+        y_lim_right = [-y_hi_right, y_hi_right]
+    # Create a frame for each iteration during which the model was evaluated
     iterations = result.get_values(columns.Iteration)
     for i in iterations:
         plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
@@ -674,6 +685,7 @@ def plot_error_reductions_vs_batch_size_gif(
         )
         filename_list.append(filename)
     
+    # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
 
 
