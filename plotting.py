@@ -663,11 +663,11 @@ def plot_error_reductions_vs_batch_size_gif(
     # Calculate custom y-axis limits, if none are given
     if y_lim_left is None:
         y_left = optimal_batch_size_column.best_reduction_dict.values()
-        y_hi_left = 1.2 * max(abs(r) for r in y_left)
+        y_hi_left = 2 * np.median([abs(y) for y in y_left])
         y_lim_left = [-y_hi_left, y_hi_left]
     if y_lim_right is None:
         y_right = optimal_batch_size_column.best_reduction_rate_dict.values()
-        y_hi_right = 1.2 * max(abs(r) for r in y_right)
+        y_hi_right = 2 * np.median([abs(y) for y in y_right])
         y_lim_right = [-y_hi_right, y_hi_right]
     # Create a frame for each iteration during which the model was evaluated
     iterations = result.get_values(columns.Iteration)
