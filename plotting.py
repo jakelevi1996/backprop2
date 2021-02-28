@@ -649,7 +649,7 @@ def plot_error_reductions_vs_batch_size_gif(
     -   best_reduction_rate: the best ratio of mean reduction in error function
         over batch size corresponding to best_batch_size
 
-    Example usage: see function test_plot_error_reductions_vs_batch_size in
+    Example usage: see function test_plot_error_reductions_vs_batch_size_gif in
     Tests/test_plotting.py
 
     TODO:
