@@ -280,3 +280,46 @@ def test_make_gif():
         input_path_list=image_path_list,
         duration=(1000 / n_frames)
     )
+
+def test_plot_error_reductions_vs_batch_size_gif():
+    """ TODO """
+    # Set random seed and initialise network and dataset
+    np.random.seed(102)
+    n_train = np.random.randint(10, 20)
+    n_its = np.random.randint(10, 20)
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    # Initialise Result, LineSearch and OptimalBatchSize column objects
+    result = optimisers.Result(verbose=False)
+    n_batch_sizes = np.random.randint(3, 6)
+    n_repeats = np.random.randint(3, 6)
+    line_search = optimisers.LineSearch()
+    columns = optimisers.results.columns
+    optimal_batch_size_col = columns.OptimalBatchSize(
+        sin_data.n_train,
+        optimisers.gradient_descent,
+        line_search,
+        n_repeats=n_repeats,
+        n_batch_sizes=n_batch_sizes
+    )
+    result.add_column(optimal_batch_size_col)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        line_search=line_search,
+        terminator=optimisers.Terminator(i_lim=n_its),
+        evaluator=optimisers.Evaluator(i_interval=1),
+    )
+    # Call plotting function to make gif
+    dir_name = os.path.join(
+        output_dir,
+        "Test plot_error_reductions_vs_batch_size_gif"
+    )
+    plotting.plot_error_reductions_vs_batch_size_gif(
+        result,
+        optimal_batch_size_col,
+        dir_name,
+        loop=None
+    )
