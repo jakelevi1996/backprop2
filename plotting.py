@@ -2,13 +2,14 @@
 repository """
 import os
 from math import ceil, sqrt
+import PIL
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
-import PIL
+from scipy import stats
 import data, optimisers
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
@@ -864,6 +865,10 @@ def plot_optimal_batch_sizes(
         a.set_xlabel("Iteration")
         a.set_xlim(x_lo, x_hi)
         a.grid(True)
+    axes[0].set_ylim(bottom=0)
+    median = np.median(best_reduction_rate_list)
+    iqr = stats.iqr(best_reduction_rate_list)
+    axes[1].set_ylim(median - 2 * iqr, median + 2 * iqr)
     handles = [
         Line2D([], [], c="b", ls="--", label="Train error"),
         Line2D([], [], c="b", ls="-", label="Test error")
