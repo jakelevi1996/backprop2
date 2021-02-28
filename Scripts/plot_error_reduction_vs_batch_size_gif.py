@@ -3,12 +3,6 @@ regular stages during training (each frame in the gif, corresponding to a
 different iteration during training, is also saved as an individual image).
 
 TODO:
--   Put output files into parameter-specific subfolder (NB: kwarg dict can be
-    formatted into a string using the expression `", ".join("%i = %i" % (k, v)
-    for k, v in kwarg.items())`)
--   Add red circle and vertical line in right hand subplot for the best mean
-    ratio of reduction to batch size, and plot the optimum batch size throughout
-    training in separate plot.
 -   Test 2 dimensional sine data (first need to determine sensible parameters
     from the test; will need to run other scripts to plot learning curve to
     determine this)
@@ -87,30 +81,33 @@ def main(
     np.random.seed(seed)
     n_iters_per_plot = int(n_iters / n_plots)
 
-    # Initialise models, data, and list of batch sizes to test
+    # Initialise model and dataset
     model = models.NeuralNetwork(input_dim, output_dim, num_hidden_units)
     freq = 1 if (input_dim == 1) else None
     sin_data = data.Sinusoidal(input_dim, output_dim, n_train, freq=freq)
-    batch_size_list = np.linspace(min_batch_size, n_train, n_batch_sizes)
     
-    # Initialise objects to use during optimisation and testing batch sizes
-    result_optimise = optimisers.Result()
-    result_test_batch = optimisers.Result(
-        verbose=False,
-        add_default_columns=False
-    )
-    evaluator = optimisers.DoNotEvaluate()
+    # Initialise objects for optimisation
+    result = optimisers.Result()
+    evaluator = optimisers.Evaluator(i_interval=n_iters_per_plot)
+    terminator = optimisers.Terminator(i_lim=n_iters)
     if batch_size_optimise is None:
-        batch_getter_optimise = optimisers.batch.FullTrainingSet()
+        batch_getter = optimisers.batch.FullTrainingSet()
     else:
-        batch_getter_optimise = optimisers.batch.ConstantBatchSize(
+        batch_getter = optimisers.batch.ConstantBatchSize(
             batch_size_optimise,
             use_replacement
         )
-    terminator_optimise = optimisers.Terminator(i_lim=n_iters_per_plot)
-    terminator_test_batch = optimisers.Terminator(i_lim=1)
-    line_search_optimise = optimisers.LineSearch()
-    line_search_test_batch = optimisers.LineSearch()
+    line_search = optimisers.LineSearch()
+
+    # Initialise OptimalBatchSize column and add to the result object
+    optimal_batch_size_col = optimisers.results.columns.OptimalBatchSize(
+        sin_data.n_train,
+        optimisers.gradient_descent,
+        line_search,
+        n_repeats=n_repeats,
+        n_batch_sizes=n_batch_sizes
+    )
+    result.add_column(optimal_batch_size_col)
 
     # Get output directory which is specific to the script parameters
     param_str = ", ".join([
@@ -130,101 +127,37 @@ def main(
         "Error vs batch",
         param_str
     )
-    frame_dir = os.path.join(output_dir, "Frames")
-    # Initialise lists for filenames and results
-    filename_list = []
-    best_batch_size_list = []
-    best_reduction_rate_list = []
 
-    # Iterate through the frames in the gif
-    for plot_num in range(n_plots):
-        # Do initial set of iterations
-        optimisers.gradient_descent(
-            model,
-            sin_data,
-            batch_getter=batch_getter_optimise,
-            terminator=terminator_optimise,
-            evaluator=evaluator,
-            result=result_optimise,
-            display_summary=False,
-            line_search=line_search_optimise
-        )
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        batch_getter=batch_getter,
+        terminator=terminator,
+        evaluator=evaluator,
+        line_search=line_search
+    )
 
-        # Get parameters and current test error
-        w_0 = model.get_parameter_vector().copy()
-        model.forward_prop(sin_data.x_test)
-        E_0 = model.mean_error(sin_data.y_test)
-        reduction_dict = dict()
-        # Iterate through batch sizes
-        for batch_size in batch_size_list:
-            # Set number of repeats and initialise results list
-            reduction_dict[batch_size] = []
-            batch_getter = optimisers.batch.ConstantBatchSize(
-                int(batch_size),
-                replace=use_replacement
-            )
-            # Iterate through repeats of the batch size
-            for _ in range(n_repeats):
-                # Perform one iteration of gradient descent
-                line_search_test_batch.s = line_search_optimise.s
-                optimisers.gradient_descent(
-                    model,
-                    sin_data,
-                    batch_getter=batch_getter,
-                    terminator=terminator_test_batch,
-                    evaluator=evaluator,
-                    result=result_test_batch,
-                    display_summary=False,
-                    line_search=line_search_test_batch
-                )
-                # Calculate new error and add the reduction to the list
-                model.forward_prop(sin_data.x_test)
-                E_new = model.mean_error(sin_data.y_test)
-                error_reduction = E_0 - E_new
-                reduction_dict[batch_size].append(error_reduction)
-                # Reset parameters
-                model.set_parameter_vector(w_0.copy())
-            print(".", end="", flush=True)
-
-        # Make plot of error reduction vs batch size
-        Iteration = optimisers.results.columns.Iteration
-        last_iter = result_optimise.get_values(Iteration)[-1]
-        title = "Error reduction vs batch size, iteration = %05i" % last_iter
-        (
-            full_path,
-            best_batch_size,
-            best_reduction_rate
-        ) = plotting.plot_error_reductions_vs_batch_size(
-            title,
-            frame_dir,
-            reduction_dict,
-            y_lim_left=ylims[:2],
-            y_lim_right=ylims[2:]
-        )
-        # Store the filename, and best batch and reduction over batch
-        filename_list.append(full_path)
-        best_batch_size_list.append(best_batch_size)
-        best_reduction_rate_list.append(best_reduction_rate)
-        print("")
-    
-    # Make gif out of the inidividual image frames
+    # Make output plots
+    plotting.plot_training_curves([result], dir_name=output_dir)
     frame_duration_ms = 1000 * gif_duration / n_plots
-    plotting.make_gif(
-        "Error reduction vs batch size",
+    plotting.plot_error_reductions_vs_batch_size_gif(
+        result,
+        optimal_batch_size_col,
         output_dir,
-        filename_list,
+        y_lim_left=ylims[:2],
+        y_lim_right=ylims[2:],
         duration=frame_duration_ms,
         loop=None
     )
-    plotting.plot_training_curves([result_optimise], dir_name=output_dir)
     plotting.plot_optimal_batch_sizes(
         "Optimal batch size",
         output_dir,
-        best_batch_size_list,
-        best_reduction_rate_list,
-        result_optimise,
+        result,
+        optimal_batch_size_col,
     )
-    
+
 
 if __name__ == "__main__":
     
