@@ -258,13 +258,53 @@ def test_plot_error_reductions_vs_batch_size_gif():
         evaluator=optimisers.Evaluator(i_interval=1),
     )
     # Call plotting function to make gif
-    dir_name = os.path.join(
+    test_output_dir = os.path.join(
         output_dir,
         "Test plot_error_reductions_vs_batch_size_gif"
     )
     plotting.plot_error_reductions_vs_batch_size_gif(
         result,
         optimal_batch_size_col,
-        dir_name,
+        test_output_dir,
         loop=None
+    )
+
+def test_plot_optimal_batch_sizes():
+    """ Test function which plots the optimal batch size, rate of reduction of
+    the mean test set error, and train and test error, against the current
+    iteration throughout the course of model-optimisation """
+    # Set random seed and initialise network and dataset
+    np.random.seed(102)
+    n_train = 10
+    n_its = 2
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    # Initialise Result, LineSearch and OptimalBatchSize column objects
+    result = optimisers.Result(verbose=False)
+    line_search = optimisers.LineSearch()
+    columns = optimisers.results.columns
+    optimal_batch_size_col = columns.OptimalBatchSize(
+        sin_data.n_train,
+        optimisers.gradient_descent,
+        line_search,
+        n_repeats=3,
+        n_batch_sizes=3,
+        min_batch_size=2
+    )
+    result.add_column(optimal_batch_size_col)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        line_search=line_search,
+        terminator=optimisers.Terminator(i_lim=n_its),
+        evaluator=optimisers.Evaluator(i_interval=1),
+    )
+    # Call plotting function
+    plotting.plot_optimal_batch_sizes(
+        "Test plot_optimal_batch_sizes",
+        output_dir,
+        result,
+        optimal_batch_size_col
     )
