@@ -462,52 +462,18 @@ def plot_result_attributes_subplots(
     axes.flat[legend_subplot_index].axis("off")
     save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
-def plot_error_reductions_vs_batch_size(
+
+def _plot_error_reductions_vs_batch_size_frame(
     plot_name,
     dir_name,
-    reduction_dict,
+    optimal_batch_size_column,
+    iteration,
     figsize=[16, 6],
     y_lim_left=None,
     y_lim_right=None,
     n_sigma=2
 ):
-    """ Function to plot statistics for the reduction in the mean error in the
-    test set after a single minimisation iteration as a function of the batch
-    size used for the iteration. This information is represented in two
-    subplots, one for the reduction in the test set error, and one for the ratio
-    of the reduction in the test set error to the batch size used for the
-    iteration, which indicates the "efficiency" of the iteration. The motivation
-    for plotting this information is that typically over the course of
-    minimisation, we want to reduce the mean test set error as much as possible
-    as fast as possible; using a large batch size will give more reliably large
-    reductions, however will also take longer for each iteration.
-
-    Inputs:
-    -   plot_name: name of the plot, also used as the filename
-    -   dir_name: name of the directory to save the plot in
-    -   reduction_dict: dictionary in which each key is an integer batch-size,
-        and each value is a corresponding list of test set reductions
-    -   fig_size: size of the figure in inches
-    -   y_lim_left: limits for y axes for the left subplot
-    -   y_lim_right: limits for y axes for the right subplot
-    -   n_sigma: number of standard deviations away from the mean to plot.
-        Default is 2
-
-    Outputs:
-    -   full_path: full path to the output image. This could be useful, EG to
-        pass to the plotting.make_gif function, as an element in the
-        input_path_list argument
-    -   best_batch_size: the batch size that has the best ratio of mean
-        reduction in error function over batch size (which is expected to give
-        the fastest rate of reduction in the error function)
-    -   best_reduction_rate: the best ratio of mean reduction in error function
-        over batch size corresponding to best_batch_size
-
-    Example usage: see function test_plot_error_reductions_vs_batch_size in
-    Tests/test_plotting.py
-
-    TODO: logarithmic x-axis (batch size)?
-    """
+    """ TODO """
     # Initialise the figure, axes, and format dictionaries
     fig, axes = plt.subplots(
         1,
@@ -556,22 +522,15 @@ def plot_error_reductions_vs_batch_size(
     optimal_fmt_legend = dict()
     optimal_fmt_legend.update(optimal_fmt)
     optimal_fmt_legend.update(optimal_point_fmt)
-    # Calculate mean and standard deviation
-    batch_size_list = np.array(sorted(reduction_dict.keys()))
-    mean = np.array([
-        np.mean(reduction_dict[batch_size])
-        for batch_size in batch_size_list
-    ])
-    std = np.array([
-        np.std(reduction_dict[batch_size])
-        for batch_size in batch_size_list
-    ])
-    # Find optimal batch size and reduction
-    mean_over_batch = mean / batch_size_list
-    best_reduction_rate = max(mean_over_batch)
-    i_best = list(mean_over_batch).index(best_reduction_rate)
-    best_batch_size = batch_size_list[i_best]
-    best_reduction = mean[i_best]
+    # Get relevant attributes from the result object
+    col                 = optimal_batch_size_column
+    batch_size_list     = col.batch_size_list
+    mean                = col.mean_dict[iteration]
+    std                 = col.std_dict[iteration]
+    reduction_dict      = col.reduction_dict_dict[iteration]
+    best_batch_size     = col.best_batch_dict[iteration]
+    best_reduction      = col.best_reduction_dict[iteration]
+    best_reduction_rate = col.best_reduction_rate_dict[iteration]
     # Plot the standard deviations
     axes[0].fill_between(
         batch_size_list,
@@ -596,7 +555,7 @@ def plot_error_reductions_vs_batch_size(
     axes[1].plot(b_list_repeated, r_over_b_list, **data_point_fmt)
     # Plot the means
     axes[0].plot(batch_size_list, mean, **mean_fmt)
-    axes[1].plot(batch_size_list, mean_over_batch, **mean_fmt)
+    axes[1].plot(batch_size_list, mean / batch_size_list, **mean_fmt)
     # Plot the optimal batch size
     axes[0].plot(
         best_batch_size,
@@ -639,8 +598,83 @@ def plot_error_reductions_vs_batch_size(
     )
     axes[2].axis("off")
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
-    full_path = save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
-    return full_path, best_batch_size, best_reduction_rate
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
+
+
+def plot_error_reductions_vs_batch_size_gif(
+    result,
+    optimal_batch_size_column,
+    dir_name,
+    plot_name="Error reduction vs batch size",
+    figsize=[16, 6],
+    y_lim_left=None,
+    y_lim_right=None,
+    n_sigma=2,
+    duration=1000,
+    loop=None
+):
+    """ Function to plot a gif of the statistics for the reduction in the mean
+    error in the test set after a single minimisation iteration as a function of
+    the batch size used for the iteration, where each frame in the gif
+    represents a different iteration throughout the course of model-optimisation
+    (this iteration is specified in the plot-title for each frame in the gif).
+    This information is represented in two subplots, one for the reduction in
+    the test set error, and one for the ratio of the reduction in the test set
+    error to the batch size used for the iteration, which indicates the
+    "efficiency" of the iteration. The motivation for plotting this information
+    is that typically over the course of minimisation, we want to reduce the
+    mean test set error as much as possible as fast as possible; using a large
+    batch size will give more reliably large reductions, however will also take
+    longer for each iteration.
+
+    Inputs:
+    -   plot_name: name of the plot, also used as the filename
+    -   dir_name: name of the directory to save the plot in
+    -   reduction_dict: dictionary in which each key is an integer batch-size,
+        and each value is a corresponding list of test set reductions
+    -   fig_size: size of the figure in inches
+    -   y_lim_left: limits for y axes for the left subplot
+    -   y_lim_right: limits for y axes for the right subplot
+    -   n_sigma: number of standard deviations away from the mean to plot.
+        Default is 2
+
+    Outputs:
+    -   full_path: full path to the output image. This could be useful, EG to
+        pass to the plotting.make_gif function, as an element in the
+        input_path_list argument
+    -   best_batch_size: the batch size that has the best ratio of mean
+        reduction in error function over batch size (which is expected to give
+        the fastest rate of reduction in the error function)
+    -   best_reduction_rate: the best ratio of mean reduction in error function
+        over batch size corresponding to best_batch_size
+
+    Example usage: see function test_plot_error_reductions_vs_batch_size in
+    Tests/test_plotting.py
+
+    TODO:
+    -   logarithmic x-axis (batch size)?
+    -   calculate ylims automatically if not provided
+    """
+    filename_list = []
+    frame_dir = os.path.join(dir_name, "Frames")
+    columns = optimisers.results.columns
+    iterations = result.get_values(columns.Iteration)
+    for i in iterations:
+        plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
+        filename = _plot_error_reductions_vs_batch_size_frame(
+            plot_name_frame,
+            frame_dir,
+            optimal_batch_size_column,
+            i,
+            figsize,
+            y_lim_left,
+            y_lim_right,
+            n_sigma
+        )
+        filename_list.append(filename)
+    
+    make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
 
 
 def make_gif(
