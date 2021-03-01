@@ -13,19 +13,24 @@ output_dir = get_output_dir("Columns")
 def test_standard_columns():
     """ Test using a Result object with the standard columns, which are added to
     a Result object by default """
+    # Initialise random seed and number of training data points and iterations
     np.random.seed(1449)
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
+    # Initialise model and data set
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    # Initialise output file
     test_name = "Test standard columns"
     output_filename = "%s.txt" % test_name
     with open(os.path.join(output_dir, output_filename), "w") as f:
+        # Initialise result object
         result = optimisers.Result(
             name=test_name,
             file=f,
             add_default_columns=True
         )
+        # Perform optimisation
         optimisers.gradient_descent(
             model,
             sin_data,
@@ -33,6 +38,10 @@ def test_standard_columns():
             terminator=optimisers.Terminator(i_lim=n_its),
             evaluator=optimisers.Evaluator(i_interval=1)
         )
+    # Check that each column object has the correct number of values
+    for col_type in optimisers.results.DEFAULT_COLUMN_TYPES:
+        # "n_its + 1" because we evaluate the initial state of the model
+        assert len(result.get_values(col_type)) == n_its + 1
 
 def test_step_size_column():
     """ Test using step size column with a Result object """
