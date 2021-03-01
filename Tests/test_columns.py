@@ -1,6 +1,6 @@
-""" Unit test module for columns objects, with one test for each different
-column, used to verify that the columns are funtioning correctly, and also to
-serve as usage examples for each column. TODO """
+""" Module containing unit tests for columns objects, used to verify that the
+columns are funtioning correctly, and also to serve as usage examples for each
+column. """
 import os
 import numpy as np
 import pytest
@@ -11,7 +11,8 @@ from .util import get_random_network, get_output_dir
 output_dir = get_output_dir("Columns")
 
 def test_standard_columns():
-    """ Test using a Result object with the standard columns """
+    """ Test using a Result object with the standard columns, which are added to
+    a Result object by default """
     np.random.seed(1449)
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)

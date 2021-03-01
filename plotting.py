@@ -474,7 +474,30 @@ def _plot_error_reductions_vs_batch_size_frame(
     y_lim_right=None,
     n_sigma=2
 ):
-    """ TODO """
+    """ Called by plot_error_reductions_vs_batch_size_gif in a loop to plot each
+    frame of a gif of the statistics for the reduction in the mean error in the
+    test set after a single minimisation iteration, as a function of the batch
+    size used for the iteration, where each frame in the gif represents a
+    different iteration throughout the course of model-optimisation.
+
+    Inputs:
+    -   plot_name: name of the plot, also used as the filename
+    -   dir_name: name of the directory to save the image in
+    -   optimal_batch_size_column: instance of OptimalBatchSize, added as a
+        column to a Result object and used during training to calculate the
+        optimal batch sizes
+    -   iteration: the number of the iteration during training for which the
+        statistics of the reduction in the test set error (as a function of the
+        batch size) should be plotted. Must be an iteration during which the
+        model was evaluated, EG taken from the Iteration column of the Result
+        object used during training. Should be an int
+    -   fig_size: size of the figure (width and height) in inches. Should be an
+        iterable of 2 numbers
+    -   y_lim_left: limits for y axes for the left subplot
+    -   y_lim_right: limits for y axes for the right subplot
+    -   n_sigma: number of standard deviations away from the mean to plot.
+        Default is 2
+    """
     # Initialise the figure, axes, and format dictionaries
     fig, axes = plt.subplots(
         1,
@@ -616,8 +639,8 @@ def plot_error_reductions_vs_batch_size_gif(
     loop=None
 ):
     """ Function to plot a gif of the statistics for the reduction in the mean
-    error in the test set after a single minimisation iteration as a function of
-    the batch size used for the iteration, where each frame in the gif
+    error in the test set after a single minimisation iteration, as a function
+    of the batch size used for the iteration, where each frame in the gif
     represents a different iteration throughout the course of model-optimisation
     (this iteration is specified in the plot-title for each frame in the gif).
     This information is represented in two subplots, one for the reduction in
@@ -630,32 +653,32 @@ def plot_error_reductions_vs_batch_size_gif(
     longer for each iteration.
 
     Inputs:
+    -   result: instance of Result used during training, which should conatin an
+        Iteration columns
+    -   optimal_batch_size_column: instance of OptimalBatchSize, added as a
+        column to the Result object and used during training to calculate the
+        optimal batch sizes
+    -   dir_name: name of the directory to save the gif in (individual frames
+        are saved in a sub-directory)
     -   plot_name: name of the plot, also used as the filename
-    -   dir_name: name of the directory to save the plot in
-    -   reduction_dict: dictionary in which each key is an integer batch-size,
-        and each value is a corresponding list of test set reductions
-    -   fig_size: size of the figure in inches
-    -   y_lim_left: limits for y axes for the left subplot
-    -   y_lim_right: limits for y axes for the right subplot
+    -   fig_size: size of the figure (width and height) in inches. Should be an
+        iterable of 2 numbers
+    -   y_lim_left: limits for y axes for the left subplot. If None then these
+        are automatically calculated
+    -   y_lim_right: limits for y axes for the right subplot. If None then these
+        are automatically calculated
     -   n_sigma: number of standard deviations away from the mean to plot.
         Default is 2
-
-    Outputs:
-    -   full_path: full path to the output image. This could be useful, EG to
-        pass to the plotting.make_gif function, as an element in the
-        input_path_list argument
-    -   best_batch_size: the batch size that has the best ratio of mean
-        reduction in error function over batch size (which is expected to give
-        the fastest rate of reduction in the error function)
-    -   best_reduction_rate: the best ratio of mean reduction in error function
-        over batch size corresponding to best_batch_size
+    -   duration: this argument is passed to the plotting.make_gif function (see
+        that function's docstring for more info)
+    -   loop: this argument is passed to the plotting.make_gif function (see
+        that function's docstring for more info)
 
     Example usage: see function test_plot_error_reductions_vs_batch_size_gif in
     Tests/test_plotting.py
 
     TODO:
     -   logarithmic x-axis (batch size)?
-    -   calculate ylims automatically if not provided
     """
     # Initialise list of filenames, and output directory for frame images
     filename_list = []
@@ -743,7 +766,7 @@ def plot_parameter_sweep_results(
     n_sigma=2
 ):
     """ Plot the results of running experiments to sweep over various different
-    values of a parameter, with multuple repeats of each experiment.
+    values of a parameter, with multiple repeats of each experiment.
 
     Inputs:
     -   experiment_results: a dictionary in which each dictionary-key is a value
@@ -811,7 +834,7 @@ def plot_optimal_batch_sizes(
     plot_name,
     dir_name,
     result,
-    optimal_batch_size_col,
+    optimal_batch_size_column,
     figsize=[15, 6],
 ):
     """ Create a figure containing 3 subplots, in which the first subplot shows
@@ -826,13 +849,11 @@ def plot_optimal_batch_sizes(
         file name
     -   dir_name: string, name of the directory in which to save the plot. This
         directory is created if it doesn't exist
-    -   best_batch_size_list: list of optimal batch sizes during different
-        iterations in training, in which each element should be an int
-    -   best_reduction_rate_list: list of rates of reduction in test set error
-        when using the corresponding optimal batch size during the corresponding
-        iteration, in which each element should be a float
-    -   result: Result object, which should conatin Iteration, TrainError, and
-        TestError columns
+    -   result: instance of Result used during training, which should conatin
+        Iteration, TrainError, and TestError columns
+    -   optimal_batch_size_column: instance of OptimalBatchSize, added as a
+        column to the Result object and used during training to calculate the
+        optimal batch sizes
     -   figsize: list of 2 numbers, describing the size of the figure in inches
     """
     fig, axes = plt.subplots(1, 3)
@@ -843,10 +864,10 @@ def plot_optimal_batch_sizes(
     train_errors = result.get_values(columns.TrainError)
     test_errors = result.get_values(columns.TestError)
     best_batch_size_list = [
-        optimal_batch_size_col.best_batch_dict[i] for i in iters
+        optimal_batch_size_column.best_batch_dict[i] for i in iters
     ]
     best_reduction_rate_list = [
-        optimal_batch_size_col.best_reduction_rate_dict[i] for i in iters
+        optimal_batch_size_column.best_reduction_rate_dict[i] for i in iters
     ]
     # Plot optimal batch size against iteration
     axes[0].plot(iters, best_batch_size_list, "b-")

@@ -1,11 +1,11 @@
-"""
-Module to contain the _Column class and its subclasses, which will be added as
-attributes to Result objects, to represent and store the data in each column, as
-well as being configurable with names, widths, and format specifiers for
-printing
-
-...TODO...
-"""
+""" Module containing the _Column class and its subclasses, which can be added
+to Result objects, to store and represent the data in each column, as well as
+being configurable with names, widths, and format specifiers for printing.
+Columns will typically be added to a Result object before optimisation starts
+(by default and/or by initialising a specific type of column and passing it to
+the Result.add_column method), and data from the column (for example the mean
+test-set error during the current iteration) will be displayed every time the
+model is evaluated. """
 
 import numpy as np
 from _optimisers.batch import ConstantBatchSize as _ConstantBatchSize
@@ -15,7 +15,15 @@ from _optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
 from _optimisers.abstract_result import AbstractResult as _AbstractResult
 
 class _Column:
+    """ Abstract column class, to be subclassed. All subclasses should override
+    the update method as a minimum, and preferably also the __init__ method,
+    setting defaults for the column name and format spec, before calling this
+    class' __init__ method """
     def __init__(self, name, format_spec, width=0):
+        """ Initialise the attributes for this _Column object, including its
+        name, title string (printed as the column heading at the start of
+        minimisation), value list, and format string (used to format values of
+        this column object before printing them during optimisation) """
         self.name = name
         width = max(width, len(name))
         self.title_str = "{{:{}s}}".format(width).format(name)
@@ -34,8 +42,7 @@ class _Column:
         formatted as a string according to self._value_fmt_str, which depends on
         the width and format_spec with which this object was initialised. The
         string is used by the Result.update method, if the Result was
-        initialised with verbose=True.
-        """
+        initialised with verbose=True. """
         return self._value_fmt_str.format(self.value_list[-1])
     
 class Iteration(_Column):
@@ -101,7 +108,21 @@ class BatchSize(_Column):
         self.value_list.append(int(self.batch_getter.batch_size))
 
 class OptimalBatchSize(_Column):
-    """ TODO """
+    """ This column is used to approximate the optimal batch size during
+    training, where the optimal batch size is considered to be the one which
+    maximises the ratio of [the reduction in the mean error of the test set
+    after a single minimisation iteration] over [the batch size used for the
+    iteration].
+
+    The motivation for calculating this information is that typically over the
+    course of minimisation, we want to reduce the mean test set error as much as
+    possible as fast as possible; using a large batch size will give more
+    reliably large reductions, however will also take longer for each iteration.
+
+    The information calculated by this column object when the model is evaluated
+    is stored in dictionary attributes, which can be plotted EG by passing this
+    object to plotting.plot_error_reductions_vs_batch_size_gif or
+    plotting.plot_optimal_batch_sizes """
     def __init__(
         self,
         max_batch_size,
@@ -112,9 +133,46 @@ class OptimalBatchSize(_Column):
         min_batch_size=5,
         use_replacement=True,
         name="Optimal Batch size",
-        format_spec="d",
     ):
-        """ TODO """
+        """ Initialise an OptimalBatchSize object.
+
+        Inputs:
+        -   max_batch_size: the maximum batch size to test when looking for the
+            optimal batch size. Should be no bigger than the size of the
+            training set
+        -   optimise_func: function to call in order to perform one iteration of
+            optimisation, for each repeat and for each different batch size to
+            test, in order to determine the optimal batch size. Should accept a
+            model and a dataset as the first arguments, as well as the following
+            keyword arguments: line_search, terminator, evaluator, result,
+            batch_getter, display_summary. [1]
+        -   line_search: instance of _optimisers.linesearch.LineSearch, or None.
+            Should match the LineSearch object which is being used during
+            optimisation. [1]
+        -   n_repeats: number of repeats to perform of each batch size during a
+            given iteration. The statistics of the reduction in the test set
+            error for a given test set tend to be quite highly stochastic, so a
+            large number of repeats is recommended. The default is 100
+        -   n_batch_sizes: number of batch sizes to test. A larger number will
+            take more time each time the model is evaluated, but will give a
+            more accurate approximation of the optimal batch size, as well as a
+            more fine-grained view of how the statistics of test-set error
+            reduction depend on the batch size
+        -   min_batch_size: the maximum batch size to test when looking for the
+            optimal batch size. Should be >= 1
+        -   use_replacement: whether or not to use replacement when sampling
+            batches from the training set. Default is True
+        -   name: name of the column object, used as the column heading when
+            evaluating the model
+
+        [1] TODO: if the minimise function was turned into a private method of a
+        Minimiser class, and each minimisation function was converted into a
+        subclass of the Minimiser object which called this common method,
+        wrapped by a function, then this column could simply be passed that
+        instance of the specific Minimiser subclass, instead of an optimisation
+        function which might have to specially initiated as a lambda expression
+        to contain the correct parameters.
+        """
         # Initialise results dictionaries
         self.reduction_dict_dict        = dict()
         self.mean_dict                  = dict()
@@ -129,7 +187,7 @@ class OptimalBatchSize(_Column):
         self._use_replacement           = use_replacement
         self._terminator                = _Terminator(i_lim=1)
         self._evaluator                 = _DoNotEvaluate()
-        self._result = _AbstractResult()
+        self._result                    = _AbstractResult()
         if line_search is None:
             self._line_search = None
             self._reference_line_search = None
@@ -158,9 +216,12 @@ class OptimalBatchSize(_Column):
         self.batch_size_list = np.array(sorted(batch_size_list))
 
         # Call parent initialiser to initialise format strings, value list etc
-        super().__init__(name, format_spec)
+        super().__init__(name, format_spec="d")
     
     def update(self, kwargs):
+        """ Find the current optimal batch size for this model and dataset
+        during the current iteration, by testing each batch size for the
+        specified number of repeats with which this object was initialised. """
         model = kwargs["model"]
         dataset = kwargs["dataset"]
         iteration = kwargs["iteration"]
