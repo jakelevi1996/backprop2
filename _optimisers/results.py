@@ -4,6 +4,14 @@ import numpy as np
 from _optimisers import columns
 from _optimisers.abstract_result import AbstractResult
 
+# Initialise default column types added to a Result object
+DEFAULT_COLUMN_TYPES = [
+    columns.Iteration,
+    columns.Time,
+    columns.TrainError,
+    columns.TestError
+]
+
 class Result(AbstractResult):
     """
     Class to store the results of optimisation in a single object which can be
@@ -41,12 +49,7 @@ class Result(AbstractResult):
             self._add_default_columns()
 
     def _add_default_columns(self):
-        for col in [
-            columns.Iteration,
-            columns.Time,
-            columns.TrainError,
-            columns.TestError
-        ]:
+        for col in DEFAULT_COLUMN_TYPES:
             self.add_column(col())
 
     def add_column(self, column):
