@@ -1,54 +1,60 @@
 import numpy as np
-from _optimisers.minimise import _minimise, Result
+from _optimisers.minimise import AbstractOptimiser
+from _optimisers.results import Result
 
-class NewtonStepCalculator():
+class GeneralisedNewton(AbstractOptimiser):
     def __init__(
         self,
         model,
         max_block_size,
         max_step,
         learning_rate,
-        reuse_block_inds
+        reuse_block_inds,
+        line_search=None
     ):
         self.reuse_block_inds = reuse_block_inds
         self.max_block_size = max_block_size
 
         if reuse_block_inds:
-            self.get_block_inds(model, max_block_size)
+            self._get_block_inds(model, max_block_size)
 
         self.delta = np.empty(model.num_params)
         self.max_step = max_step
         self.learning_rate = learning_rate
+
+        super().__init__(line_search)
     
-    def get_block_inds(self, model, max_block_size):
+    def _get_block_inds(self, model, max_block_size):
         # Get random indices for block-diagonalisation of weights in each layer
-        self.weight_inds = [
+        self._weight_inds = [
             np.array_split(
                 np.random.permutation(layer.num_weights),
                 np.ceil(layer.num_weights / max_block_size)
-            ) for layer in model.layers
+            )
+            for layer in model.layers
         ]
 
         # Get random indices for block-diagonalisation of biases in each layer
-        self.bias_inds = [
+        self._bias_inds = [
             np.array_split(
                 np.random.permutation(layer.num_bias),
                 np.ceil(layer.num_bias / max_block_size)
-            ) for layer in model.layers
+            )
+            for layer in model.layers
         ]
     
-    def get_step(self, model, x_batch, y_batch):
+    def _get_step(self, model, x_batch, y_batch):
         # If not reusing old block inds then get new ones
         if not self.reuse_block_inds:
-            self.get_block_inds(model, self.max_block_size)
+            self._get_block_inds(model, self.max_block_size)
         # Get gradient vector
         dEdw = model.get_gradient_vector(x_batch, y_batch)
         # Get Hessian blocks
         hess_block_list, hess_inds_list = model.get_hessian_blocks(
             x_batch,
             y_batch,
-            self.weight_inds,
-            self.bias_inds
+            self._weight_inds,
+            self._bias_inds
         )
         # Iterate through each Hessian block
         for hess_block, hess_inds in zip(hess_block_list, hess_inds_list):
@@ -75,25 +81,21 @@ def generalised_newton(
     max_step=1,
     result=None,
     reuse_block_inds=True,
+    line_search=None,
     **kwargs
 ):
-    newton_step_calculator = NewtonStepCalculator(
+    optimiser = GeneralisedNewton(
         model,
         max_block_size,
         max_step,
         learning_rate,
-        reuse_block_inds
-    )
-
-    get_step = lambda model, x_batch, y_batch: newton_step_calculator.get_step(
-        model,
-        x_batch,
-        y_batch
+        reuse_block_inds,
+        line_search
     )
 
     if result is None:
         result = Result("Generalised Newton")
 
-    result = _minimise(model, dataset, get_step, result=result, **kwargs)
+    result = optimiser.optimise(model, dataset, result=result, **kwargs)
 
     return result

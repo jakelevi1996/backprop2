@@ -1,19 +1,28 @@
-from _optimisers.minimise import _minimise, Result
+from _optimisers.minimise import AbstractOptimiser
+from _optimisers.results import Result
 
-def get_gradient_descent_step(model, x_batch, y_batch, learning_rate):
-    """ Method to get the descent step during each iteration of gradient-descent
-    minimisation, using a learning rate """
-    dEdw = model.get_gradient_vector(x_batch, y_batch)
+class GradientDescentFixedLearningRate(AbstractOptimiser):
+    def __init__(self, learning_rate):
+        self._learning_rate = learning_rate
+        super().__init__(line_search=None)
 
-    return -learning_rate * dEdw, dEdw
+    def _get_step(self, model, x_batch, y_batch):
+        """ Method to get the descent step during each iteration of
+        gradient-descent minimisation, using a learning rate """
+        dEdw = model.get_gradient_vector(x_batch, y_batch)
+        delta = -self._learning_rate * dEdw
 
-def get_gradient_descent_step_no_lr(model, x_batch, y_batch):
-    """ Method to get the descent step during each iteration of gradient-descent
-    minimisation, without a learning rate (this is intended to be used with a
-    line-search) """
-    dEdw = model.get_gradient_vector(x_batch, y_batch)
+        return delta, dEdw
 
-    return -dEdw, dEdw
+class GradientDescent(AbstractOptimiser):
+    def _get_step(self, model, x_batch, y_batch):
+        """ Method to get the descent step during each iteration of
+        gradient-descent minimisation, without a learning rate (this is intended
+        to be used with a line-search) """
+        dEdw = model.get_gradient_vector(x_batch, y_batch)
+        delta = -dEdw
+
+        return delta, dEdw
 
 def gradient_descent(
     model,
@@ -25,24 +34,17 @@ def gradient_descent(
 ):
     """ TODO: why is this ~10% slower than the old SGD function? """
     if line_search is None:
-        get_step = lambda model, x_batch, y_batch: get_gradient_descent_step(
-            model,
-            x_batch,
-            y_batch,
-            learning_rate
-        )
+        optimiser = GradientDescentFixedLearningRate(learning_rate)
     else:
-        get_step = get_gradient_descent_step_no_lr
+        optimiser = GradientDescent(line_search)
     
     if result is None:
         result = Result("Gradient descent")
 
-    result = _minimise(
+    result = optimiser.optimise(
         model,
         dataset,
-        get_step,
         result=result,
-        line_search=line_search,
         **kwargs
     )
 
