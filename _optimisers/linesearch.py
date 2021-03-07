@@ -29,10 +29,10 @@ class LineSearch:
         self.max_its = max_its
             
     def get_step_size(self, model, x, y, w, delta, dEdw):
-        """
-        Find the approximate locally best step size to use to optimise the model
-        for the current batch of training data. This function is called by the
-        minimise function (if a valid LineSearch object is passed to it).
+        """ Find the approximate locally best step size to use to optimise the
+        model for the current batch of training data. This function is called by
+        the AbstractOptimiser.optimise method (if a valid LineSearch object is
+        passed to it).
 
         Note that at the beginning of this method we do not propagate the input
         x through the network again, because we are assuming it has just been

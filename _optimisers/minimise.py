@@ -1,8 +1,4 @@
-""" This module contains an abstract class for model-optimisation, with common
-training and evaluation logic which is used by specific optimisation algorithms
-(EG gradient descent, generalised Newton method) in different modules. This
-model-optimisation function is applicable to all models and datasets in this
-repository """
+""" This module contains only the AbstractOptimiser class """
 
 from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
@@ -11,9 +7,15 @@ from _optimisers.batch import FullTrainingSet
 from _optimisers.columns import Iteration
 
 class AbstractOptimiser:
+    """ This class is an abstract class for model-optimisation, with common
+    training and evaluation logic which is used by specific optimisation
+    algorithms (EG gradient descent, generalised Newton method, etc) which are
+    implemented in separate modules. This model-optimisation class is applicable
+    to all models and datasets in this repository """
     def __init__(self, line_search=None):
         """ Initialise this optimiser object, and store the optional line-search
-        object which can be used by the optimise method.
+        object which can be used by the optimise method. If line_search is None,
+        then no line-search is used
 
         Inputs:
         -   line_search: (optional) object used to perform a line-search, which
@@ -64,11 +66,10 @@ class AbstractOptimiser:
         batch_getter=None,
         display_summary=True
     ):
-        """ Abstract model-optimisation function, containing common training and
-        evaluation logic which is used by specific optimisation algorithms in
-        different modules. Specific minimisation functions should call this
-        function with a get_step callable, which should take a model and a
-        dataset object, and return a step vector and a gradient vector.
+        """ Optimise the given model to fit the given dataset. The code in this
+        method is abstract, and depends on the output from the _get_step private
+        method, which will be overriden by subclasses which are specific to
+        different optimisation algorithms.
 
         Inputs:
         -   model: model that will be optimised. Should be an instance of
