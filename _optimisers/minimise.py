@@ -1,8 +1,8 @@
-"""
-Module to contain optimisation procedures and inner loop functions (EG HNGD,
-backtracking, forward-tracking, etc.), agnostic to all models and objective
-functions
-"""
+""" This module contains an abstract function for model-optimisation, with
+common training and evaluation logic which is used by specific optimisation
+algorithms (EG gradient descent, generalised Newton method) in different
+modules. This model-optimisation function is applicable to all models and
+datasets in this repository """
 from _optimisers.results import Result
 from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
@@ -20,13 +20,17 @@ def _minimise(
     batch_getter=None,
     display_summary=True
 ):
-    """ Abstract minimisation function, containing code which is common to all
-    minimisation routines. Specific minimisation functions should call this
-    function with a get_step callable, which should take a model and a dataset
-    object, and return a step vector and a gradient vector.
+    """ Abstract model-optimisation function, containing common training and
+    evaluation logic which is used by specific optimisation algorithms in
+    different modules. Specific minimisation functions should call this function
+    with a get_step callable, which should take a model and a dataset object,
+    and return a step vector and a gradient vector.
 
     Inputs:
-    -   ...
+    -   model: model that will be optimised. Should be an instance of
+        models.NeuralNetwork
+    -   dataset: dataset that model will be optimised to fit. Should be an
+        instance of data.DataSet
     -   get_step: callable which accepts the model and a batch of training data
         inputs and matching outputs, and returns delta (the suggested change in
         the parameters) and the vector of partial derivatives of the error
@@ -34,7 +38,31 @@ def _minimise(
         function propagates the inputs from the batch of training data forwards
         through the network, as well as calculating the gradient (which is
         needed if a line-search is used)
-    -   ...
+    -   evaluator: (optional) object which is used to decide when to evaluate
+        the model during optimisation, based on either time, or the number of
+        iterations that have been completed. Should be an instance of
+        optimisers.Evaluator. Default is to evaluate every 100 iterations
+    -   terminator: (optional) object which is used to decide when to stop
+        optimising the model, based on either time, the number of iterations
+        that have been completed, or the current value of the error function.
+        Should be an instance of optimisers.Terminator. Default is to terminate
+        after 1000 iterations
+    -   line_search: (optional) object used to perform a line-search, which
+        attempts to find an approximately locally optimal step-size to scale the
+        change in parameters used for each iteration. Should be an instance of
+        optimisers.LineSearch. Default is to not use a line-search
+    -   result: (optional) result used to calculate, store, and display the
+        progress of the model during optimisation. Can be configured with
+        different columns from the optimisers.results.columns module. This
+        object can also be passed to multiple different plotting functions.
+        Should be an instance of optimisers.Result
+    -   batch_getter: (optional) object which is used to choose batches from the
+        training set used to optimise the model. Should be an instance of
+        optimisers.batch._BatchGetter. Default is to use the full training set
+        for each iteration of optimisation
+    -   display_summary: (optional) whether or not to display a summary of the
+        optimisation results after optimisation has finished. Should be a
+        Boolean. Default is True
     """
     if terminator is None:
         terminator = Terminator(i_lim=1000)
