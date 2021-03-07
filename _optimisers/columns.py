@@ -31,11 +31,12 @@ class _Column:
         self._value_fmt_str = "{{:{}{}}}".format(width, format_spec)
     
     def update(self, kwargs):
-        """ Given the dictionary kwargs passed from minimise to Result.update to
-        this method, extract the appropriate value for this column from kwargs,
-        and add it to the end of this object's internal list of values. This
-        method will be overriden by all subclasses of _Column. """
-        raise NotImplementedError
+        """ Given the dictionary kwargs passed from AbstractOptimiser.optimise
+        to Result.update to this method, extract the appropriate value for this
+        column from kwargs, and add it to the end of this object's internal list
+        of values. This method will be overriden by all subclasses of _Column.
+        """
+        raise NotImplementedError()
 
     def get_value_str(self):
         """ Return the last value with which this _Column object was updated,

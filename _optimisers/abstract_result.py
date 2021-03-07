@@ -15,10 +15,10 @@ class AbstractResult:
         self.begun = True
 
     def has_column_type(self, col_type):
-        """ Called by _optimisers.minimise.minimise when determining the initial
+        """ Called by AbstractOptimiser.optimise when determining the initial
         iteration number """
         return False
 
     def update(self, **kwargs):
-        """ Called by _optimisers.minimise.minimise during and after the
+        """ Called by AbstractOptimiser.optimise during and after the
         optimisation loop """

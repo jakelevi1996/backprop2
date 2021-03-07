@@ -87,10 +87,10 @@ def test_pbgn(seed, reuse_block_inds):
     results_file.close()
 
 def test_minimise_reentrant():
-    """ Test that the minimise function is re-entrant, IE that the function can
-    return, and be called again, and the columns in the result object are as
-    expected (the output from the result object can be found in the
-    corresponding output file) """
+    """ Test that the AbstractOptimiser.optimise method is re-entrant, IE that
+    the function can return, and be called again, and the columns in the result
+    object are as expected (the output from the result object can be found in
+    the corresponding output file) """
     # Set parameters for number of iterations and evaluation frequency
     n_iters_1       = 23
     eval_every_1    = 5
@@ -101,7 +101,7 @@ def test_minimise_reentrant():
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, freq=1)
     # Open result file
-    results_filename = "Test minimise function re-entrant.txt"
+    results_filename = "Test AbstractOptimiser.optimise method re-entrant.txt"
     results_path = os.path.join(output_dir, results_filename)
     with open(results_path, "w") as results_file:
         # Create Result object

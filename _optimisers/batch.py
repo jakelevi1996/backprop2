@@ -1,8 +1,8 @@
 """
 Module to contain batch-getters, which are classes containing a get_batch
-method, called in _optimisers/minimise.py; this method accepts a dataset object,
-and returns x_batch and y_batch, which are taken from the dataset object and
-used as the inputs and outputs for one iteration of training a model.
+method, called in AbstractOptimiser.optimise; this method accepts a dataset
+object, and returns x_batch and y_batch, which are taken from the dataset object
+and used as the inputs and outputs for one iteration of training a model.
 
 TODO:
 -   Add docstrings
@@ -31,8 +31,8 @@ class _BatchGetter():
     implement different strategies for choosing a batch from a data-set"""
     def get_batch(self, dataset):
         """ Get a batch of data, used for one iteration of training. This method
-        is called by _optimisers/minimise.py """
-        raise NotImplementedError
+        is called by AbstractOptimiser.optimise """
+        raise NotImplementedError()
 
 class FullTrainingSet(_BatchGetter):
     """ Class for a batch-getter which returns the full training set as a batch.

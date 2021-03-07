@@ -1,5 +1,5 @@
 import numpy as np
-from _optimisers.minimise import AbstractOptimiser
+from _optimisers.abstract_optimiser import AbstractOptimiser
 from _optimisers.results import Result
 
 class GeneralisedNewton(AbstractOptimiser):

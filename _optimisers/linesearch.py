@@ -36,10 +36,10 @@ class LineSearch:
 
         Note that at the beginning of this method we do not propagate the input
         x through the network again, because we are assuming it has just been
-        propagated while calling get_step in minimise.py for the same batch of
-        training data and the same set of parameters, therefore we call
-        model.mean_error(y) straight away, without first propagating the data
-        through the network.
+        propagated during the call to the _get_step method in
+        AbstractOptimiser.optimise for the same batch of training data and the
+        same set of parameters, therefore we call model.mean_error(y) straight
+        away, without first propagating the data through the network.
 
         Inputs:
         -   model: instance of NeuralNetwork to be optimised

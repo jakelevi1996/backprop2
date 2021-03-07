@@ -1,11 +1,9 @@
 from time import perf_counter
 
 class Evaluator:
-    """
-    The Evaluator class is used to decide when to evaluate a model's
-    performance during the minimise function, based on either time or iteration
-    number.
-    """
+    """ The Evaluator class is used to decide when to evaluate a model's
+    performance during the AbstractOptimiser.optimise method, based on either
+    time or iteration number. """
     def __init__(self, t_interval=None, i_interval=None):
         """ Initialise an Evaluator object """
         self.t_interval = t_interval

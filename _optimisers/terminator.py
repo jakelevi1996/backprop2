@@ -1,9 +1,9 @@
 from time import perf_counter
 
 class Terminator:
-    """
-    The Terminator class is used to decide when to exit the minimise function,
-    based on either time, iteration number, or error value.
+    """ The Terminator class is used to decide when to exit the main loop in the
+    AbstractOptimiser.optimise method, based on either time, iteration number,
+    or error value.
 
     TODO: add support for DBS
     """

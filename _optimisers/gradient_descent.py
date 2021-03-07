@@ -1,7 +1,7 @@
 """ This module contains the GradientDescentFixedLearningRate and
 GradientDescent classes, and the gradient_descent wrapper function. """
 
-from _optimisers.minimise import AbstractOptimiser
+from _optimisers.abstract_optimiser import AbstractOptimiser
 from _optimisers.results import Result
 
 class GradientDescentFixedLearningRate(AbstractOptimiser):
