@@ -120,20 +120,19 @@ def test_optimal_batch_size_column():
         n_repeats = np.random.randint(3, 6)
         line_search = optimisers.LineSearch()
         columns = optimisers.results.columns
+        gd_optimiser = optimisers.GradientDescent(line_search)
         optimal_batch_size_col = columns.OptimalBatchSize(
+            gd_optimiser,
             sin_data.n_train,
-            optimisers.gradient_descent,
-            line_search,
             n_repeats=n_repeats,
             n_batch_sizes=n_batch_sizes
         )
         result.add_column(optimal_batch_size_col)
         # Call optimisation function
-        optimisers.gradient_descent(
+        gd_optimiser.optimise(
             model,
             sin_data,
             result=result,
-            line_search=line_search,
             terminator=optimisers.Terminator(i_lim=n_its),
             evaluator=optimisers.Evaluator(i_interval=1),
         )

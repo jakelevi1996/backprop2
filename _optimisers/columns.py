@@ -123,12 +123,14 @@ class OptimalBatchSize(_Column):
     The information calculated by this column object when the model is evaluated
     is stored in dictionary attributes, which can be plotted EG by passing this
     object to plotting.plot_error_reductions_vs_batch_size_gif or
-    plotting.plot_optimal_batch_sizes """
+    plotting.plot_optimal_batch_sizes.
+
+    See the test_optimal_batch_size_column function in the Tests/test_columns.py
+    module for a usage example of this class """
     def __init__(
         self,
+        optimiser,
         max_batch_size,
-        optimise_func,
-        line_search,
         n_repeats=100,
         n_batch_sizes=30,
         min_batch_size=5,
@@ -138,18 +140,12 @@ class OptimalBatchSize(_Column):
         """ Initialise an OptimalBatchSize object.
 
         Inputs:
+        -   optimiser: instance of AbstractOptimiser which is being used to
+            optimise the model when this column is being used to approximate the
+            optimal batch size
         -   max_batch_size: the maximum batch size to test when looking for the
             optimal batch size. Should be no bigger than the size of the
             training set
-        -   optimise_func: function to call in order to perform one iteration of
-            optimisation, for each repeat and for each different batch size to
-            test, in order to determine the optimal batch size. Should accept a
-            model and a dataset as the first arguments, as well as the following
-            keyword arguments: line_search, terminator, evaluator, result,
-            batch_getter, display_summary. [1]
-        -   line_search: instance of _optimisers.linesearch.LineSearch, or None.
-            Should match the LineSearch object which is being used during
-            optimisation. [1]
         -   n_repeats: number of repeats to perform of each batch size during a
             given iteration. The statistics of the reduction in the test set
             error for a given test set tend to be quite highly stochastic, so a
@@ -165,14 +161,6 @@ class OptimalBatchSize(_Column):
             batches from the training set. Default is True
         -   name: name of the column object, used as the column heading when
             evaluating the model
-
-        [1] TODO: if the minimise function was turned into a private method of a
-        Minimiser class, and each minimisation function was converted into a
-        subclass of the Minimiser object which called this common method,
-        wrapped by a function, then this column could simply be passed that
-        instance of the specific Minimiser subclass, instead of an optimisation
-        function which might have to specially initiated as a lambda expression
-        to contain the correct parameters.
         """
         # Initialise results dictionaries
         self.reduction_dict_dict        = dict()
@@ -182,23 +170,13 @@ class OptimalBatchSize(_Column):
         self.best_reduction_rate_dict   = dict()
         self.best_reduction_dict        = dict()
         # Store attributes that will be used in the update method
-        self._reference_line_search     = line_search
-        self._optimise_func             = optimise_func
+        self._optimiser                 = optimiser
+        self._using_line_search         = (optimiser.line_search is not None)
         self._n_repeats                 = n_repeats
         self._use_replacement           = use_replacement
         self._terminator                = _Terminator(i_lim=1)
         self._evaluator                 = _DoNotEvaluate()
         self._result                    = _AbstractResult()
-        if line_search is None:
-            self._line_search = None
-            self._reference_line_search = None
-        else:
-            self._line_search = _LineSearch(
-                alpha=line_search.alpha,
-                beta=line_search.beta,
-                max_its=line_search.max_its
-            )
-            self._reference_line_search = line_search
 
         # Initialise list of unique integer batch sizes of the correct length
         while True:
@@ -223,15 +201,18 @@ class OptimalBatchSize(_Column):
         """ Find the current optimal batch size for this model and dataset
         during the current iteration, by testing each batch size for the
         specified number of repeats with which this object was initialised. """
+        # Get the model, dataset, and iteration number
         model = kwargs["model"]
         dataset = kwargs["dataset"]
         iteration = kwargs["iteration"]
         # Get parameters and current test error
         w_0 = model.get_parameter_vector().copy()
+        if self._using_line_search:
+            s_0 = self._optimiser.line_search.s
         model.forward_prop(dataset.x_test)
         E_0 = model.mean_error(dataset.y_test)
-        reduction_dict = dict()
         # Iterate through batch sizes
+        reduction_dict = dict()
         for batch_size in self.batch_size_list:
             # Initialise results list and batch-getter
             reduction_dict[batch_size] = []
@@ -242,12 +223,9 @@ class OptimalBatchSize(_Column):
             # Iterate through repeats of the batch size
             for _ in range(self._n_repeats):
                 # Perform one iteration of gradient descent
-                if self._line_search is not None:
-                    self._line_search.s = self._reference_line_search.s
-                self._optimise_func(
+                self._optimiser.optimise(
                     model,
                     dataset,
-                    line_search=self._line_search,
                     terminator=self._terminator,
                     evaluator=self._evaluator,
                     result=self._result,
@@ -261,6 +239,8 @@ class OptimalBatchSize(_Column):
                 reduction_dict[batch_size].append(error_reduction)
                 # Reset parameters
                 model.set_parameter_vector(w_0.copy())
+                if self._using_line_search:
+                    self._optimiser.line_search.s = s_0
 
         # Calculate arrays of mean and standard deviation reductions
         mean = np.array([

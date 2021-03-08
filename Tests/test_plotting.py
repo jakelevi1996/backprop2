@@ -238,22 +238,21 @@ def test_plot_error_reductions_vs_batch_size_gif():
     # Initialise Result, LineSearch and OptimalBatchSize column objects
     result = optimisers.Result(verbose=False)
     line_search = optimisers.LineSearch()
+    gd_optimiser = optimisers.GradientDescent(line_search)
     columns = optimisers.results.columns
     optimal_batch_size_col = columns.OptimalBatchSize(
+        gd_optimiser,
         sin_data.n_train,
-        optimisers.gradient_descent,
-        line_search,
         n_repeats=3,
         n_batch_sizes=3,
         min_batch_size=2
     )
     result.add_column(optimal_batch_size_col)
     # Call optimisation function
-    optimisers.gradient_descent(
+    gd_optimiser.optimise(
         model,
         sin_data,
         result=result,
-        line_search=line_search,
         terminator=optimisers.Terminator(i_lim=n_its),
         evaluator=optimisers.Evaluator(i_interval=1),
     )
@@ -282,22 +281,21 @@ def test_plot_optimal_batch_sizes():
     # Initialise Result, LineSearch and OptimalBatchSize column objects
     result = optimisers.Result(verbose=False)
     line_search = optimisers.LineSearch()
+    gd_optimiser = optimisers.GradientDescent(line_search)
     columns = optimisers.results.columns
     optimal_batch_size_col = columns.OptimalBatchSize(
+        gd_optimiser,
         sin_data.n_train,
-        optimisers.gradient_descent,
-        line_search,
         n_repeats=3,
         n_batch_sizes=3,
         min_batch_size=2
     )
     result.add_column(optimal_batch_size_col)
     # Call optimisation function
-    optimisers.gradient_descent(
+    gd_optimiser.optimise(
         model,
         sin_data,
         result=result,
-        line_search=line_search,
         terminator=optimisers.Terminator(i_lim=n_its),
         evaluator=optimisers.Evaluator(i_interval=1),
     )

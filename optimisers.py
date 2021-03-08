@@ -2,7 +2,8 @@
 Wrapper for modules, classes and functions related to optimisation, found in the
 _optimisers directory. See unit tests and scripts for usage examples.
 """
-from _optimisers.gradient_descent import gradient_descent
+from _optimisers.gradient_descent import gradient_descent, GradientDescent
+from _optimisers.gradient_descent import GradientDescentFixedLearningRate
 from _optimisers.generalised_newton import generalised_newton
 from _optimisers.evaluator import Evaluator, DoNotEvaluate
 from _optimisers.terminator import Terminator
