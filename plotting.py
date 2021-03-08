@@ -889,7 +889,9 @@ def plot_optimal_batch_sizes(
     axes[0].set_ylim(bottom=0)
     median = np.median(best_reduction_rate_list)
     iqr = stats.iqr(best_reduction_rate_list)
-    axes[1].set_ylim(median - 2 * iqr, median + 2 * iqr)
+    y_lo = min(median - 2 * iqr, 0)
+    y_hi = max(median + 2 * iqr, 0)
+    axes[1].set_ylim(y_lo, y_hi)
     handles = [
         Line2D([], [], c="b", ls="--", label="Train error"),
         Line2D([], [], c="b", ls="-", label="Test error")
