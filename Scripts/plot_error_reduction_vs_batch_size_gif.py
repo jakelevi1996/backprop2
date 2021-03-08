@@ -101,10 +101,10 @@ def main(
     line_search = optimisers.LineSearch()
 
     # Initialise OptimalBatchSize column and add to the result object
+    gd_optimiser = optimisers.GradientDescent(line_search)
     optimal_batch_size_col = optimisers.results.columns.OptimalBatchSize(
+        gd_optimiser,
         sin_data.n_train,
-        optimisers.gradient_descent,
-        line_search,
         n_repeats=n_repeats,
         n_batch_sizes=n_batch_sizes
     )
@@ -130,14 +130,13 @@ def main(
     )
 
     # Call optimisation function
-    optimisers.gradient_descent(
+    gd_optimiser.optimise(
         model,
         sin_data,
         result=result,
         batch_getter=batch_getter,
         terminator=terminator,
         evaluator=evaluator,
-        line_search=line_search
     )
 
     # Make output plots
