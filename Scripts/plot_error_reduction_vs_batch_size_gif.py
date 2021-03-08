@@ -141,7 +141,6 @@ def main(
 
     # Make output plots
     print("Plotting output plots in \"%s\"..." % output_dir)
-    plotting.plot_training_curves([result], dir_name=output_dir)
     frame_duration_ms = 1000 * gif_duration / n_plots
     if ylims is None:
         y_lim_left = None
