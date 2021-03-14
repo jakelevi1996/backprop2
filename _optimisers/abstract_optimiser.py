@@ -5,6 +5,7 @@ from _optimisers.evaluator import Evaluator
 from _optimisers.terminator import Terminator
 from _optimisers.batch import FullTrainingSet
 from _optimisers.columns import Iteration
+from _optimisers.timer import Timer
 
 class AbstractOptimiser:
     """ This class is an abstract class for model-optimisation, with common
@@ -110,11 +111,20 @@ class AbstractOptimiser:
         # Set initial parameters and iteration counter
         w = model.get_parameter_vector()
         i = result.get_iteration_number()
+        evaluator.set_initial_iteration(i)
+        terminator.set_initial_iteration(i)
 
+        # Update the timer objects
+        timer = Timer()
+        evaluator.set_timer(timer)
+        terminator.set_timer(timer)
+        if not result.has_timer():
+            result.set_timer(timer)
+        
+        # Begin the result and timer objects
         if not result.begun:
             result.begin()
-        evaluator.begin(i)
-        terminator.begin(i)
+        timer.begin()
 
         while True:
             # Evaluate the model

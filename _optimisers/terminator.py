@@ -1,6 +1,6 @@
-from time import perf_counter
+from _optimisers.timer import TimedObject
 
-class Terminator:
+class Terminator(TimedObject):
     """ The Terminator class is used to decide when to exit the main loop in the
     AbstractOptimiser.optimise method, based on either time, iteration number,
     or error value.
@@ -11,14 +11,15 @@ class Terminator:
         """ Initialise a Terminator object """
         self.t_lim = t_lim
         self.e_lim = e_lim
-        self.i_lim_init = i_lim
+        self._num_iterations = i_lim
     
-    def begin(self, i):
-        """ Reset the timer, and update the iteration limit depending on the
-        starting iteration number """
-        self.t_start = perf_counter()
-        if self.i_lim_init is not None:
-            self.i_lim = i + self.i_lim_init
+    def set_initial_iteration(self, i):
+        """ Use the initial iteration number to set the iteration number limit.
+        This method is called in _optimisers/abstract_optimiser.py, in the
+        AbstractOptimiser.optimise method, before the main optimisation loop.
+        """
+        if self._num_iterations is not None:
+            self.i_lim = i + self._num_iterations
         else:
             self.i_lim = None
     
@@ -28,7 +29,7 @@ class Terminator:
         return False.
         """
         if self.t_lim is not None:
-            if perf_counter() - self.t_start >= self.t_lim:
+            if self.time_elapsed() >= self.t_lim:
                 return True
         
         if self.i_lim is not None:

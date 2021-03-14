@@ -1,6 +1,6 @@
-from time import perf_counter
+from _optimisers.timer import TimedObject
 
-class Evaluator:
+class Evaluator(TimedObject):
     """ The Evaluator class is used to decide when to evaluate a model's
     performance during the AbstractOptimiser.optimise method, based on either
     time or iteration number. """
@@ -10,15 +10,18 @@ class Evaluator:
         self.i_interval = i_interval
         self.t_next_print = 0
     
-    def begin(self, i):
-        """ Reset the timer, and set the next iteration to evaluate. If the
-        current iteration is 0, then we will evaluate during iteration 0,
+    def set_initial_iteration(self, i):
+        """ Use the initial iteration to set the next iteration to evaluate.
+        This method is called in _optimisers/abstract_optimiser.py, in the
+        AbstractOptimiser.optimise method, before the main optimisation loop.
+
+        If the current iteration is 0, then we will evaluate during iteration 0,
         because we want to know the initial performance of the model, before
-        optimisation starts. Otherwise we assume that the current iteration has
-        been evaluated at the end of the last optimisation loop, so the next
-        time we evaluate based on iteration number will be at the next multiple
-        of self.i_interval (if this is not None) """
-        self.t_start = perf_counter()
+        optimisation starts. Otherwise we must be re-entering the optimise
+        method, therefore we assume that the current iteration has been
+        evaluated after the end of the last optimisation loop, so the next time
+        we evaluate based on iteration number will be at the next multiple of
+        self.i_interval (if this is not None) """
         if i == 0:
             self.i_next_print = 0
         elif self.i_interval is not None:
@@ -29,7 +32,7 @@ class Evaluator:
         Return True if ready to evaluate the model, otherwise return False.
         """
         if self.t_interval is not None:
-            if perf_counter() - self.t_start >= self.t_next_print:
+            if self.time_elapsed() >= self.t_next_print:
                 self.t_next_print += self.t_interval
                 return True
         

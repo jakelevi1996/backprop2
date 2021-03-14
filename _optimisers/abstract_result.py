@@ -1,4 +1,6 @@
-class AbstractResult:
+from _optimisers.timer import TimedObject
+
+class AbstractResult(TimedObject):
     """ The AbstractResult is used as an abstract parent class for
     _optimiser.results.Result, and is also used as a blank result by
     _optimisers.columns.OptimalBatchSize. This is to avoid the circular

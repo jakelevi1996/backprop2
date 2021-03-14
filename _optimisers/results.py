@@ -1,8 +1,8 @@
 import os
-from time import perf_counter
 import numpy as np
 from _optimisers import columns
 from _optimisers.abstract_result import AbstractResult
+from _optimisers.timer import Timer
 
 # Initialise default column types added to a Result object
 DEFAULT_COLUMN_TYPES = [
@@ -80,16 +80,25 @@ class Result(AbstractResult):
         return self._column_dict[column_type].name
     
     def begin(self):
+        """ Display column headers for the columns in this result (if this
+        result object is verbose, and these column headers have not already been
+        displayed by calling this method previously), and if this result does
+        not have a timer object, then add a timer object, and tell it to begin.
+
+        If a specific timer object is to be added to this Result class, which
+        can be done using the set_timer method (inherited from the TimedObject
+        class via the AbstractResult class), then the set_timer method should be
+        called before this method (Result.begin), in order to avoid
+        unnecessarily initialising an extra timer object """
         if self.verbose:
             self._display_headers()
         
-        self._start_time = perf_counter()
+        if not self.has_timer():
+            timer = Timer()
+            self.set_timer(timer)
+            timer.begin()
+        
         self.begun = True
-    
-    def _time_elapsed(self):
-        """ Return the time elapsed by this Result object. The Result.begin
-        method must be called before this method is called """
-        return perf_counter() - self._start_time
     
     def update(self, **kwargs):
         """ Update all the columns in this Result object with new values.
@@ -98,7 +107,7 @@ class Result(AbstractResult):
         arguments model, dataset, and iteration will be required. The begin
         method must be called before the update method, otherwise an
         AttributeError is raised. """
-        kwargs["time"] = self._time_elapsed()
+        kwargs["time"] = self.time_elapsed()
         self._iteration = kwargs.get("iteration")
 
         for col in self._column_list:
@@ -124,7 +133,7 @@ class Result(AbstractResult):
         )
 
     def display_summary(self, n_iters):
-        t_total = self._time_elapsed()
+        t_total = self.time_elapsed()
         t_mean = t_total / n_iters
         print(
             "-" * 50,
