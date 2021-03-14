@@ -8,7 +8,7 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i1 -o1
 
-    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --t_eval 0.2
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10
 
 To get help information for the available arguments, use the following command:
 
@@ -56,6 +56,23 @@ def main(
     """
     np.random.seed(1913)
 
+    # Get output directory which is specific to the script parameters
+    param_str = " ".join([
+        "i%i"   % input_dim,
+        "o%i"   % output_dim,
+        "t%i"   % t_lim,
+        "n%i"   % n_train,
+        "b%i"   % batch_size,
+        "u%r"   % num_hidden_units,
+    ])
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(
+        current_dir,
+        "Outputs",
+        "Train gradient descent",
+        param_str
+    )
+
     # Perform warmup experiment
     optimisers.warmup()
 
@@ -84,7 +101,11 @@ def main(
 
         result_list.append(result)
     
-    plotting.plot_training_curves(result_list, dir_name=".", e_lims=error_lims)
+    plotting.plot_training_curves(
+        result_list,
+        dir_name=output_dir,
+        e_lims=error_lims
+    )
     
 
 if __name__ == "__main__":
@@ -134,8 +155,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--t_eval",
         help="Length of time between each time the model is evaluated during "
-        "optimisation in seconds. Default is 0.1 seconds",
-        default=0.1,
+        "optimisation in seconds. Default is t_lim / 50",
+        default=None,
         type=float
     )
     parser.add_argument(
@@ -177,6 +198,8 @@ if __name__ == "__main__":
     num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
     
     line_search = None if args.no_line_search else optimisers.LineSearch()
+
+    args.t_eval = args.t_lim / 50 if args.t_eval is None else args.t_eval
 
     if args.error_lims is not None:
         float_fmt = lambda e: -float(e[1:]) if e.startswith("n") else float(e)
