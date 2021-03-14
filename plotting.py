@@ -228,6 +228,7 @@ def plot_training_curves(
     t_lims=None,
     i_lims=None,
     tp=0.75,
+    n_iqr=2,
     error_log_axis=False,
     time_log_axis=False,
     iter_log_axis=False
@@ -256,10 +257,11 @@ def plot_training_curves(
         # Get line colour, depending on the name of the experiment
         colour = colour_dict[result.name]
         # Get values from Result object
-        times = result.get_values(optimisers.results.columns.Time)
-        train_errors = result.get_values(optimisers.results.columns.TrainError)
-        test_errors = result.get_values(optimisers.results.columns.TestError)
-        iters = result.get_values(optimisers.results.columns.Iteration)
+        columns = optimisers.results.columns
+        times           = result.get_values(columns.Time)
+        train_errors    = result.get_values(columns.TrainError)
+        test_errors     = result.get_values(columns.TestError)
+        iters           = result.get_values(columns.Iteration)
         # Plot errors against time
         axes[0].plot(times, train_errors,   c=colour, ls="--",  alpha=tp)
         axes[0].plot(times, test_errors,    c=colour, ls="-",   alpha=tp)
@@ -279,15 +281,25 @@ def plot_training_curves(
         axes[2].grid(True)
     
     # Set axis limits
-    if e_lims is not None:
-        axes[0].set_ylim(*e_lims)
-        axes[1].set_ylim(*e_lims)
+    if e_lims is None:
+        error_val_list = sorted(
+            error_val
+            for result in result_list
+            for error_type in [columns.TestError, columns.TrainError]
+            for error_val in result.get_values(error_type)
+        )
+        median = np.median(error_val_list)
+        iqr = stats.iqr(error_val_list)
+        e_lims = [min(median - n_iqr*iqr, 0), max(median + n_iqr*iqr, 0)]
+        
+    axes[0].set_ylim(e_lims)
+    axes[1].set_ylim(e_lims)
     if t_lims is not None:
-        axes[0].set_xlim(*t_lims)
-        axes[2].set_xlim(*t_lims)
+        axes[0].set_xlim(t_lims)
+        axes[2].set_xlim(t_lims)
     if i_lims is not None:
-        axes[1].set_xlim(*i_lims)
-        axes[2].set_ylim(*i_lims)
+        axes[1].set_xlim(i_lims)
+        axes[2].set_ylim(i_lims)
 
     # Format, save and close
     handles = []

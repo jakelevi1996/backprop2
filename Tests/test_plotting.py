@@ -104,7 +104,8 @@ def test_plot_training_curves():
         results_list,
         "Test plot_training_curves",
         output_dir,
-        e_lims=None
+        e_lims=None,
+        n_iqr=1,
     )
 
 def test_plot_result_attribute():
