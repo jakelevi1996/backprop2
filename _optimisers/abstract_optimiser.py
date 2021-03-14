@@ -109,13 +109,7 @@ class AbstractOptimiser:
 
         # Set initial parameters and iteration counter
         w = model.get_parameter_vector()
-        if (
-            result.has_column_type(Iteration)
-            and len(result.get_values(Iteration)) > 0
-        ):
-            i = result.get_values(Iteration)[-1]
-        else:
-            i = 0
+        i = result.get_iteration_number()
 
         if not result.begun:
             result.begin()

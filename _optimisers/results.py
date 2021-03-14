@@ -33,17 +33,17 @@ class Result(AbstractResult):
         file=None,
         add_default_columns=True
     ):
-        """
-        Store the name of the experiment (which is useful later when displaying
-        results), verbosity, output file, and initialise list and dictionary of
-        columns. If specified by the input argument, then add default columns to
-        this Result object.
-        """
+        """ Store the name of the experiment (which is useful later when
+        displaying results), verbosity, output file, and initialise list of
+        columns, and dictionary mapping types of columns to their instances. If
+        specified by the input argument, then add default columns to this Result
+        object. """
         self.name = name if (name is not None) else "Unnamed experiment"
         self.file = file
         self.verbose = verbose
         self._column_list = list()
         self._column_dict = dict()
+        self._iteration = 0
         self.begun = False
         if add_default_columns:
             self._add_default_columns()
@@ -58,11 +58,10 @@ class Result(AbstractResult):
 
         self._column_list.append(column)
         self._column_dict[type(column)] = column
-    
-    def has_column_type(self, column_type):
-        """ Given a type of column, return True if this Result object has a
-        Column with the same type, otherwise return False """
-        return column_type in self._column_dict
+
+    def get_iteration_number(self):
+        """ Return the current iteration number, as an integer """
+        return self._iteration
     
     def get_values(self, column_type):
         """ Given the type of column, return the list of values for the column
@@ -88,6 +87,8 @@ class Result(AbstractResult):
         self.begun = True
     
     def _time_elapsed(self):
+        """ Return the time elapsed by this Result object. The Result.begin
+        method must be called before this method is called """
         return perf_counter() - self._start_time
     
     def update(self, **kwargs):
@@ -98,6 +99,7 @@ class Result(AbstractResult):
         method must be called before the update method, otherwise an
         AttributeError is raised. """
         kwargs["time"] = self._time_elapsed()
+        self._iteration = kwargs.get("iteration")
 
         for col in self._column_list:
             col.update(kwargs)

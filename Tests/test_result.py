@@ -115,18 +115,15 @@ def test_line_search_column(seed):
         
         assert np.all(result.get_values(type(col)) == step_sizes)
 
-def test_result_column_names():
-    # Create result object
-    result = results.Result(add_default_columns=True)
-    # Test the has_column_type method for columns which it does/doesn't have
-    assert result.has_column_type(results.columns.Iteration)
-    assert not result.has_column_type(results.columns.StepSize)
-    # Add a new column and check that the has_column_type method is correct
-    result.add_column(results.columns.StepSize(LineSearch()))
-    assert result.has_column_type(results.columns.StepSize)
-    # Test getting the values from the new column
-    result.get_values(results.columns.StepSize)
-    # Test trying to get the values of a column that doesn't exist
-    assert not result.has_column_type("This is not a valid column type")
-    with pytest.raises(KeyError):
-        result.get_values("This is not a valid column type")
+def test_get_iteration_number():
+    """ Unit test for the public get_iteration_number method of the Result class
+    """
+    # Create result object, and tell it to begin
+    result = results.Result(add_default_columns=False)
+    result.begin()
+    # Check the initial iteration number is 0
+    assert result.get_iteration_number() == 0
+    # Check that the iteration number is updated when calling update
+    for i in range(10):
+        result.update(iteration=i)
+        assert result.get_iteration_number() == i

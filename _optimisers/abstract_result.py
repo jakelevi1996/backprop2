@@ -14,10 +14,10 @@ class AbstractResult:
         self.verbose = False
         self.begun = True
 
-    def has_column_type(self, col_type):
-        """ Called by AbstractOptimiser.optimise when determining the initial
-        iteration number """
-        return False
+    def get_iteration_number(self):
+        """ Called by AbstractOptimiser.optimise when initialising the iteration
+        number """
+        return 0
 
     def update(self, **kwargs):
         """ Called by AbstractOptimiser.optimise during and after the
