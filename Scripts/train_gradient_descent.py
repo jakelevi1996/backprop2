@@ -6,9 +6,9 @@ optional (by default, a line-search will be used). Optionally also plot:
 
 Below are some examples for calling this script:
 
-    python Scripts/train_gradient_descent.py -i1 -o1
+    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds
 
-    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
 
 To get help information for the available arguments, use the following command:
 
@@ -34,6 +34,7 @@ def main(
     n_repeats,
     line_search,
     t_eval,
+    plot_preds,
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -53,17 +54,18 @@ def main(
         experiment
     -   line_search: TODO
     -   t_eval: TODO
+    -   plot_preds: TODO
     """
     np.random.seed(1913)
 
     # Get output directory which is specific to the script parameters
     param_str = " ".join([
-        "i%i"   % input_dim,
-        "o%i"   % output_dim,
-        "t%i"   % t_lim,
-        "n%i"   % n_train,
-        "b%i"   % batch_size,
-        "u%r"   % num_hidden_units,
+        "i%s"   % input_dim,
+        "o%s"   % output_dim,
+        "t%s"   % t_lim,
+        "n%s"   % n_train,
+        "b%s"   % batch_size,
+        "u%s"   % num_hidden_units,
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -101,12 +103,42 @@ def main(
 
         result_list.append(result)
     
+    # Make output plots
+    print("Plotting output plots in \"%s\"..." % output_dir)
     plotting.plot_training_curves(
         result_list,
         dir_name=output_dir,
         e_lims=error_lims
     )
-    
+    if plot_preds:
+        # TODO: keep list of models, and make one output plot per trained model
+        plot_name = "Final predictions"
+        if input_dim == 1:
+            plotting.plot_1D_regression(
+                plot_name,
+                output_dir,
+                dataset,
+                model,
+            )
+        elif input_dim == 2:
+            x_pred = lambda d: np.linspace(
+                min(dataset.x_test[d, :]),
+                max(dataset.x_test[d, :]
+            ))
+            plotting.plot_2D_nD_regression(
+                plot_name,
+                output_dir,
+                output_dim,
+                dataset,
+                x_pred(0),
+                x_pred(1),
+                model
+            )
+        else:
+            raise ValueError(
+                "Can only plot predictions when the input dimension is 1 or 2"
+            )
+
 
 if __name__ == "__main__":
     
@@ -191,6 +223,20 @@ if __name__ == "__main__":
         "optimisation",
         action="store_true",
     )
+    parser.add_argument(
+        "--plot_preds",
+        help="If this flag is included, then after training has finished, plot "
+        "the final predictions of the model on the data-set (only valid for 1D "
+        "or 2D inputs)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--plot_pred_gif",
+        help="If this flag is included, then after training has finished, plot "
+        "a gif of the predictions of the model on the data-set evolving during "
+        "training (only valid for 1D or 2D inputs)",
+        action="store_true",
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -220,5 +266,6 @@ if __name__ == "__main__":
         n_repeats=args.n_repeats,
         line_search=line_search,
         t_eval=args.t_eval,
+        plot_preds=args.plot_preds
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
