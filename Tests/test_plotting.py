@@ -58,12 +58,11 @@ def test_plot_2D_regression(seed, output_dim):
     input_dim = 2
     x_lo = -2
     x_hi = 2
-    x_pred = np.linspace(x_lo, x_hi, 10)
     # Generate dataset and network
     sin_data = data.Sinusoidal(
         input_dim=input_dim,
         output_dim=output_dim,
-        n_train=200,
+        n_train=2000,
         x_lo=x_lo,
         x_hi=x_hi
     )
@@ -83,8 +82,6 @@ def test_plot_2D_regression(seed, output_dim):
         dir_name=output_dir,
         output_dim=output_dim,
         dataset=sin_data,
-        x_pred_0=x_pred,
-        x_pred_1=x_pred,
         model=model,
     )
 

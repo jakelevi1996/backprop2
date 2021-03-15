@@ -130,12 +130,10 @@ def plot_1D_regression(
 def plot_2D_regression(
     plot_name,
     dir_name,
-    output_dim,
     dataset,
-    x_pred_0,
-    x_pred_1,
     model,
-    tight_layout=False
+    output_dim,
+    tp=0.5,
 ):
     """ Plot the training data, test data, and model predictions for a
     regression data set with 2 input dimensions and output_dim output
@@ -145,19 +143,12 @@ def plot_2D_regression(
     -   plot_name: title of the plot; will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
-    -   output_dim: number of output dimensions to plot
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
-    -   x_pred_0: first dimension of inputs that the model will use to make
-        predictions, as a 1-dimensional np.ndarray. The upper and lower limits
-        of this array will be used to set the x axis limits
-    -   x_pred_1: second dimension of inputs that the model will use to make
-        predictions, as a 1-dimensional np.ndarray. The upper and lower limits
-        of this array will be used to set the y axis limits
     -   model: instance of NeuralNetwork, used to form predictions
-    -   tight_layout: Boolean flag indicating whether or not to use a
-        tight-layout for saving the plots, which (for some reason) makes this
-        function about 50% slower for certain inputs. Default is False.
+    -   output_dim: number of output dimensions to plot
+    -   tp: transparency to use for the markers for the training and test data
+        poin
     """
     assert dataset.input_dim == 2
     # Create subplots
@@ -173,6 +164,12 @@ def plot_2D_regression(
     y_min = dataset.y_test.min()
     y_max = dataset.y_test.max()
     # Use model to make predictions
+    x_pred = lambda d: np.linspace(
+        min(dataset.x_test[d, :]),
+        max(dataset.x_test[d, :]),
+    )
+    x_pred_0 = x_pred(0)
+    x_pred_1 = x_pred(1)
     xx0, xx1 = np.meshgrid(x_pred_0, x_pred_1)
     x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
     y_pred = model(x_pred)
@@ -185,8 +182,8 @@ def plot_2D_regression(
             c=dataset.y_train[i, :],
             vmin=y_min,
             vmax=y_max,
-            alpha=0.5,
-            ec=None
+            alpha=tp,
+            ec=None,
         )
         # Plot test data
         axes[1][i].scatter(
@@ -195,8 +192,8 @@ def plot_2D_regression(
             c=dataset.y_test[i, :],
             vmin=y_min,
             vmax=y_max,
-            alpha=0.5,
-            ec=None
+            alpha=tp,
+            ec=None,
         )
         # Plot predictions
         axes[2][i].pcolormesh(
@@ -223,8 +220,6 @@ def plot_2D_regression(
         fraction=1
     )
     fig.suptitle(plot_name, fontsize=16)
-    if tight_layout:
-        fig.tight_layout(rect=[0, 0, 1, 0.95])
     save_and_close(plot_name, dir_name, fig)
 
 def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
