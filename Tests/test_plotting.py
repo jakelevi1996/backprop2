@@ -49,7 +49,7 @@ def test_plot_1D_regression(output_dim, seed):
 
 
 @pytest.mark.parametrize("seed, output_dim", [(1814, 1), (1743, 3)])
-def test_plot_2D_nD_regression(seed, output_dim):
+def test_plot_2D_regression(seed, output_dim):
     """
     Test plotting function for data with 2 input dimensions and a variable
     number of output dimensions
@@ -78,10 +78,10 @@ def test_plot_2D_nD_regression(seed, output_dim):
         )
     )
     # Call plotting function under test
-    plotting.plot_2D_nD_regression(
-        "Random predictions 2D-{}D sinusoid".format(output_dim),
-        output_dir,
-        n_output_dims=output_dim,
+    plotting.plot_2D_regression(
+        plot_name="Random predictions for 2D-%iD sinusoidal data" % output_dim,
+        dir_name=output_dir,
+        output_dim=output_dim,
         dataset=sin_data,
         x_pred_0=x_pred,
         x_pred_1=x_pred,

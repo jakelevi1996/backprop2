@@ -127,25 +127,25 @@ def plot_1D_regression(
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     save_and_close(plot_name, dir_name, fig)
 
-def plot_2D_nD_regression(
+def plot_2D_regression(
     plot_name,
     dir_name,
-    n_output_dims,
+    output_dim,
     dataset,
     x_pred_0,
     x_pred_1,
     model,
     tight_layout=False
 ):
-    """
-    Plot the training data, test data, and model predictions for a regression
-    data set with 2 input dimensions and n_output_dims output dimensions.
+    """ Plot the training data, test data, and model predictions for a
+    regression data set with 2 input dimensions and output_dim output
+    dimensions.
 
     Inputs:
     -   plot_name: title of the plot; will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
-    -   n_output_dims: number of output dimensions to plot
+    -   output_dim: number of output dimensions to plot
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
     -   x_pred_0: first dimension of inputs that the model will use to make
@@ -160,17 +160,16 @@ def plot_2D_nD_regression(
         function about 50% slower for certain inputs. Default is False.
     """
     assert dataset.input_dim == 2
-    # Create subplots and set figure size
+    # Create subplots
     fig, axes = plt.subplots(
         3,
-        n_output_dims + 1,
+        output_dim + 1,
         sharex=True,
         sharey=True,
-        gridspec_kw={"width_ratios": ([1] * n_output_dims) + [0.2]}
+        squeeze=False,
+        figsize=[4 * (output_dim + 1), 10],
+        gridspec_kw={"width_ratios": ([1] * output_dim) + [0.2]},
     )
-    fig.set_size_inches(4 * (n_output_dims + 1), 10)
-    if axes.ndim == 1:
-        axes = np.expand_dims(axes, 1)
     y_min = dataset.y_test.min()
     y_max = dataset.y_test.max()
     # Use model to make predictions
@@ -178,7 +177,7 @@ def plot_2D_nD_regression(
     x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
     y_pred = model(x_pred)
     # Iterate through each output dimension
-    for i in range(n_output_dims):
+    for i in range(output_dim):
         # Plot training data
         axes[0][i].scatter(
             dataset.x_train[0, :],
