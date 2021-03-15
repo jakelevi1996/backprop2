@@ -28,15 +28,6 @@ def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
 
     return full_path
 
-def min_and_max(*input_arrays):
-    """
-    min_and_max: given a variable number of np.ndarrays, return the smallest and
-    largest elements out of all of the input arguments
-    """
-    min_elem = min([array.min() for array in input_arrays])
-    max_elem = max([array.max() for array in input_arrays])
-    return min_elem, max_elem
-
 def simple_plot(
     x,
     y,
@@ -65,20 +56,17 @@ def plot_1D_regression(
     plot_name,
     dir_name,
     dataset,
-    x_pred=None,
-    y_pred=None,
+    model,
     train_marker="bo",
     test_marker="ro",
     pred_marker="g-",
     tp=0.75,
     figsize=[8, 6],
 ):
-    """
-    plot_1D_regression: plot the training data, test data, and optionally also
-    model predictions, for a 1D regression data set. The dataset argument should
-    be an instance of data.DataSet, and should contain x_train, y_train, x_test,
-    and y_test attributes
-    """
+    """ Plot the training data, test data, and model predictions for a 1D
+    regression data set. The dataset argument should be an instance of
+    data.DataSet, and should contain x_train, y_train, x_test, and y_test
+    attributes """
     assert dataset.input_dim == 1
     plt.figure(figsize=figsize)
     # Plot training and test data
@@ -94,16 +82,17 @@ def plot_1D_regression(
         test_marker,
         alpha=tp
     )
-    if (x_pred is not None) and (y_pred is not None):
-        # Plot predictions
-        plt.plot(x_pred.ravel(), y_pred.ravel(), pred_marker, alpha=tp)
-        plt.legend(["Training data", "Test data", "Predictions"])
-    else:
-        plt.legend(["Training data", "Test data"])
+    # Plot predictions
+    x_pred = np.linspace(
+        min(dataset.x_test.flat),
+        max(dataset.x_test.flat)
+    ).reshape(1, -1)
+    plt.plot(x_pred.ravel(), model(x_pred).ravel(), pred_marker, alpha=tp)
     # Format, save and close
     plt.title(plot_name)
     plt.xlabel("x")
     plt.ylabel("y")
+    plt.legend(["Training data", "Test data", "Predictions"])
     plt.grid(True)
     save_and_close(plot_name, dir_name)
 

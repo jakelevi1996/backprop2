@@ -21,21 +21,25 @@ def test_plot_1D_regression(seed):
     dimension
     """
     np.random.seed(seed)
-    # Generate training and test sets for 1D to 1D regression
-    s11 = data.Sinusoidal(n_train=100, n_test=50, x_lo=0, x_hi=1)
-    # Generate random predictions
-    min_elem, max_elem = plotting.min_and_max(s11.x_train, s11.x_test)
-    N_D = 200
-    x_pred = np.linspace(min_elem, max_elem, N_D).reshape(1, -1)
-    y_pred = np.random.normal(size=[1, N_D])
+    # Initialise data and model
+    sin_data = data.Sinusoidal(n_train=100, n_test=50, x_lo=0, x_hi=1)
+    model = get_random_network(
+        input_dim=1,
+        output_dim=1,
+        low=2,
+        high=3,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=sin_data.x_train,
+            y_train=sin_data.y_train
+        )
+    )
     # Call plotting function under test
     plotting.plot_1D_regression(
-        "Random predictions 1D sinusoid",
-        output_dir,
-        s11,
-        x_pred.ravel(),
-        y_pred.ravel(),
-        pred_marker="go"
+        plot_name="Random predictions 1D sinusoid",
+        dir_name=output_dir,
+        dataset=sin_data,
+        model=model,
+        pred_marker="go--"
     )
 
 
