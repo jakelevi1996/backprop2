@@ -28,6 +28,11 @@ def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
 
     return full_path
 
+def get_handle(*args, **kwargs):
+    """ Return a handle with the given keyword arguments, that can be used as a
+    legend entry """
+    return Line2D([], [], *args, **kwargs)
+
 def simple_plot(
     x,
     y,
@@ -57,44 +62,70 @@ def plot_1D_regression(
     dir_name,
     dataset,
     model,
-    train_marker="bo",
-    test_marker="ro",
-    pred_marker="g-",
+    output_dim,
     tp=0.75,
-    figsize=[8, 6],
 ):
-    """ Plot the training data, test data, and model predictions for a 1D
-    regression data set. The dataset argument should be an instance of
-    data.DataSet, and should contain x_train, y_train, x_test, and y_test
-    attributes """
+    """ Plot the training data, test data, and model predictions for a
+    regression data set with one-dimensional inputs. The dataset argument should
+    be an instance of data.DataSet, and should contain x_train, y_train, x_test,
+    and y_test attributes """
     assert dataset.input_dim == 1
-    plt.figure(figsize=figsize)
-    # Plot training and test data
-    plt.plot(
-        dataset.x_train.ravel(),
-        dataset.y_train.ravel(),
-        train_marker,
-        alpha=tp
+    # Create figure and axes and define plotting formats
+    fig, axes = plt.subplots(
+        1,
+        output_dim + 1,
+        sharey=True,
+        squeeze=False,
+        figsize=[4 * (output_dim + 1), 6],
+        gridspec_kw={"width_ratios": ([1]*output_dim + [0.2])},
     )
-    plt.plot(
-        dataset.x_test.ravel(),
-        dataset.y_test.ravel(),
-        test_marker,
-        alpha=tp
-    )
-    # Plot predictions
+    train_data_fmt  = {"color": "b", "marker": "o", "linestyle": ""}
+    test_data_fmt   = {"color": "r", "marker": "o", "linestyle": ""}
+    pred_data_fmt   = {"color": "g", "marker": "o", "linestyle": "--"}
+    # Make predictions
     x_pred = np.linspace(
         min(dataset.x_test.flat),
-        max(dataset.x_test.flat)
+        max(dataset.x_test.flat),
     ).reshape(1, -1)
-    plt.plot(x_pred.ravel(), model(x_pred).ravel(), pred_marker, alpha=tp)
+    y_pred = model(x_pred)
+    # Iterate through each output dimension
+    for i in range(output_dim):
+        # Plot training, test and prediction data
+        axes[0, i].plot(
+            dataset.x_train.ravel(),
+            dataset.y_train[i, :],
+            **train_data_fmt,
+            alpha=tp,
+        )
+        axes[0, i].plot(
+            dataset.x_test.ravel(),
+            dataset.y_test[i, :],
+            **test_data_fmt,
+            alpha=tp,
+        )
+        axes[0, i].plot(
+            x_pred.ravel(),
+            y_pred[i, :],
+            **pred_data_fmt,
+            alpha=tp,
+        )
+        # Set axis labels and grid
+        axes[0][i].set_xlabel("x")
+        axes[0][i].set_ylabel("$y_%i$" % (i))
+        axes[0][i].grid(True)
     # Format, save and close
-    plt.title(plot_name)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.legend(["Training data", "Test data", "Predictions"])
-    plt.grid(True)
-    save_and_close(plot_name, dir_name)
+    axes[0][-1].legend(
+        handles=[
+            get_handle(label="Training data",   **train_data_fmt),
+            get_handle(label="Test data",       **test_data_fmt),
+            get_handle(label="Predictions",     **pred_data_fmt),
+        ],
+        loc="center",
+    )
+    axes[0][-1].axis("off")
+    fig.suptitle(plot_name, fontsize=16)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    save_and_close(plot_name, dir_name, fig)
 
 def plot_2D_nD_regression(
     plot_name,

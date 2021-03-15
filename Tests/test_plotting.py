@@ -14,18 +14,23 @@ from .util import get_random_network, get_output_dir
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Plotting")
 
-@pytest.mark.parametrize("seed", [8974, 4798, 1812])
-def test_plot_1D_regression(seed):
-    """
-    Test plotting function for data with 1 input dimension and 1 output
-    dimension
-    """
+@pytest.mark.parametrize("output_dim, seed", [(1, 8974), (2, 4798), (3, 1812)])
+def test_plot_1D_regression(output_dim, seed):
+    """ Test plotting function for regression data with 1-dimensional inputs,
+    amd a variable number of outputs """
     np.random.seed(seed)
     # Initialise data and model
-    sin_data = data.Sinusoidal(n_train=100, n_test=50, x_lo=0, x_hi=1)
+    sin_data = data.Sinusoidal(
+        input_dim=1,
+        output_dim=output_dim,
+        n_train=100,
+        n_test=50,
+        x_lo=0,
+        x_hi=1,
+    )
     model = get_random_network(
         input_dim=1,
-        output_dim=1,
+        output_dim=output_dim,
         low=2,
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
@@ -35,11 +40,11 @@ def test_plot_1D_regression(seed):
     )
     # Call plotting function under test
     plotting.plot_1D_regression(
-        plot_name="Random predictions 1D sinusoid",
+        plot_name="Random predictions for 1D-%iD sinusoidal data" % output_dim,
         dir_name=output_dir,
         dataset=sin_data,
         model=model,
-        pred_marker="go--"
+        output_dim=output_dim,
     )
 
 
