@@ -61,9 +61,10 @@ def plot_regression(
     plot_name,
     dir_name,
     dataset,
-    model,
     input_dim,
     output_dim,
+    model=None,
+    preds=None,
     tp=None,
 ):
     """ Wrapper for the plot_1D_regression and plot_2D_regression functions
@@ -77,10 +78,12 @@ def plot_regression(
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
-    -   model: instance of NeuralNetwork, used to form predictions
     -   input_dim: number of input dimensions (currently only 1 and 2 are
         supported)
     -   output_dim: number of output dimensions to plot
+    -   model: (optional) instance of NeuralNetwork, used to form predictions
+    -   preds: (optional) tuple containing 2 values, which are the x-values and
+        y-values for the model predictions
     -   tp: (optional) transparency to use for the markers for the training and
         test data points
     
@@ -91,8 +94,9 @@ def plot_regression(
         "plot_name":    plot_name,
         "dir_name":     dir_name,
         "dataset":      dataset,
-        "model":        model,
         "output_dim":   output_dim,
+        "model":        model,
+        "preds":        preds,
     }
     if tp is not None:
         kwargs["tp"] = tp
@@ -108,8 +112,9 @@ def plot_1D_regression(
     plot_name,
     dir_name,
     dataset,
-    model,
     output_dim,
+    model=None,
+    preds=None,
     tp=0.75,
 ):
     """ Plot the training data, test data, and model predictions for a
@@ -130,11 +135,17 @@ def plot_1D_regression(
     test_data_fmt   = {"color": "r", "marker": "o", "linestyle": ""}
     pred_data_fmt   = {"color": "g", "marker": "o", "linestyle": "--"}
     # Make predictions
+    if (preds is None) and (model is not None):
     x_pred = np.linspace(
-        min(dataset.x_test.flat),
-        max(dataset.x_test.flat),
-    ).reshape(1, -1)
+            dataset.x_test.min(axis=1),
+            dataset.x_test.max(axis=1),
+            axis=1,
+        )
     y_pred = model(x_pred)
+    elif preds is not None:
+        x_pred, y_pred = preds
+    else:
+        raise ValueError("Either model or preds must be provided")
     # Iterate through each output dimension
     for i in range(output_dim):
         # Plot training, test and prediction data
@@ -179,8 +190,9 @@ def plot_2D_regression(
     plot_name,
     dir_name,
     dataset,
-    model,
     output_dim,
+    model=None,
+    preds=None,
     tp=0.5,
 ):
     """ Plot the training data, test data, and model predictions for a
@@ -214,16 +226,20 @@ def plot_2D_regression(
     )
     y_min = dataset.y_test.min()
     y_max = dataset.y_test.max()
-    # Use model to make predictions
-    x_pred = lambda d: np.linspace(
-        min(dataset.x_test[d, :]),
-        max(dataset.x_test[d, :]),
+    # Make predictions
+    if (preds is None) and (model is not None):
+        x01 = np.linspace(
+            dataset.x_test.min(axis=1),
+            dataset.x_test.max(axis=1),
+            axis=1,
     )
-    x_pred_0 = x_pred(0)
-    x_pred_1 = x_pred(1)
-    xx0, xx1 = np.meshgrid(x_pred_0, x_pred_1)
+        xx0, xx1 = np.meshgrid(x01[0], x01[1])
     x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
     y_pred = model(x_pred)
+    elif preds is not None:
+        x_pred, y_pred = preds
+    else:
+        raise ValueError("Either model or preds must be provided")
     # Iterate through each output dimension
     for i in range(output_dim):
         # Plot training data
@@ -247,12 +263,12 @@ def plot_2D_regression(
             ec=None,
         )
         # Plot predictions
-        axes[2][i].pcolormesh(
-            x_pred_0,
-            x_pred_1,
-            y_pred[i].reshape(x_pred_1.size, x_pred_0.size),
+        axes[2][i].scatter(
+            x_pred[0, :],
+            x_pred[1, :],
+            c=y_pred[i, :],
             vmin=y_min,
-            vmax=y_max
+            vmax=y_max,
         )
         axes[2][i].set_xlabel("$y_{}$".format(i))
     # Format, save and close
@@ -260,9 +276,9 @@ def plot_2D_regression(
     axes[1][0].set_ylabel("Test data")
     axes[2][0].set_ylabel("Predictions")
     for i in range(axes.shape[0]):
-        axes[i, -1].set_ylim(x_pred_1.min(), x_pred_1.max())
-    for j in range(axes.shape[1]):
-        axes[-1, j].set_xlim(x_pred_0.min(), x_pred_0.max())
+        axes[i, -1].set_ylim(x_pred[1].min(), x_pred[1].max())
+    for j in range(axes.shape[1] - 1):
+        axes[-1, j].set_xlim(x_pred[0].min(), x_pred[0].max())
     for a in axes[:, -1]:
         a.axis("off")
     fig.colorbar(
