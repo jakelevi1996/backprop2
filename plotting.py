@@ -83,6 +83,9 @@ def plot_regression(
     -   output_dim: number of output dimensions to plot
     -   tp: (optional) transparency to use for the markers for the training and
         test data points
+    
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
     """
     kwargs = {
         "plot_name":    plot_name,
@@ -169,7 +172,8 @@ def plot_1D_regression(
     axes[0][-1].axis("off")
     fig.suptitle(plot_name, fontsize=16)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
-    save_and_close(plot_name, dir_name, fig)
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
 
 def plot_2D_regression(
     plot_name,
@@ -191,8 +195,11 @@ def plot_2D_regression(
         x_train, y_train, x_test, and y_test attributes
     -   model: instance of NeuralNetwork, used to form predictions
     -   output_dim: number of output dimensions to plot
-    -   tp: transparency to use for the markers for the training and test data
-        poin
+    -   tp: (optional) transparency to use for the markers for the training and
+        test data points
+    
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
     """
     assert dataset.input_dim == 2
     # Create subplots
@@ -264,7 +271,8 @@ def plot_2D_regression(
         fraction=1
     )
     fig.suptitle(plot_name, fontsize=16)
-    save_and_close(plot_name, dir_name, fig)
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
 
 def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
     """
