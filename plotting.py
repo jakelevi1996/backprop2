@@ -57,6 +57,50 @@ def simple_plot(
     plt.grid(True)
     save_and_close(plot_name, dir_name)
 
+def plot_regression(
+    plot_name,
+    dir_name,
+    dataset,
+    model,
+    input_dim,
+    output_dim,
+    tp=None,
+):
+    """ Wrapper for the plot_1D_regression and plot_2D_regression functions
+    (only one of these functions is called, depending on the value of
+    input_dim), for plotting the training data, test data, and model predictions
+    for a regression data set. Raises a ValueError if input_dim is not 1 or 2.
+    
+    Inputs:
+    -   plot_name: title of the plot; will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   model: instance of NeuralNetwork, used to form predictions
+    -   input_dim: number of input dimensions (currently only 1 and 2 are
+        supported)
+    -   output_dim: number of output dimensions to plot
+    -   tp: (optional) transparency to use for the markers for the training and
+        test data points
+    """
+    kwargs = {
+        "plot_name":    plot_name,
+        "dir_name":     dir_name,
+        "dataset":      dataset,
+        "model":        model,
+        "output_dim":   output_dim,
+    }
+    if tp is not None:
+        kwargs["tp"] = tp
+    
+    if input_dim == 1:
+        return plot_1D_regression(**kwargs)
+    elif input_dim == 2:
+        return plot_2D_regression(**kwargs)
+    else:
+        raise ValueError("input_dim must be 1 or 2")
+
 def plot_1D_regression(
     plot_name,
     dir_name,
