@@ -48,7 +48,7 @@ def test_plot_1D_regression(output_dim, seed):
     )
 
 
-@pytest.mark.parametrize("seed, output_dim", [(1814, 1), (1743, 3)])
+@pytest.mark.parametrize("seed, output_dim", [(1815, 1), (1743, 3)])
 def test_plot_2D_regression(seed, output_dim):
     """
     Test plotting function for data with 2 input dimensions and a variable
