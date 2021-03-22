@@ -313,3 +313,48 @@ def test_plot_optimal_batch_sizes():
         result,
         optimal_batch_size_col
     )
+
+def test_plot_predictions_gif():
+    """ Test function ot make a gif of predictions formed by the model during
+    training """
+    # Set random seed and initialise network and dataset
+    seed = hash("test_plot_predictions_gif")
+    seed &= (1 << 32) - 1
+    np.random.seed(seed)
+    n_train = np.random.randint(10, 20)
+    n_pred = np.random.randint(5, 10)
+    n_its = 2
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(
+        input_dim=1,
+        output_dim=1,
+        n_train=n_train,
+        x_lo=-1,
+        x_hi=1,
+        freq=1,
+    )
+    # Initialise Result and Predictions column object
+    result = optimisers.Result(verbose=False)
+    pred_column = optimisers.results.columns.Predictions(sin_data, n_pred)
+    result.add_column(pred_column)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        terminator=optimisers.Terminator(i_lim=n_its),
+        evaluator=optimisers.Evaluator(i_interval=1),
+        line_search=optimisers.LineSearch()
+    )
+    # Call plotting function
+    plot_name = "Test plot_predictions_gif"
+    plotting.plot_predictions_gif(
+        plot_name=plot_name,
+        dir_name=os.path.join(output_dir, plot_name),
+        result=result,
+        prediction_column=pred_column,
+        dataset=sin_data,
+        input_dim=1,
+        output_dim=1,
+        duration=1000,
+    )
