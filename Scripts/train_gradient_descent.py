@@ -115,32 +115,13 @@ def main(
     for i, model in enumerate(model_list):
         output_dir_repeat = os.path.join(output_dir, "Repeat %i" % (i + 1))
         if plot_preds:
-            plot_name = "Final predictions"
-            if input_dim == 1:
-                plotting.plot_1D_regression(
-                    plot_name,
-                    output_dir_repeat,
-                    dataset,
-                    model,
-                )
-            elif input_dim == 2:
-                x_pred = lambda d: np.linspace(
-                    min(dataset.x_test[d, :]),
-                    max(dataset.x_test[d, :]
-                ))
-                plotting.plot_2D_nD_regression(
-                    plot_name,
-                    output_dir_repeat,
-                    output_dim,
-                    dataset,
-                    x_pred(0),
-                    x_pred(1),
-                    model
-                )
-            else:
-                raise ValueError(
-                    "Can only plot predictions when the input dimension is 1 "
-                    "or 2"
+            plotting.plot_regression(
+                plot_name="Final predictions",
+                dir_name=output_dir_repeat,
+                dataset=dataset,
+                input_dim=input_dim,
+                output_dim=output_dim,
+                model=model,
                 )
 
 
