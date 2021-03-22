@@ -267,6 +267,70 @@ class OptimalBatchSize(_Column):
         # Update the results list
         self.value_list.append(best_batch_size)
 
+class Predictions(_Column):
+    """ This column is for storing predictions of the model during training.
+    Once training is complete, this object can be passed to the
+    plot_predictions_gif object to plot a gif of the predictions evolving during
+    training.
+
+    See the test_predictions_column function in the Tests/test_columns.py module
+    for a usage example of this class. """
+    def __init__(
+        self,
+        dataset,
+        n_points=50,
+        store_hidden_layer_outputs=True,
+        name="Predictions",
+    ):
+        """ Initialise this Predictions column.
+
+        Inputs:
+        -   dataset: dataset that the model is about to be trained on. The
+            training set from this dataset is used to calculate the upper and
+            lower limits of the prediction inputs used by this object
+        -   n_points: the number of unique prediction inputs to use in each
+            input dimension. The actual prediction inputs will be created as a
+            mesh over each input dimension, so the total number of prediction
+            inputs will by n_points ** dataset.input_dim
+        -   store_hidden_layer_outputs: if True, then store not only the
+            prediction outputs, but also the outputs from each hidden layer in
+            the model (this can be used to plot the evolution of each hidden
+            unit during training)
+        -   name: name of the column object, used as the column heading when
+            evaluating the model
+        """
+        super().__init__(name, "s")
+        self.predictions_dict = dict()
+        x = np.linspace(
+            dataset.x_test.min(axis=1),
+            dataset.x_test.max(axis=1),
+            n_points,
+            axis=1,
+        )
+        xx = np.meshgrid(*x)
+        self.x_pred = np.stack([xx_i.ravel() for xx_i in xx], axis=0)
+        self.value_list.append("Yes")
+        self._store_hidden_layer_outputs = store_hidden_layer_outputs
+    
+    def update(self, kwargs):
+        """ Store the predictions of the model on this object's internal
+        prediction inputs, and optionally also the activations of each hidden
+        unit in the network.
+
+        This method is called by the Result.update method, which is called by
+        the AbstractOptimiser.optimise method, which is wrapped by various
+        optimiser classes/functions. """
+        # Get the model and iteration number
+        model       = kwargs["model"]
+        iteration   = kwargs["iteration"]
+        # Calculate and store the predictions of the model
+        y_pred = model(self.x_pred)
+        self.predictions_dict[iteration] = y_pred
+        # If specified, store the hidden layer outputs
+        if self._store_hidden_layer_outputs:
+            # TODO
+            pass
+
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
