@@ -71,7 +71,7 @@ def plot_regression(
     (only one of these functions is called, depending on the value of
     input_dim), for plotting the training data, test data, and model predictions
     for a regression data set. Raises a ValueError if input_dim is not 1 or 2.
-    
+
     Inputs:
     -   plot_name: title of the plot; will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
@@ -136,12 +136,12 @@ def plot_1D_regression(
     pred_data_fmt   = {"color": "g", "marker": "o", "linestyle": "--"}
     # Make predictions
     if (preds is None) and (model is not None):
-    x_pred = np.linspace(
+        x_pred = np.linspace(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
             axis=1,
         )
-    y_pred = model(x_pred)
+        y_pred = model(x_pred)
     elif preds is not None:
         x_pred, y_pred = preds
     else:
@@ -209,7 +209,7 @@ def plot_2D_regression(
     -   output_dim: number of output dimensions to plot
     -   tp: (optional) transparency to use for the markers for the training and
         test data points
-    
+
     Outputs:
     -   full_path: full path to the file in which the output image is saved
     """
@@ -232,10 +232,10 @@ def plot_2D_regression(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
             axis=1,
-    )
+        )
         xx0, xx1 = np.meshgrid(x01[0], x01[1])
-    x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
-    y_pred = model(x_pred)
+        x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
+        y_pred = model(x_pred)
     elif preds is not None:
         x_pred, y_pred = preds
     else:
@@ -994,3 +994,57 @@ def plot_optimal_batch_sizes(
     fig.suptitle(plot_name)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     save_and_close(plot_name, dir_name, fig)
+
+def plot_predictions_gif(
+    plot_name,
+    dir_name,
+    result,
+    prediction_column,
+    dataset,
+    input_dim,
+    output_dim,
+    duration=5000,
+    loop=0
+):
+    """ Make a gif of predictions formed by the model during training.
+
+    Inputs:
+    -   plot_name: title that will be given to the plot, and also the filename
+        that the plot will be saved to
+    -   dir_name: directory in which the plot will be saved. Will be created if
+        it doesn't already exist
+    -   result: instance of Result that was used for the model during training
+    -   prediction_column: instance of Predictions (this must have been added to
+        the Result object using the add_column method before the start of
+        training)
+    -   dataset: instance of DataSet that the model was trained on
+    -   input_dim: input dimension for the model and the dataset
+    -   output_dim: input dimension for the model and the dataset
+    -   duration: duration each frame of the gif should last for in milliseconds
+    -   loop: integer number of times the GIF should loop. 0 means that it will
+        loop forever. If None, then the image will not loop at all. By default,
+        the image will loop forever
+    """
+    # Initialise list of filenames, and output directory for frame images
+    filename_list = []
+    frame_dir = os.path.join(dir_name, "Regression frames")
+    columns = optimisers.results.columns
+    # Create a frame for each iteration during which the model was evaluated
+    iterations = result.get_values(columns.Iteration)
+    for i in iterations:
+        plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
+        filename = plot_regression(
+            plot_name=plot_name_frame,
+            dir_name=frame_dir,
+            dataset=dataset,
+            preds=(
+                prediction_column.x_pred,
+                prediction_column.predictions_dict[i]
+            ),
+            input_dim=input_dim,
+            output_dim=output_dim,
+        )
+        filename_list.append(filename)
+    
+    # Make a gif out of the image frames
+    make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
