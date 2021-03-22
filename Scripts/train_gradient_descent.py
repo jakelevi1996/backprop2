@@ -6,7 +6,7 @@ optional (by default, a line-search will be used). Optionally also plot:
 
 Below are some examples for calling this script:
 
-    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds
+    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_pred_gif
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
 
@@ -35,6 +35,7 @@ def main(
     line_search,
     t_eval,
     plot_preds,
+    plot_pred_gif,
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -55,6 +56,7 @@ def main(
     -   line_search: TODO
     -   t_eval: TODO
     -   plot_preds: TODO
+    -   plot_pred_gif: TODO
     """
     np.random.seed(1913)
 
@@ -80,6 +82,7 @@ def main(
 
     result_list = []
     model_list = []
+    prediction_column_list = []
 
     dataset = data.Sinusoidal(input_dim, output_dim, n_train)
 
@@ -91,7 +94,11 @@ def main(
         if line_search is not None:
             line_search_col = optimisers.results.columns.StepSize(line_search)
             result.add_column(line_search_col)
-        
+
+        if plot_pred_gif:
+            pred_column = optimisers.results.columns.Predictions(dataset)
+            result.add_column(pred_column)
+
         optimisers.gradient_descent(
             model,
             dataset,
@@ -104,6 +111,8 @@ def main(
 
         result_list.append(result)
         model_list.append(model)
+        if plot_pred_gif:
+            prediction_column_list.append(pred_column)
     
     # Make output plots
     print("Plotting output plots in \"%s\"..." % output_dir)
@@ -115,6 +124,7 @@ def main(
     for i, model in enumerate(model_list):
         output_dir_repeat = os.path.join(output_dir, "Repeat %i" % (i + 1))
         if plot_preds:
+            print("Plotting final predictions...")
             plotting.plot_regression(
                 plot_name="Final predictions",
                 dir_name=output_dir_repeat,
@@ -122,7 +132,19 @@ def main(
                 input_dim=input_dim,
                 output_dim=output_dim,
                 model=model,
-                )
+            )
+        if plot_pred_gif:
+            print("Plotting gif of predictions during training...")
+            plotting.plot_predictions_gif(
+                plot_name="Model predictions during training",
+                dir_name=output_dir_repeat,
+                result=result_list[i],
+                prediction_column=prediction_column_list[i],
+                dataset=dataset,
+                input_dim=input_dim,
+                output_dim=output_dim,
+                duration=t_eval*1000,
+            )
 
 
 if __name__ == "__main__":
@@ -251,6 +273,7 @@ if __name__ == "__main__":
         n_repeats=args.n_repeats,
         line_search=line_search,
         t_eval=args.t_eval,
-        plot_preds=args.plot_preds
+        plot_preds=args.plot_preds,
+        plot_pred_gif=args.plot_pred_gif,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
