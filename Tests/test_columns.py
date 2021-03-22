@@ -144,3 +144,61 @@ def test_optimal_batch_size_column():
         assert set(reduction_dict.keys()) == set(batch_size_list)
         for reduction_list in reduction_dict.values():
             assert len(reduction_list) == n_repeats
+
+@pytest.mark.parametrize("input_dim, output_dim", [(1, 1), (2, 3)])
+def test_predictions_column(input_dim, output_dim):
+    """ Test using a column which stores model predictions during training """
+    # Set random seed and initialise network and dataset
+    seed = hash(("test_predictions_column", input_dim, output_dim))
+    seed &= (1 << 32) - 1
+    np.random.seed(seed)
+    n_train = np.random.randint(10, 20)
+    n_pred = np.random.randint(5, 10)
+    n_its = np.random.randint(10, 20)
+    model = get_random_network(input_dim=input_dim, output_dim=output_dim)
+    sin_data = data.Sinusoidal(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        n_train=n_train,
+    )
+    # Initialise output file and Result object
+    test_name = "Test prediction column (%id-%id data)" % (
+        input_dim,
+        output_dim
+    )
+    output_filename = "%s.txt" % test_name
+    with open(os.path.join(output_dir, output_filename), "w") as f:
+        # Initialise result object
+        result = optimisers.Result(
+            name=test_name,
+            file=f,
+            add_default_columns=True
+        )
+        # Initialise column object and add to the result
+        columns = optimisers.results.columns
+        prediction_column = columns.Predictions(
+            sin_data,
+            n_points=n_pred,
+        )
+        result.add_column(prediction_column)
+        # Call optimisation function
+        optimisers.gradient_descent(
+            model,
+            sin_data,
+            result=result,
+            terminator=optimisers.Terminator(i_lim=n_its),
+            evaluator=optimisers.Evaluator(i_interval=1),
+        )
+        # Print Predictions column attributes to file
+        print("x_pred:", prediction_column.x_pred, sep="\n", file=f)
+        iter_list = result.get_values(columns.Iteration)
+        print("Predictions:", file=f)
+        for i in iter_list:
+            print("i = %i:" % i, file=f)
+            print(prediction_column.predictions_dict[i], file=f)
+
+    # Test that the OptimalBatchSize object attributes are as expected
+    assert prediction_column.x_pred.shape == (input_dim, (n_pred ** input_dim))
+    assert set(prediction_column.predictions_dict.keys()) == set(iter_list)
+    for y_pred in prediction_column.predictions_dict.values():
+        assert y_pred.shape == (output_dim, (n_pred ** input_dim))
