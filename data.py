@@ -66,6 +66,20 @@ class DataSet():
             file=file
         )
 
+class Regression(DataSet):
+    """ Class for regression datasets. Outputs are continuous matrices with
+    self.output_dim numbers of rows, and each column refers to a different data
+    point. This class is used as a parent class for specific regression
+    datasets. """
+
+class Classification(DataSet):
+    """ Class for classification datasets. Outputs are one-hot integer matrices,
+    with self.output_dim number of rows (this is equal to the number of
+    classes), and each column refers to a different data point. Each column has
+    one value equal to 1, referring to which class that data point belongs to,
+    and the rest of the values are equal to zero. This class is used as a parent
+    class for specific regression datasets. """
+
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     """
     noisy_sin: apply a linearly transformed sinusoidal function to a linearly
@@ -94,7 +108,7 @@ def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     return y + np.random.normal(offset, noise_std, [output_dim, x.shape[1]])
 
 
-class Sinusoidal(DataSet):
+class Sinusoidal(Regression):
     """
     Class for a sinusoidal data set. The input and output dimensions are
     configurable through the initialiser arguments. The training and test set
