@@ -303,20 +303,29 @@ class MixtureOfGaussians(Classification):
                 (scale_matrix[i] @ self.x_test[:, z_test == i])
                 + mean[i].reshape(-1, 1)
             )
-        # Initialise array to assign a class to each mixture component
-        mixture_to_class = np.full(n_mixture_components, np.nan)
-        # Choose initial class assignments to ensure >=1 component per class
-        initial_class_assignment_inds = np.random.choice(
-            n_mixture_components,
-            size=output_dim,
-            replace=False,
-        )
-        mixture_to_class[initial_class_assignment_inds] = np.arange(output_dim)
-        # Choose remaining class assignments
-        mixture_to_class[np.isnan(mixture_to_class)] = np.random.randint(
-            output_dim,
-            size=n_mixture_components-output_dim,
-        )
+        # Initialise mixture_to_class which maps mixture components to classes
+        if n_mixture_components > output_dim:
+            mixture_to_class = np.full(n_mixture_components, np.nan)
+            initial_class_assignment_inds = np.random.choice(
+                n_mixture_components,
+                size=output_dim,
+                replace=False,
+            )
+            mixture_to_class[initial_class_assignment_inds] = np.arange(
+                output_dim
+            )
+            mixture_to_class[np.isnan(mixture_to_class)] = np.random.randint(
+                output_dim,
+                size=n_mixture_components-output_dim,
+            )
+        elif n_mixture_components < output_dim:
+            mixture_to_class = np.random.choice(
+                output_dim,
+                size=n_mixture_components,
+                replace=False,
+            )
+        else:
+            mixture_to_class = np.arange(output_dim)
         # Set labels and one-hot output data
         self.train_labels = mixture_to_class[z_train]
         self.test_labels  = mixture_to_class[z_test]
