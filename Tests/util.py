@@ -8,6 +8,19 @@ import os
 import numpy as np
 import models, data
 
+def set_random_seed_from_args(*args):
+    """ Given a variable number of arguments, set an almost-surely unique random
+    seed by using a tuple of the input arguments as the input to a hash function
+    (and applying a 32-bit mask to the output from the hash function, because
+    the input to the np.random.seed function "must be between 0 and 2**32 - 1").
+    The inputs to this function could be for example a string representation of
+    the test function, followed by the values of the arguments with which that
+    test function is parametrised.
+    """
+    seed = hash(args)
+    seed &= (1 << 32) - 1
+    np.random.seed(seed)
+
 def get_output_dir(subdir_name):
     """ Get name of output directory for a given test module, and create it if
     it doesn't exist """
