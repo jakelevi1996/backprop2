@@ -96,21 +96,13 @@ def get_random_network_inputs_targets(
     t = get_random_targets(n.output_dim, N_D)
     return n, x, t, N_D
 
-dataset_list = [
-    "1x1_sinusoidal_set_freq",
-    "1x1_sinusoidal_random_freq",
-    "2x1_sinusoidal",
-    "2x4_sinusoidal",
-]
-
-def get_dataset(dataset_str):
-    if dataset_str == "1x1_sinusoidal_set_freq":
-        return data.Sinusoidal(input_dim=1, output_dim=1, freq=1.1)
-    elif dataset_str == "1x1_sinusoidal_random_freq":
-        return data.Sinusoidal(input_dim=1, output_dim=1)
-    elif dataset_str == "2x1_sinusoidal":
-        return data.Sinusoidal(input_dim=2, output_dim=1)
-    elif dataset_str == "2x4_sinusoidal":
-        return data.Sinusoidal(input_dim=2, output_dim=4)
-    else:
-        raise ValueError("Invalid input string")
+dataset_dict = {
+    "1x1_sinusoidal_set_freq":      data.Sinusoidal(
+        input_dim=1,
+        output_dim=1,
+        freq=1.1,
+    ),
+    "1x1_sinusoidal_random_freq":   data.Sinusoidal(input_dim=1, output_dim=1),
+    "2x1_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=1),
+    "2x4_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=4),
+}

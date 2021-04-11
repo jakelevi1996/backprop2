@@ -3,7 +3,7 @@ import string
 import numpy as np
 import pytest
 from experiment import Experiment, Parameter
-from .util import get_dataset, dataset_list, get_output_dir
+from .util import get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Experiment")
