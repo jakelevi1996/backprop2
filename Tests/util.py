@@ -105,4 +105,8 @@ dataset_dict = {
     "1x1_sinusoidal_random_freq":   data.Sinusoidal(input_dim=1, output_dim=1),
     "2x1_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=1),
     "2x4_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=4),
+    "2x3_mixture_of_gaussians":     data.MixtureOfGaussians(
+        input_dim=1,
+        output_dim=3,
+    ),
 }
