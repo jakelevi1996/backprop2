@@ -31,6 +31,35 @@ class DataSet():
             self.x_train    , self.y_train      = None, None
             self.x_test     , self.y_test       = None, None
     
+    def set_shape_constants(self, input_dim, output_dim, n_train, n_test):
+        """ Set the input_dim, output_dim, n_train, and n_test attributes for
+        this DataSet object, which determine the dimensionalities of the inputs
+        and outputs, and the number of points in the training and test sets.
+
+        Inputs:
+        -   input_dim: dimensionality of inputs for this data set. Should be a
+            positive integer
+        -   output_dim: dimensionality of outputs for this data set. Should be a
+            positive integer
+        -   n_train: number of points in the training set for this data set.
+            Should be None or a positive integer. If n_train is None, then it is
+            chosen as 50 to the power of the input dimension
+        -   n_test: number of points in the test set for this data set. Should
+            be None or a positive integer. If n_test is None, then it is chosen
+            to be equal to the number of points in the training set
+        """
+        if n_train is None:
+            n_train = pow(50, input_dim)
+        if n_test is None:
+            n_test = n_train
+
+        # Set shape constants
+        self.input_dim      = input_dim
+        self.output_dim     = output_dim
+        self.n_train        = n_train
+        self.n_test         = n_test
+
+    
     def save(self, filename, dir_name="."):
         path = os.path.join(dir_name, filename + ".npz")
         np.savez(
@@ -167,11 +196,8 @@ class Sinusoidal(Regression):
         -   ValueError: if x-limits x_lo and x_hi don't broadcast to the size of
             x_train and x_test
         """
-        # Set unspecified parameters
-        if n_train is None:
-            n_train = pow(50, input_dim)
-        if n_test is None:
-            n_test = n_train
+        # Set shape constants and unspecified parameters
+        self.set_shape_constants(input_dim, output_dim, n_train, n_test)
         if phase is None:
             phase = np.random.normal(size=[input_dim, 1])
         if freq is None:
@@ -180,12 +206,17 @@ class Sinusoidal(Regression):
             ampl = np.random.normal(size=[output_dim, output_dim])
         if offset is None:
             offset = np.random.normal(size=[output_dim, 1])
-        # Set shape constants
-        self.input_dim  , self.output_dim   = input_dim , output_dim
-        self.n_train    , self.n_test       = n_train   , n_test
         # Generate input/output training and test data
-        self.x_train = np.random.uniform(x_lo, x_hi, size=[input_dim, n_train])
-        self.x_test  = np.random.uniform(x_lo, x_hi, size=[input_dim, n_test])
+        self.x_train = np.random.uniform(
+            x_lo,
+            x_hi,
+            size=[input_dim, self.n_train]
+        )
+        self.x_test  = np.random.uniform(
+            x_lo,
+            x_hi,
+            size=[input_dim, self.n_test]
+        )
         self.y_train = noisy_sin(
             self.x_train,
             phase,
