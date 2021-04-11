@@ -72,3 +72,25 @@ def test_invalid_freq_shape():
     """
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=3, output_dim=7, freq=np.zeros([5, 9]))
+
+@pytest.mark.parametrize("n_mixture_components", [2, 4, 6])
+def test_gaussian_mixture_num_components(n_mixture_components):
+    """ Test initialising a mixture-of-Gaussians classification dataset where
+    the number of mixture components is less than, equal to, and greater than
+    the output dimension (IE the number of classes) """
+    # Set random seed
+    set_random_seed_from_args(
+        "test_gaussian_mixture_num_components",
+        n_mixture_components,
+    )
+    # Initialise input arguments
+    output_dim = 4
+    n_train = np.random.randint(10, 20)
+    input_dim = np.random.randint(2, 5)
+    # Initialise data set
+    data.MixtureOfGaussians(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        n_train=n_train,
+        n_mixture_components=n_mixture_components,
+    )
