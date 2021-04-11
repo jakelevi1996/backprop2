@@ -236,6 +236,100 @@ class Sinusoidal(Regression):
             output_dim
         )
 
+class MixtureOfGaussians(Classification):
+    """ Class for a mixture-of-Gaussians classification dataset. The means of
+    the mixture components are generated from a normal distribution, and the
+    variance matrices are generated randomly and implicitly. There can be more
+    mixture components than classes, although by default there will be there
+    same number of mixture components and classes.  """
+    def __init__(
+        self,
+        input_dim=2,
+        output_dim=3,
+        n_train=None,
+        n_test=None,
+        n_mixture_components=None,
+        scale=0.2,
+    ):
+        """ Initialise a mixture-of-Gaussians classification data set.
+
+        Inputs:
+        -   input_dim: dimensionality of inputs for this data set. Should be a
+            positive integer
+        -   output_dim: dimensionality of outputs for this data set. Should be a
+            positive integer
+        -   n_train: number of points in the training set for this data set.
+            Should be None or a positive integer. If n_train is None, then it is
+            chosen as 50 to the power of the input dimension
+        -   n_test: number of points in the test set for this data set. Should
+            be None or a positive integer. If n_test is None, then it is chosen
+            to be equal to the number of points in the training set
+        -   n_mixture_components: number of mixture components in the data set.
+            Should be None, or a positive integer. Can be more than the output
+            dimension, in which case some classes will have multiple mixture
+            components, or less than the output dimension, in which case some
+            classes will have no mixture components (and therefore no data
+            points)
+        -   scale: positive float, which determines the expected variance of the
+            mixture components relative to the distance between them. A larger
+            scale will mean that the variances of mixture components are large,
+            and therefore the mixture components are more likely to overlap and
+            become more difficult to distinguish, making the classification task
+            "harder"
+        """
+        # Set shape constants and number of mixture components
+        self.set_shape_constants(input_dim, output_dim, n_train, n_test)
+        if n_mixture_components is None:
+            n_mixture_components = self.output_dim
+        
+        # Generate mean and scale for each mixture component
+        mean = np.random.normal(size=[n_mixture_components, input_dim])
+        scale_matrix = scale * np.random.normal(
+            size=[n_mixture_components, input_dim, input_dim]
+        )
+        # Generate all of the input points
+        self.x_train = np.random.normal(size=[self.input_dim, self.n_train])
+        self.x_test  = np.random.normal(size=[self.input_dim, self.n_test])
+        # Generate assignments of inputs to mixture components
+        z_train = np.random.randint(n_mixture_components, size=self.n_train)
+        z_test  = np.random.randint(n_mixture_components, size=self.n_test)
+        # Transform each input point according to its mixture component
+        for i in range(n_mixture_components):
+            self.x_train[:, z_train == i] = (
+                (scale_matrix[i] @ self.x_train[:, z_train == i])
+                + mean[i].reshape(-1, 1)
+            )
+            self.x_test[:, z_test == i] = (
+                (scale_matrix[i] @ self.x_test[:, z_test == i])
+                + mean[i].reshape(-1, 1)
+            )
+        # Initialise array to assign a class to each mixture component
+        mixture_to_class = np.full(n_mixture_components, np.nan)
+        # Choose initial class assignments to ensure >=1 component per class
+        initial_class_assignment_inds = np.random.choice(
+            n_mixture_components,
+            size=output_dim,
+            replace=False,
+        )
+        mixture_to_class[initial_class_assignment_inds] = np.arange(output_dim)
+        # Choose remaining class assignments
+        mixture_to_class[np.isnan(mixture_to_class)] = np.random.randint(
+            output_dim,
+            size=n_mixture_components-output_dim,
+        )
+        # Set labels and one-hot output data
+        self.train_labels = mixture_to_class[z_train]
+        self.test_labels  = mixture_to_class[z_test]
+        self.y_train = (
+            self.train_labels.reshape(1, -1)
+            == np.arange(output_dim).reshape(-1, 1)
+        ).astype(float)
+        self.y_test = (
+            self.test_labels.reshape(1, -1)
+            == np.arange(output_dim).reshape(-1, 1)
+        ).astype(float)
+
+
 class CircleDataSet(DataSet):
     pass
 
