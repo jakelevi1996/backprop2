@@ -318,6 +318,7 @@ class MixtureOfGaussians(Classification):
                 output_dim,
                 size=n_mixture_components-output_dim,
             )
+            mixture_to_class = mixture_to_class.astype(int)
         elif n_mixture_components < output_dim:
             mixture_to_class = np.random.choice(
                 output_dim,
@@ -329,14 +330,10 @@ class MixtureOfGaussians(Classification):
         # Set labels and one-hot output data
         self.train_labels = mixture_to_class[z_train]
         self.test_labels  = mixture_to_class[z_test]
-        self.y_train = (
-            self.train_labels.reshape(1, -1)
-            == np.arange(output_dim).reshape(-1, 1)
-        ).astype(float)
-        self.y_test = (
-            self.test_labels.reshape(1, -1)
-            == np.arange(output_dim).reshape(-1, 1)
-        ).astype(float)
+        self.y_train = np.zeros([output_dim, self.n_train])
+        self.y_test  = np.zeros([output_dim, self.n_test])
+        self.y_train[self.train_labels, np.arange(self.n_train)] = 1
+        self.y_test[ self.test_labels,  np.arange(self.n_test)]  = 1
 
 
 class CircleDataSet(DataSet):
