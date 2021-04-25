@@ -418,6 +418,37 @@ class NeuralNetwork():
         """
         return self._error_func(self.y, t).mean()
 
+    def softmax_output_probabilities(self, x):
+        """ Given an input matrix x, propagate that input through the network,
+        and apply a softmax function to the output to calculate output
+        probabilities. Softmax is not implemented as an activation function in
+        the activations module because it is not a 1D element-wise function (see
+        the docstring for the _SoftmaxCrossEntropy class in the errors module
+        for more information about using softmax for multi-class classification
+        models).
+
+        Inputs:
+        -   x: input to the neural network. Should be a numpy array with shape
+            (input_dim, N_D), where N_D is the number of data points (size of
+            dimension 1) of the most recent set of inputs that were propagated
+            through the network
+
+        Outputs:
+        -   probabilities: a numpy array with shape (output_dim, N_D), in which
+            each column refers to a different data point, and each row refers to
+            the probability of the corresponding input point belonging to the
+            class corresponding to that row (so the first row has the
+            probabilities of each data point belonging class 1, the second row
+            has the probabilities for class 2, etc)
+        """
+        y = self.forward_prop(x)
+        probability_numerator = np.exp(y)
+        probabilities = (
+            probability_numerator
+            / probability_numerator.sum(axis=0, keepdims=True)
+        )
+        return probabilities
+
     def save_model(self, filename, filename_prepend_timestamp=True):
         # Save params, self._num_units_list, and identities of activation
         # functions as np.ndarrays in an npz file, and return the filename

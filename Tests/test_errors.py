@@ -8,7 +8,10 @@ import models
 from .util import get_random_network_inputs_targets, get_output_dir
 
 # Define list of error functions to be tested
-error_func_list = [models.errors.sum_of_squares]
+error_func_list = [
+    models.errors.sum_of_squares,
+    models.errors.softmax_cross_entropy,
+]
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Errors")

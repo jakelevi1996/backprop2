@@ -414,25 +414,25 @@ def plot_act_func(act_func, dir_name, xlims, npoints):
     plt.grid(True)
     save_and_close(act_func.name, dir_name)
 
-def plot_error_func(error_func, dir_name, xlims, npoints):
-    """
-    Plot an error function and its derivatives
-    """
-    y = np.linspace(*xlims, npoints).reshape(1, -1)
-    t = 0
-    E = error_func.E(y, 0)
-    dEdy = error_func.dEdy(y, 0)
-    d2Edy2 = error_func.d2Edy2(y, 0)
+def plot_error_func(error_func, dir_name, xlims, npoints, y=None, t=None):
+    """ Plot an error function and its derivatives """
+    if y is None:
+        y = np.linspace(*xlims, npoints).reshape(1, -1)
+    if t is None:
+        t = 0.0
+    E       = error_func.E(y, t)
+    dEdy    = error_func.dEdy(y, t)
+    d2Edy2  = error_func.d2Edy2(y, t)
     plt.figure(figsize=[8, 6])
-    plt.plot(y.ravel(), E.ravel(), 'b', alpha=0.75)
-    plt.plot(y.ravel(), dEdy.ravel(), 'r', alpha=0.75)
-    plt.plot(y.ravel(), d2Edy2.ravel(), 'g', alpha=0.75)
+    plt.plot(y[0], E[0],            'b', alpha=0.75)
+    plt.plot(y[0], dEdy[0],         'r', alpha=0.75)
+    plt.plot(y[0], d2Edy2[0, 0],    'g', alpha=0.75)
     plt.axvline(0, c="k", ls="--", alpha=0.75)
     plt.legend([
         "$E(y, t)$",
         "$\\frac{dE}{dy}(y, t)$",
         "$\\frac{d^2E}{dy^2}(y, t)$",
-        "Target $t = 0.0$"
+        "Target $t = 0.0$", 
     ])
     plt.title(error_func.name)
     plt.grid(True)

@@ -1,8 +1,16 @@
-"""
-Module to contain activation functions, used in hidden and output layers of a
-neural network. The classes in this module are private, and are exposed through
-public instances.
-"""
+""" This module contains activation functions and their gradients, used in
+hidden and output layers of a neural network. The classes in this module are
+private subclasses of the _ActivationFunction abstract parent class, and are
+exposed through public instances.
+
+For efficiency in backpropagation, it is assumed that the activation functions
+in this module are applied as a 1D function element-wise to each element of the
+input vector, with no dependence on the other elements in the input vector. This
+means, for example, that activation functions such as the softmax activation
+function (which requires normalising each element in the output vector using the
+other elements of the input vector) cannot be implemented in this module; see
+the docstring for the _SoftmaxCrossEntropy class in the errors module for more
+information about using softmax for multi-class classification models. """
 import numpy as np
 import plotting
 
@@ -139,8 +147,6 @@ class _Cauchy(_ActivationFunction):
         y = self.y(x)
         return 2.0 * y * y * ((4.0 * x * x * y) - 1)
 
-class _SoftMax(_ActivationFunction):
-    pass
 
 class _PiecewiseQuadratic(_ActivationFunction):
     name = "Piecewise quadratic activation function"
@@ -185,5 +191,4 @@ logistic            = _Logistic()
 relu                = _Relu()
 gaussian            = _Gaussian()
 cauchy              = _Cauchy()
-softMax             = _SoftMax()
 piecewise_quadratic = _PiecewiseQuadratic()

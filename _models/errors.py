@@ -1,11 +1,9 @@
-"""
-Module to contain error functions, used with neural network to measure
-performance, and for training. The classes in this module are private, and are
-exposed through public instances.
+""" This module contains error functions and their gradients, used with neural
+networks to measure performance, and for training. The classes in this module
+are private, and are exposed through public instances.
 
 TODO:
--   Make BinaryCrossEntropy work with multiple data points
--   Softmax error function
+-   Make BinaryCrossEntropy work with multiple data points and test
 """
 
 import numpy as np
@@ -128,9 +126,8 @@ def get_func_from_id(func_id):
     return func_object
 
 class _SumOfSquares(_ErrorFunction):
-    """
-    Sum of squares error function, used for regression
-    """
+    """ Sum of squares error function, used for regression, typically using a
+    model with a linear activation function in the output layer """
     name = "Sum of squares error function"
     def E(self, y, target):
         return 0.5 * np.square(y - target).sum(axis=0, keepdims=True)
@@ -159,11 +156,58 @@ class _BinaryCrossEntropy(_ErrorFunction):
     def dEdy(self, y, target):
         return ((y - target) / (y * (1.0 - y))).sum()
 
-class _Softmax(_ErrorFunction):
-    # TODO
-    pass
+def _softmax(x):
+    """ Apply a softmax function to the input x. It is assumed that x is a 2D
+    matrix, in which dimension 0 of the input matrix refers to different
+    dimensions of the input, and dimension 1 of the input matrix refers to
+    different data points (so for example, a matrix containing 5 3D inputs would
+    be represented by a 3x5 matrix), hence normalisation of the output is
+    applied down dimension 0. """
+    numerator = np.exp(x)
+    return numerator / numerator.sum(axis=0, keepdims=True)
+
+class _SoftmaxCrossEntropy(_ErrorFunction):
+    """ This error function applies softmax and a cross entropy error function,
+    typically used for training a model for multi-class classification. Softmax
+    is applied here as part of the error function because it cannot be supported
+    by the activations module, because it is not a 1D element-wise function (the
+    normalisation of the output introduces dependency of each element in the
+    output vector on all elements of the input vector), and hence is not
+    compatible with the implementation of back-propagation in that module (and
+    changing the implementation would likely reduce its efficiency).
+
+    Because softmax is applied here, a multi-class classification model which is
+    trained with this error function should have a linear activation function in
+    the output layer. To apply a softmax function for prediction, the
+    NeuralNetwork softmax_output_probabilities method should be used.
+
+    Targets are assumed to be one-hot vectors (or matrices in the case of
+    multiple data points) """
+
+    name = "Softmax cross-entropy error function"
+
+    def E(self, y, target):
+        return -(target * np.log(_softmax(y))).sum(axis=0, keepdims=True)
+    
+    def dEdy(self, y, target):
+        return _softmax(y) - target
+    
+    def d2Edy2(self, y, target):
+        s = _softmax(y)
+        hessian = (- np.expand_dims(s, 0)) * np.expand_dims(s, 1)
+        diag_inds = np.arange(s.shape[0])
+        hessian[diag_inds, diag_inds, :] += s
+        return hessian
+
+    def plot(self, dir_name=".", xlims=[-5, 5], npoints=200):
+        t = np.zeros([2, npoints])
+        y = np.zeros([2, npoints])
+        t[1] = 1
+        y[0] = np.linspace(*xlims, npoints)
+        plotting.plot_error_func(self, dir_name, xlims, npoints, y, t)
+
 
 # Expose public instances of private classes
 sum_of_squares          = _SumOfSquares()
 binary_cross_entropy    = _BinaryCrossEntropy()
-softmax                 = _Softmax()
+softmax_cross_entropy   = _SoftmaxCrossEntropy()
