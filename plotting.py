@@ -108,14 +108,31 @@ def plot_1D_regression(
     dir_name,
     dataset,
     output_dim,
-    model=None,
     preds=None,
+    model=None,
     tp=0.75,
 ):
     """ Plot the training data, test data, and model predictions for a
     regression data set with one-dimensional inputs. The dataset argument should
     be an instance of data.DataSet, and should contain x_train, y_train, x_test,
-    and y_test attributes """
+    and y_test attributes.
+
+    Inputs:
+    -   plot_name: title of the plot. Will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   output_dim: number of output dimensions to plot
+    -   preds: (optional) predictions to plot
+    -   model: (optional) instance of NeuralNetwork, used to form predictions
+        if preds is not provided
+    -   tp: (optional) transparency to use for the markers for the training and
+        test data points
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
+    """
     assert dataset.input_dim == 1
     # Create figure and axes and define plotting formats
     fig, axes = plt.subplots(
@@ -130,17 +147,19 @@ def plot_1D_regression(
     test_data_fmt   = {"color": "r", "marker": "o", "linestyle": ""}
     pred_data_fmt   = {"color": "g", "marker": "o", "linestyle": "--"}
     # Make predictions
-    if (preds is None) and (model is not None):
+    if preds is not None:
+        x_pred, y_pred = preds
+    elif model is not None:
         x_pred = np.linspace(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
             axis=1,
         )
         y_pred = model(x_pred)
-    elif preds is not None:
-        x_pred, y_pred = preds
     else:
-        raise ValueError("Either model or preds must be provided")
+        raise ValueError(
+            "Either model or preds must be provided (and not None)"
+        )
     # Iterate through each output dimension
     for i in range(output_dim):
         # Plot training, test and prediction data
@@ -186,8 +205,8 @@ def plot_2D_regression(
     dir_name,
     dataset,
     output_dim,
-    model=None,
     preds=None,
+    model=None,
     tp=0.5,
 ):
     """ Plot the training data, test data, and model predictions for a
@@ -200,8 +219,10 @@ def plot_2D_regression(
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
-    -   model: instance of NeuralNetwork, used to form predictions
     -   output_dim: number of output dimensions to plot
+    -   preds: (optional) predictions to plot
+    -   model: (optional) instance of NeuralNetwork, used to form predictions
+        if preds is not provided
     -   tp: (optional) transparency to use for the markers for the training and
         test data points
 
@@ -222,7 +243,9 @@ def plot_2D_regression(
     y_min = dataset.y_test.min()
     y_max = dataset.y_test.max()
     # Make predictions
-    if (preds is None) and (model is not None):
+    if preds is not None:
+        x_pred, y_pred = preds
+    elif model is not None:
         x01 = np.linspace(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
@@ -231,10 +254,10 @@ def plot_2D_regression(
         xx0, xx1 = np.meshgrid(x01[0], x01[1])
         x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
         y_pred = model(x_pred)
-    elif preds is not None:
-        x_pred, y_pred = preds
     else:
-        raise ValueError("Either model or preds must be provided")
+        raise ValueError(
+            "Either model or preds must be provided (and not None)"
+        )
     # Iterate through each output dimension
     for i in range(output_dim):
         # Plot training data
@@ -295,9 +318,10 @@ def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
 def plot_2D_classification(
     plot_name,
     dir_name,
-    model,
     dataset,
     output_dim,
+    preds=None,
+    model=None,
     tp=0.5,
     figsize=[15, 6],
     n_points_per_axis=50,
@@ -312,10 +336,12 @@ def plot_2D_classification(
     -   plot_name: title of the plot. Will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
-    -   model: instance of NeuralNetwork, used to form predictions
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
     -   output_dim: number of classes in the dataset
+    -   preds: (optional) predictions to plot
+    -   model: (optional) instance of NeuralNetwork, used to form predictions
+        if preds is not provided
     -   tp: (optional) transparency to use for the markers for the training and
         test data points
     -   figsize: iterable containing the width and height of the figure in
