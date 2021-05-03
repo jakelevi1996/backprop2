@@ -57,56 +57,51 @@ def simple_plot(
     plt.grid(True)
     save_and_close(plot_name, dir_name)
 
-def plot_regression(
-    plot_name,
-    dir_name,
-    dataset,
-    input_dim,
-    output_dim,
-    model=None,
-    preds=None,
-    tp=None,
-):
-    """ Wrapper for the plot_1D_regression and plot_2D_regression functions
-    (only one of these functions is called, depending on the value of
-    input_dim), for plotting the training data, test data, and model predictions
-    for a regression data set. Raises a ValueError if input_dim is not 1 or 2.
+def plot_data_predictions(dataset, **kwargs):
+    """ Given a dataset and keyword arguments, this function calls an
+    appropriate specific function to plot the training data, test data, and
+    model predictions for the dataset (or raises an error if no such function
+    has been implemented). This function is a wrapper for various plotting
+    functions in this module, and only one plotting function is called,
+    depending on the properties of the input dataset object.
 
     Inputs:
-    -   plot_name: title of the plot. Will also be used as the filename
-    -   dir_name: name of directory to save plot to (will be created if it
-        doesn't already exist)
-    -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
-    -   input_dim: number of input dimensions (currently only 1 and 2 are
-        supported)
-    -   output_dim: number of output dimensions to plot
-    -   model: (optional) instance of NeuralNetwork, used to form predictions
-    -   preds: (optional) tuple containing 2 values, which are the x-values and
-        y-values for the model predictions
-    -   tp: (optional) transparency to use for the markers for the training and
-        test data points
-    
+    -   dataset: an instance of data.DataSet (more specifically an instance of
+        data.Regression or data.Classification) whose training data and test
+        data will be plotted alongside model predictions
+    -   kwargs: extra keyword arguments that will be passed on to the specific
+        plotting function, EG the name of the plot
+
     Outputs:
     -   full_path: full path to the file in which the output image is saved
     """
-    kwargs = {
-        "plot_name":    plot_name,
-        "dir_name":     dir_name,
-        "dataset":      dataset,
-        "output_dim":   output_dim,
-        "model":        model,
-        "preds":        preds,
-    }
-    if tp is not None:
-        kwargs["tp"] = tp
     
-    if input_dim == 1:
-        return plot_1D_regression(**kwargs)
-    elif input_dim == 2:
-        return plot_2D_regression(**kwargs)
+    if isinstance(dataset, data.Regression):
+        # Plot regression dataset
+        if dataset.input_dim == 1:
+            full_path = plot_1D_regression(dataset=dataset, **kwargs)
+        elif dataset.input_dim == 2:
+            full_path = plot_2D_regression(dataset=dataset, **kwargs)
+        else:
+            raise ValueError(
+                "dataset.input_dim must be 1 or 2, got %r" % dataset.input_dim
+            )
+    
+    elif isinstance(dataset, data.Classification):
+        # Plot classication dataset
+        if dataset.input_dim == 2:
+            full_path = plot_2D_classification(dataset=dataset, **kwargs)
+        else:
+            raise ValueError(
+                "dataset.input_dim must be 2, got %r" % dataset.input_dim
+            )
+    
     else:
-        raise ValueError("input_dim must be 1 or 2")
+        raise ValueError(
+            "dataset must be either a classification or regression data set"
+        )
+    
+    return full_path
 
 def plot_1D_regression(
     plot_name,
@@ -1095,10 +1090,9 @@ def plot_predictions_gif(
     result,
     prediction_column,
     dataset,
-    input_dim,
     output_dim,
     duration=5000,
-    loop=0
+    loop=0,
 ):
     """ Make a gif of predictions formed by the model during training.
 
@@ -1127,7 +1121,7 @@ def plot_predictions_gif(
     iterations = result.get_values(columns.Iteration)
     for i in iterations:
         plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
-        filename = plot_regression(
+        filename = plot_data_predictions(
             plot_name=plot_name_frame,
             dir_name=frame_dir,
             dataset=dataset,
@@ -1135,7 +1129,6 @@ def plot_predictions_gif(
                 prediction_column.x_pred,
                 prediction_column.predictions_dict[i]
             ),
-            input_dim=input_dim,
             output_dim=output_dim,
         )
         filename_list.append(filename)
