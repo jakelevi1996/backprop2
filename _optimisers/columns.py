@@ -278,7 +278,7 @@ class Predictions(_Column):
     def __init__(
         self,
         dataset,
-        n_points=50,
+        n_points_per_dim=50,
         store_hidden_layer_outputs=True,
         name="Predictions",
     ):
@@ -288,10 +288,10 @@ class Predictions(_Column):
         -   dataset: dataset that the model is about to be trained on. The
             training set from this dataset is used to calculate the upper and
             lower limits of the prediction inputs used by this object
-        -   n_points: the number of unique prediction inputs to use in each
-            input dimension. The actual prediction inputs will be created as a
-            mesh over each input dimension, so the total number of prediction
-            inputs will by n_points ** dataset.input_dim
+        -   n_points_per_dim: the number of unique prediction inputs to use in
+            each input dimension. The actual prediction inputs will be created
+            as a mesh over each input dimension, so the total number of
+            prediction inputs will by n_points_per_dim ** dataset.input_dim
         -   store_hidden_layer_outputs: if True, then store not only the
             prediction outputs, but also the outputs from each hidden layer in
             the model (this can be used to plot the evolution of each hidden
@@ -300,15 +300,16 @@ class Predictions(_Column):
             evaluating the model
         """
         super().__init__(name, "s")
+        self.n_points_per_dim = n_points_per_dim
         self.predictions_dict = dict()
-        x = np.linspace(
+        self.x_unique = np.linspace(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
-            n_points,
+            num=n_points_per_dim,
             axis=1,
         )
-        xx = np.meshgrid(*x)
-        self.x_pred = np.stack([xx_i.ravel() for xx_i in xx], axis=0)
+        x_mesh = np.meshgrid(*self.x_unique)
+        self.x_pred = np.stack([xx_i.ravel() for xx_i in x_mesh], axis=0)
         self.value_list.append("Yes")
         self._store_hidden_layer_outputs = store_hidden_layer_outputs
     

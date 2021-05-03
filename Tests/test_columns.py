@@ -178,7 +178,7 @@ def test_predictions_column(input_dim, output_dim):
         columns = optimisers.results.columns
         prediction_column = columns.Predictions(
             sin_data,
-            n_points=n_pred,
+            n_points_per_dim=n_pred,
         )
         result.add_column(prediction_column)
         # Call optimisation function

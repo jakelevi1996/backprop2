@@ -113,9 +113,9 @@ def plot_1D_regression(
     tp=0.75,
 ):
     """ Plot the training data, test data, and model predictions for a
-    regression data set with one-dimensional inputs. The dataset argument should
-    be an instance of data.DataSet, and should contain x_train, y_train, x_test,
-    and y_test attributes.
+    regression data set with one-dimensional inputs. The dataset argument
+    should be an instance of data.DataSet, and should contain x_train, y_train,
+    x_test, and y_test attributes.
 
     Inputs:
     -   plot_name: title of the plot. Will also be used as the filename
@@ -124,7 +124,9 @@ def plot_1D_regression(
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
     -   output_dim: number of output dimensions to plot
-    -   preds: (optional) predictions to plot
+    -   preds: (optional) predictions to plot, as a dictionary containing the
+        keys "x_pred" and "y_pred", which specify the prediction inputs and
+        predicted outputs respectively
     -   model: (optional) instance of NeuralNetwork, used to form predictions
         if preds is not provided
     -   tp: (optional) transparency to use for the markers for the training and
@@ -148,7 +150,8 @@ def plot_1D_regression(
     pred_data_fmt   = {"color": "g", "marker": "o", "linestyle": "--"}
     # Make predictions
     if preds is not None:
-        x_pred, y_pred = preds
+        x_pred = preds["x_pred"]
+        y_pred = preds["y_pred"]
     elif model is not None:
         x_pred = np.linspace(
             dataset.x_test.min(axis=1),
@@ -220,7 +223,9 @@ def plot_2D_regression(
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
     -   output_dim: number of output dimensions to plot
-    -   preds: (optional) predictions to plot
+    -   preds: (optional) predictions to plot, as a dictionary containing the
+        keys "x_pred" and "y_pred", which specify the prediction inputs and
+        predicted outputs respectively
     -   model: (optional) instance of NeuralNetwork, used to form predictions
         if preds is not provided
     -   tp: (optional) transparency to use for the markers for the training and
@@ -244,7 +249,8 @@ def plot_2D_regression(
     y_max = dataset.y_test.max()
     # Make predictions
     if preds is not None:
-        x_pred, y_pred = preds
+        x_pred = preds["x_pred"]
+        y_pred = preds["y_pred"]
     elif model is not None:
         x01 = np.linspace(
             dataset.x_test.min(axis=1),
@@ -339,7 +345,10 @@ def plot_2D_classification(
     -   dataset: should be an instance of data.DataSet, and should contain
         x_train, y_train, x_test, and y_test attributes
     -   output_dim: number of classes in the dataset
-    -   preds: (optional) predictions to plot
+    -   preds: (optional) predictions to plot, as a dictionary containing the
+        keys "n_points_per_dim", "x_unique", and "y_pred", which specify the
+        number of points in each direction, the unique inputs along each
+        dimension, and the 2D grid of predicted outputs, respectively
     -   model: (optional) instance of NeuralNetwork, used to form predictions
         if preds is not provided
     -   tp: (optional) transparency to use for the markers for the training and
@@ -360,17 +369,29 @@ def plot_2D_classification(
     plt.set_cmap("hsv")
 
     # Make predictions
-    x01 = np.linspace(
-        dataset.x_test.min(axis=1),
-        dataset.x_test.max(axis=1),
-        axis=1,
-        num=n_points_per_axis,
-    )
-    x0 = x01[0]
-    x1 = x01[1]
-    xx0, xx1 = np.meshgrid(x0, x1)
-    x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
-    y_pred = model.softmax_output_probabilities(x_pred)
+    if preds is not None:
+        n_points_per_axis = preds["n_points_per_dim"]
+        x_unique = preds["x_unique"]
+        assert x_unique.shape[0] == 2
+        x0 = x_unique[0]
+        x1 = x_unique[1]
+        y_pred = preds["y_pred"]
+    elif model is not None:
+        x01 = np.linspace(
+            dataset.x_test.min(axis=1),
+            dataset.x_test.max(axis=1),
+            axis=1,
+            num=n_points_per_axis,
+        )
+        x0 = x01[0]
+        x1 = x01[1]
+        xx0, xx1 = np.meshgrid(x0, x1)
+        x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
+        y_pred = model.softmax_output_probabilities(x_pred)
+    else:
+        raise ValueError(
+            "Either model or preds must be provided (and not None)"
+        )
     
     # Plot training data
     axes[0].scatter(
@@ -1151,10 +1172,12 @@ def plot_predictions_gif(
             plot_name=plot_name_frame,
             dir_name=frame_dir,
             dataset=dataset,
-            preds=(
-                prediction_column.x_pred,
-                prediction_column.predictions_dict[i]
-            ),
+            preds={
+                "n_points_per_dim": prediction_column.n_points_per_dim,
+                "x_unique":         prediction_column.x_unique,
+                "x_pred":           prediction_column.x_pred,
+                "y_pred":           prediction_column.predictions_dict[i],
+            },
             output_dim=output_dim,
         )
         filename_list.append(filename)
