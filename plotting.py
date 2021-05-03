@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, ListedColormap
 from scipy import stats
 import data, optimisers
 
@@ -73,7 +73,7 @@ def plot_regression(
     for a regression data set. Raises a ValueError if input_dim is not 1 or 2.
 
     Inputs:
-    -   plot_name: title of the plot; will also be used as the filename
+    -   plot_name: title of the plot. Will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
@@ -200,7 +200,7 @@ def plot_2D_regression(
     dimensions.
 
     Inputs:
-    -   plot_name: title of the plot; will also be used as the filename
+    -   plot_name: title of the plot. Will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
@@ -297,9 +297,103 @@ def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
     """
     raise NotImplementedError
 
-def plot_2D_classification(self, filename, figsize=[8, 6]):
-    pass
-    # TODO: add plotting method for binary/discrete data
+def plot_2D_classification(
+    plot_name,
+    dir_name,
+    model,
+    dataset,
+    output_dim,
+    tp=0.5,
+    figsize=[15, 6],
+    n_points_per_axis=50,
+):
+    """ Plot the training data, test data, and model predictions for a
+    classification data set with 2 input dimensions and output_dim output
+    dimensions. Each output dimension refers to a different class.
+
+    TODO: add plotting method for binary data
+
+    Inputs:
+    -   plot_name: title of the plot. Will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   model: instance of NeuralNetwork, used to form predictions
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   output_dim: number of classes in the dataset
+    -   tp: (optional) transparency to use for the markers for the training and
+        test data points
+    -   figsize: iterable containing the width and height of the figure in
+        inches
+    -   n_points_per_axis: number of points to use in the x and y axes when
+        plotting the predictions of the model
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
+    """
+    assert dataset.input_dim == 2
+    # Create subplots and colours
+    fig, axes = plt.subplots(1, 2, sharey=True, figsize=figsize)
+    cmap_sample_points = np.linspace(0, 1, output_dim, endpoint=False)
+    colours = plt.get_cmap("hsv")(cmap_sample_points)
+    plt.set_cmap("hsv")
+
+    # Make predictions
+    x01 = np.linspace(
+        dataset.x_test.min(axis=1),
+        dataset.x_test.max(axis=1),
+        axis=1,
+        num=n_points_per_axis,
+    )
+    x0 = x01[0]
+    x1 = x01[1]
+    xx0, xx1 = np.meshgrid(x0, x1)
+    x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
+    y_pred = model.softmax_output_probabilities(x_pred)
+    
+    # Plot training data
+    axes[0].scatter(
+        dataset.x_train[0],
+        dataset.x_train[1],
+        c=dataset.train_labels,
+        vmin=0,
+        vmax=output_dim,
+        alpha=tp,
+        ec=None,
+    )
+    # Plot test data
+    axes[1].scatter(
+        dataset.x_test[0],
+        dataset.x_test[1],
+        c=dataset.test_labels,
+        vmin=0,
+        vmax=output_dim,
+        alpha=tp,
+        ec=None,
+    )
+    # Iterate through each output dimension
+    for i in range(output_dim):
+        # Make colour map for predictions for this class
+        n_levels = 10
+        levels = np.linspace(0, 1, n_levels)
+        cmap_table = np.tile(colours[i], [n_levels, 1])
+        cmap_table[:, 3] = np.linspace(0, 1, n_levels)
+
+        # Plot predictions
+        axes[1].contour(
+            x0,
+            x1,
+            y_pred[i].reshape(n_points_per_axis, n_points_per_axis),
+            levels=levels,
+            colors=cmap_table,
+        )
+    
+    # Format, save and close
+    axes[0].set_xlabel("Training data")
+    axes[1].set_xlabel("Test data")
+    fig.suptitle(plot_name, fontsize=16)
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
 
 def plot_training_curves(
     result_list,
@@ -331,9 +425,9 @@ def plot_training_curves(
     fig.set_size_inches(figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
-    colour_list = plt.get_cmap("hsv")(
-        np.linspace(0, 1, len(unique_names_list), endpoint=False)
-    )
+    num_colours = len(unique_names_list)
+    cmap_sample_points = np.linspace(0, 1, num_colours, endpoint=False)
+    colour_list = plt.get_cmap("hsv")(cmap_sample_points)
     colour_dict = dict(zip(unique_names_list, colour_list))
     for result in result_list:
         # Get line colour, depending on the name of the experiment
@@ -456,9 +550,9 @@ def plot_result_attribute(
     plt.figure(figsize=figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
-    colour_list = plt.get_cmap("hsv")(
-        np.linspace(0, 1, len(unique_names_list), endpoint=False)
-    )
+    num_colours = len(unique_names_list)
+    cmap_sample_points = np.linspace(0, 1, num_colours, endpoint=False)
+    colour_list = plt.get_cmap("hsv")(cmap_sample_points)
     colour_dict = dict(zip(unique_names_list, colour_list))
     for result in result_list:
         plt.plot(
@@ -520,9 +614,9 @@ def plot_result_attributes_subplots(
     fig, axes = plt.subplots(num_rows, num_cols, sharex=True, figsize=figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
-    colour_list = plt.get_cmap("hsv")(
-        np.linspace(0, 1, len(unique_names_list), endpoint=False)
-    )
+    num_colours = len(unique_names_list)
+    cmap_sample_points = np.linspace(0, 1, num_colours, endpoint=False)
+    colour_list = plt.get_cmap("hsv")(cmap_sample_points)
     colour_dict = dict(zip(unique_names_list, colour_list))
     # Iterate through attributes, axes, and results
     for attribute, ax in zip(attribute_list, axes.flat):
