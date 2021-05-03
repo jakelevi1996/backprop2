@@ -9,7 +9,7 @@ import numpy as np
 from math import ceil
 import pytest
 import plotting, data, optimisers, models
-from .util import get_random_network, get_output_dir
+from .util import get_random_network, get_output_dir, set_random_seed_from_args
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Plotting")
@@ -35,7 +35,7 @@ def test_plot_1D_regression(output_dim, seed):
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
             x_train=sin_data.x_train,
-            y_train=sin_data.y_train
+            y_train=sin_data.y_train,
         )
     )
     # Call plotting function under test
@@ -50,10 +50,8 @@ def test_plot_1D_regression(output_dim, seed):
 
 @pytest.mark.parametrize("seed, output_dim", [(1815, 1), (1743, 3)])
 def test_plot_2D_regression(seed, output_dim):
-    """
-    Test plotting function for data with 2 input dimensions and a variable
-    number of output dimensions
-    """
+    """ Test plotting function for regression data with 2 input dimensions and a
+    variable number of output dimensions """
     np.random.seed(seed)
     input_dim = 2
     x_lo = -2
@@ -73,7 +71,7 @@ def test_plot_2D_regression(seed, output_dim):
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
             x_train=sin_data.x_train,
-            y_train=sin_data.y_train
+            y_train=sin_data.y_train,
         )
     )
     # Call plotting function under test
@@ -82,6 +80,42 @@ def test_plot_2D_regression(seed, output_dim):
         dir_name=output_dir,
         output_dim=output_dim,
         dataset=sin_data,
+        model=model,
+    )
+
+
+def test_plot_2D_classification():
+    """ Test plotting function for classification data with 2 input dimensions
+    and a variable number of classes """
+    # Set random seed and input and output dimensions
+    set_random_seed_from_args("test_plot_2D_classification")
+    input_dim = 2
+    output_dim = np.random.randint(4, 7)
+    # Generate dataset and network
+    classification_data = data.MixtureOfGaussians(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        n_train=2000,
+    )
+    model = get_random_network(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        low=2,
+        high=3,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=classification_data.x_train,
+            y_train=classification_data.y_train,
+        )
+    )
+    # Call plotting function under test
+    plotting.plot_2D_classification(
+        plot_name=(
+            "test_plot_2D_classification for 2D-%iD sinusoidal data"
+            % output_dim
+        ),
+        dir_name=output_dir,
+        output_dim=output_dim,
+        dataset=classification_data,
         model=model,
     )
 
