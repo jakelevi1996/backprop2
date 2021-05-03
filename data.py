@@ -345,3 +345,9 @@ class SumOfGaussianCurvesDataSet(DataSet):
 class GaussianCurveDataSet(DataSet):
     """ Wrapper for SumOfGaussianCurvesDataSet """
     pass
+
+# Create dictionary mapping name-strings to non-abstract dataset classes
+dataset_class_dict = {
+    dataset_class.__name__: dataset_class
+    for dataset_class in [Sinusoidal, MixtureOfGaussians]
+}
