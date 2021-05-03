@@ -348,37 +348,50 @@ def test_plot_optimal_batch_sizes():
         optimal_batch_size_col
     )
 
-def test_plot_predictions_gif():
-    """ Test function ot make a gif of predictions formed by the model during
-    training """
+@pytest.mark.parametrize(
+    "dataset_type",
+    [data.Sinusoidal, data.MixtureOfGaussians],
+)
+def test_plot_predictions_gif(dataset_type):
+    """ Test function to make a gif of predictions formed by the model during
+    training, for regression or classification """
     # Set random seed and initialise network and dataset
-    seed = hash("test_plot_predictions_gif")
-    seed &= (1 << 32) - 1
-    np.random.seed(seed)
+    set_random_seed_from_args("test_plot_predictions_gif", dataset_type)
     n_train = np.random.randint(10, 20)
     n_pred = np.random.randint(5, 10)
     n_its = 2
-    model = get_random_network(input_dim=1, output_dim=1)
-    sin_data = data.Sinusoidal(
-        input_dim=1,
-        output_dim=1,
+    if issubclass(dataset_type, data.Regression):
+        input_dim = 1
+        output_dim = 1
+        dataset_kwargs = {"x_lo": -1, "x_hi": 1, "freq": 1}
+    elif issubclass(dataset_type, data.Classification):
+        input_dim = 2
+        output_dim = 3
+        dataset_kwargs = {}
+    else:
+        raise ValueError(
+            "dataset_type %r must be a subclass of data.Regression or "
+            "data.Classification" % dataset_type
+        )
+    model = get_random_network(input_dim=input_dim, output_dim=output_dim)
+    dataset = dataset_type(
+        input_dim=input_dim,
+        output_dim=output_dim,
         n_train=n_train,
-        x_lo=-1,
-        x_hi=1,
-        freq=1,
+        **dataset_kwargs,
     )
     # Initialise Result and Predictions column object
     result = optimisers.Result(verbose=False)
-    pred_column = optimisers.results.columns.Predictions(sin_data, n_pred)
+    pred_column = optimisers.results.columns.Predictions(dataset, n_pred)
     result.add_column(pred_column)
     # Call optimisation function
     optimisers.gradient_descent(
         model,
-        sin_data,
+        dataset,
         result=result,
         terminator=optimisers.Terminator(i_lim=n_its),
         evaluator=optimisers.Evaluator(i_interval=1),
-        line_search=optimisers.LineSearch()
+        line_search=optimisers.LineSearch(),
     )
     # Call plotting function
     plot_name = "Test plot_predictions_gif"
@@ -387,8 +400,7 @@ def test_plot_predictions_gif():
         dir_name=os.path.join(output_dir, plot_name),
         result=result,
         prediction_column=pred_column,
-        dataset=sin_data,
-        input_dim=1,
-        output_dim=1,
+        dataset=dataset,
+        output_dim=output_dim,
         duration=1000,
     )
