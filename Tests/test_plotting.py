@@ -36,7 +36,7 @@ def test_plot_1D_regression(output_dim, seed):
         initialiser=models.initialisers.ConstantPreActivationStatistics(
             x_train=sin_data.x_train,
             y_train=sin_data.y_train,
-        )
+        ),
     )
     # Call plotting function under test
     plotting.plot_1D_regression(
@@ -373,12 +373,19 @@ def test_plot_predictions_gif(dataset_type):
             "dataset_type %r must be a subclass of data.Regression or "
             "data.Classification" % dataset_type
         )
-    model = get_random_network(input_dim=input_dim, output_dim=output_dim)
     dataset = dataset_type(
         input_dim=input_dim,
         output_dim=output_dim,
         n_train=n_train,
         **dataset_kwargs,
+    )
+    model = get_random_network(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=dataset.x_train,
+            y_train=dataset.y_train,
+        ),
     )
     # Initialise Result and Predictions column object
     result = optimisers.Result(verbose=False)
@@ -394,7 +401,9 @@ def test_plot_predictions_gif(dataset_type):
         line_search=optimisers.LineSearch(),
     )
     # Call plotting function
-    plot_name = "Test plot_predictions_gif"
+    plot_name = (
+        "test_plot_predictions_gif, dataset_type = %s" % dataset_type.__name__
+    )
     plotting.plot_predictions_gif(
         plot_name=plot_name,
         dir_name=os.path.join(output_dir, plot_name),
