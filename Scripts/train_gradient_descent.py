@@ -1,14 +1,17 @@
-""" This script will train a model on a dataset using gradient descent, and plot
-the resulting learning curve. Using a line-search during optimisation is
+""" This script will train a model on a dataset using gradient descent, and
+plot the resulting learning curve. Using a line-search during optimisation is
 optional (by default, a line-search will be used). Optionally also plot:
 -   The final predictions of the model for the dataset
--   A gif of the predictions and hidden layer activations evolving over time
+-   A gif of the predictions evolving over time
+-   A gif of the hidden layer activations evolving over time
 
 Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_pred_gif
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
+
+    python Scripts/train_gradient_descent.py -i2 -o5 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
 
 To get help information for the available arguments, use the following command:
 
@@ -36,6 +39,7 @@ def main(
     t_eval,
     plot_preds,
     plot_pred_gif,
+    dataset_type,
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -57,6 +61,7 @@ def main(
     -   t_eval: TODO
     -   plot_preds: TODO
     -   plot_pred_gif: TODO
+    -   dataset_type: TODO
     """
     np.random.seed(1913)
 
@@ -68,6 +73,7 @@ def main(
         "n%s"   % n_train,
         "b%s"   % batch_size,
         "u%s"   % num_hidden_units,
+        "d%s"   % dataset_type.__name__[:3],
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -80,14 +86,41 @@ def main(
     # Perform warmup experiment
     optimisers.warmup()
 
+    # Initialise lists of objects that will be stored for each repeat
     result_list = []
     model_list = []
     prediction_column_list = []
 
-    dataset = data.Sinusoidal(input_dim, output_dim, n_train)
+    # Initialise dataset object and corresponding error function
+    dataset = dataset_type(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        n_train=n_train,
+    )
 
+    if isinstance(dataset, data.Regression):
+        error_func = models.errors.sum_of_squares
+        print("Using regression data set with sum of squares error function")
+    elif isinstance(dataset, data.Classification):
+        error_func = models.errors.softmax_cross_entropy
+        print(
+            "Using classification data set with softmax cross entropy error "
+            "function"
+        )
+    else:
+        raise ValueError(
+            "Data set must be either a classification or regression data set"
+        )
+
+    # Iterate through repeats
     for _ in range(n_repeats):
-        model = models.NeuralNetwork(input_dim, output_dim, num_hidden_units)
+        # Initialise model and Result object
+        model = models.NeuralNetwork(
+            input_dim=input_dim,
+            output_dim=output_dim,
+            num_hidden_units=num_hidden_units,
+            error_func=error_func,
+        )
 
         result = optimisers.Result()
 
@@ -99,6 +132,7 @@ def main(
             pred_column = optimisers.results.columns.Predictions(dataset)
             result.add_column(pred_column)
 
+        # Perform gradient descent
         optimisers.gradient_descent(
             model,
             dataset,
@@ -106,9 +140,10 @@ def main(
             result=result,
             evaluator=optimisers.Evaluator(t_interval=t_eval),
             terminator=optimisers.Terminator(t_lim=t_lim),
-            batch_getter=optimisers.batch.ConstantBatchSize(batch_size, False)
+            batch_getter=optimisers.batch.ConstantBatchSize(batch_size, False),
         )
 
+        # Store results
         result_list.append(result)
         model_list.append(model)
         if plot_pred_gif:
@@ -119,17 +154,17 @@ def main(
     plotting.plot_training_curves(
         result_list,
         dir_name=output_dir,
-        e_lims=error_lims
+        e_lims=error_lims,
     )
+    os.system("explorer \"%s\"" % output_dir)
     for i, model in enumerate(model_list):
         output_dir_repeat = os.path.join(output_dir, "Repeat %i" % (i + 1))
         if plot_preds:
             print("Plotting final predictions...")
-            plotting.plot_regression(
+            plotting.plot_data_predictions(
                 plot_name="Final predictions",
                 dir_name=output_dir_repeat,
                 dataset=dataset,
-                input_dim=input_dim,
                 output_dim=output_dim,
                 model=model,
             )
@@ -141,7 +176,6 @@ def main(
                 result=result_list[i],
                 prediction_column=prediction_column_list[i],
                 dataset=dataset,
-                input_dim=input_dim,
                 output_dim=output_dim,
                 duration=t_eval*1000,
             )
@@ -160,28 +194,28 @@ if __name__ == "__main__":
         "--input_dim",
         help="Number of input dimensions",
         default=1,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-o",
         "--output_dim",
         help="Number of output dimensions",
         default=1,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-n",
         "--n_train",
         help="Number of points in the training set",
         default=100,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-b",
         "--batch_size",
         help="Batch size to use for training, default is 50",
         default=50,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-t",
@@ -189,40 +223,40 @@ if __name__ == "__main__":
         help="Length of time to train for each experiment in seconds. Default "
         "is 5 seconds",
         default=5,
-        type=float
+        type=float,
     )
     parser.add_argument(
         "--t_eval",
         help="Length of time between each time the model is evaluated during "
         "optimisation in seconds. Default is t_lim / 50",
         default=None,
-        type=float
+        type=float,
     )
     parser.add_argument(
         "-u",
         "--num_hidden_units",
         help="Comma-separated list of hidden units per layer, EG 4,5,6",
         default="10",
-        type=str
+        type=str,
     )
     parser.add_argument(
         "-e",
         "--error_lims",
         help="Comma-separated list of 2 floats describing the limits to use "
         "for the axes representing the error function in the output plots. "
-        "Negative numbers should be prefixed with the character 'n' instead of "
-        "a negative sign, so that this value is not confused with another "
+        "Negative numbers should be prefixed with the character 'n' instead "
+        "of a negative sign, so that this value is not confused with another "
         "command-line argument, EG \"n0.05,0.05\". Default is "
         "automatically-calculated axis limits.",
         default=None,
-        type=str
+        type=str,
     )
     parser.add_argument(
         "-r",
         "--n_repeats",
         help="Number of repeats to perform of each experiment",
         default=3,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "--no_line_search",
@@ -232,17 +266,29 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--plot_preds",
-        help="If this flag is included, then after training has finished, plot "
-        "the final predictions of the model on the data-set (only valid for 1D "
-        "or 2D inputs)",
+        help="If this flag is included, then after training has finished, "
+        "plot the final predictions of the model on the data-set (only valid "
+        "for 1D or 2D inputs)",
         action="store_true",
     )
     parser.add_argument(
         "--plot_pred_gif",
-        help="If this flag is included, then after training has finished, plot "
-        "a gif of the predictions of the model on the data-set evolving during "
-        "training (only valid for 1D or 2D inputs)",
+        help="If this flag is included, then after training has finished, "
+        "plot a gif of the predictions of the model on the data-set evolving "
+        "during training (only valid for 1D or 2D inputs)",
         action="store_true",
+    )
+    parser.add_argument(
+        "-d",
+        "--dataset_type",
+        help="Type of dataset to use. Options include regression and "
+        "classification types of datasets. The error function, output layer "
+        "activation function, and plotting functions will be chosen to match "
+        "the dataset type. Options are: %r, default is 'Sinusoidal'" %
+        list(data.dataset_class_dict.keys()),
+        default="Sinusoidal",
+        type=str,
+        dest="dataset_type_str",
     )
 
     # Parse arguments
@@ -253,6 +299,8 @@ if __name__ == "__main__":
     line_search = None if args.no_line_search else optimisers.LineSearch()
 
     args.t_eval = args.t_lim / 50 if args.t_eval is None else args.t_eval
+
+    dataset_type = data.dataset_class_dict[args.dataset_type_str]
 
     if args.error_lims is not None:
         float_fmt = lambda e: -float(e[1:]) if e.startswith("n") else float(e)
@@ -275,5 +323,6 @@ if __name__ == "__main__":
         t_eval=args.t_eval,
         plot_preds=args.plot_preds,
         plot_pred_gif=args.plot_pred_gif,
+        dataset_type=dataset_type,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
