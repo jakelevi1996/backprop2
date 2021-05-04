@@ -10,6 +10,7 @@ from matplotlib.patches import Patch
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize, ListedColormap
 from scipy import stats
+from scipy.special import softmax
 import data, optimisers
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
@@ -375,7 +376,7 @@ def plot_2D_classification(
         assert x_unique.shape[0] == 2
         x0 = x_unique[0]
         x1 = x_unique[1]
-        y_pred = preds["y_pred"]
+        y_pred = softmax(preds["y_pred"], axis=0)
     elif model is not None:
         x01 = np.linspace(
             dataset.x_test.min(axis=1),
