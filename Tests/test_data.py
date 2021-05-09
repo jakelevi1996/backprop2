@@ -102,3 +102,29 @@ def test_gaussian_mixture_num_components(n_mixture_components):
     assert classification_data.test_labels.shape    == (n_test, )
     assert classification_data.y_train.shape        == (output_dim, n_train)
     assert classification_data.y_test.shape         == (output_dim, n_test)
+
+@pytest.mark.parametrize("n_mixture_components", [2, 5])
+def test_binary_gaussian_mixture_num_components(n_mixture_components):
+    """ Test initialising a binary mixture-of-Gaussians classification dataset
+    where the number of mixture components is equal to and greater
+    than the number of classes (IE 2) """
+    # Set random seed
+    set_random_seed_from_args(
+        "test_binary_gaussian_mixture_num_components",
+        n_mixture_components,
+    )
+    # Initialise input arguments
+    n_train     = np.random.randint(10, 20)
+    n_test      = np.random.randint(10, 20)
+    input_dim   = np.random.randint(2, 5)
+    # Initialise data set
+    classification_data = data.BinaryMixtureOfGaussians(
+        input_dim=input_dim,
+        n_train=n_train,
+        n_test=n_test,
+        n_mixture_components=n_mixture_components,
+    )
+    assert classification_data.x_train.shape        == (input_dim, n_train)
+    assert classification_data.x_test.shape         == (input_dim, n_test)
+    assert classification_data.y_train.shape        == (1, n_train)
+    assert classification_data.y_test.shape         == (1, n_test)

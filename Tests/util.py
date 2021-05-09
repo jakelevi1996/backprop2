@@ -113,4 +113,8 @@ dataset_dict = {
         input_dim=1,
         output_dim=3,
     ),
+    "2D_binary_mixture_of_gaussians":   data.BinaryMixtureOfGaussians(
+        input_dim=2,
+        n_mixture_components=5,
+    )
 }
