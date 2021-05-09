@@ -84,13 +84,21 @@ def test_gaussian_mixture_num_components(n_mixture_components):
         n_mixture_components,
     )
     # Initialise input arguments
-    output_dim = 4
-    n_train = np.random.randint(10, 20)
-    input_dim = np.random.randint(2, 5)
+    output_dim  = 4
+    n_train     = np.random.randint(10, 20)
+    n_test      = np.random.randint(10, 20)
+    input_dim   = np.random.randint(2, 5)
     # Initialise data set
-    data.MixtureOfGaussians(
+    classification_data = data.MixtureOfGaussians(
         input_dim=input_dim,
         output_dim=output_dim,
         n_train=n_train,
+        n_test=n_test,
         n_mixture_components=n_mixture_components,
     )
+    assert classification_data.x_train.shape        == (input_dim, n_train)
+    assert classification_data.x_test.shape         == (input_dim, n_test)
+    assert classification_data.train_labels.shape   == (n_train, )
+    assert classification_data.test_labels.shape    == (n_test, )
+    assert classification_data.y_train.shape        == (output_dim, n_train)
+    assert classification_data.y_test.shape         == (output_dim, n_test)
