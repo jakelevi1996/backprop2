@@ -103,12 +103,19 @@ class Regression(DataSet):
     datasets. """
 
 class Classification(DataSet):
-    """ Class for classification datasets. Outputs are one-hot integer matrices,
-    with self.output_dim number of rows (this is equal to the number of
-    classes), and each column refers to a different data point. Each column has
-    one value equal to 1, referring to which class that data point belongs to,
-    and the rest of the values are equal to zero. This class is used as a parent
-    class for specific regression datasets. """
+    """ Class for classification datasets. Outputs are one-hot integer
+    matrices, with self.output_dim number of rows (this is equal to the number
+    of classes), and each column refers to a different data point. Each column
+    has one value equal to 1, referring to which class that data point belongs
+    to, and the rest of the values are equal to zero. This class is used as a
+    parent class for specific classification datasets. """
+
+class BinaryClassification(Classification):
+    """ Class for binary classification datasets. Outputs are binary matrices
+    with a single row, where a value of 0 or 1 determines the class of the data
+    point, and each column (IE each element) refers to a different data point.
+    This class is used as a parent class for specific binary classification
+    datasets. """
 
 def noisy_sin(x, phase, freq, ampl, offset, noise_std, output_dim):
     """
@@ -289,7 +296,6 @@ def _mixture_of_gaussians(
         )
     # Set labels and one-hot output data using mixture components
     labels = mixture_to_class[z]
-    print(mixture_to_class)
     y = np.zeros([output_dim, n_points])
     y[labels, np.arange(n_points)] = 1
     return x, labels, y
@@ -393,6 +399,134 @@ class MixtureOfGaussians(Classification):
         )
 
 
+def _binary_mixture_of_gaussians(
+    input_dim,
+    n_points,
+    n_mixture_components,
+    scale_matrix,
+    mean,
+    mixture_to_class,
+):
+    """ Generate data for a binary mixture-of-Gaussians classification dataset.
+    This function avoids duplicate code for generating the training and test
+    sets within the BinaryMixtureOfGaussians initialiser method.
+
+    Inputs:
+    -   input_dim: number of input dimensions, as an integer
+    -   n_points: number of data points to generate, as an integer
+    -   n_mixture_components: number of mixture components, as an integer
+    -   scale_matrix: array of matrices used to scale the inputs in each
+        mixture component, as a numpy array with shape (n_mixture_components,
+        input_dim, input_dim)
+    -   mean: array of vectors used to translate the inputs in each mixture
+        component, as a numpy array with shape (n_mixture_components,
+        input_dim)
+    -   mixture_to_class: binary array of integers mapping mixture components
+        to classes, as a 1D numpy array with n_mixture_components elements,
+        each of which is an integer in {0, 1}
+
+    Outputs:
+    -   x: input coordindates for each data point, as a numpy array with shape
+        (input_dim, n_points)
+    -   y: binary vector containing one-hot outputs for each data point, as a
+        numpy array with shape (1, n_points), in which each element is in {0,
+        1}
+    """
+    # Generate all of the input points
+    x = np.random.normal(size=[input_dim, n_points])
+    # Generate assignments of inputs to mixture components
+    z = np.random.randint(n_mixture_components, size=n_points)
+    # Transform each input point according to its mixture component
+    for i in range(n_mixture_components):
+        x[:, z == i] = (
+            (scale_matrix[i] @ x[:, z == i])
+            + mean[i].reshape(-1, 1)
+        )
+    # Set output labels using mixture components
+    y = np.array(mixture_to_class[z]).reshape(1, -1)
+    return x, y
+
+
+class BinaryMixtureOfGaussians(BinaryClassification):
+    """ Class for a binary mixture-of-Gaussians classification dataset. The
+    means of the mixture components are generated from a normal distribution,
+    and the variance matrices are generated randomly and implicitly. """
+    def __init__(
+        self,
+        input_dim=2,
+        n_train=None,
+        n_test=None,
+        n_mixture_components=2,
+        scale=0.2,
+    ):
+        """ Initialise a mixture-of-Gaussians classification data set.
+
+        Inputs:
+        -   input_dim: dimensionality of inputs for this data set. Should be a
+            positive integer
+        -   n_train: number of points in the training set for this data set.
+            Should be None or a positive integer. If n_train is None, then it
+            is chosen as 50 to the power of the input dimension
+        -   n_test: number of points in the test set for this data set. Should
+            be None or a positive integer. If n_test is None, then it is chosen
+            to be equal to the number of points in the training set
+        -   n_mixture_components: number of mixture components in the data set.
+            Should be a positive integer >= 2. If > 2, then there will be
+            multiple mixture components per class
+        -   scale: positive float, which determines the expected variance of
+            the mixture components relative to the distance between them. A
+            larger scale will mean that the variances of mixture components are
+            large, and therefore the mixture components are more likely to
+            overlap and become more difficult to distinguish, making the
+            classification task "harder"
+        """
+        # Set shape constants and number of mixture components
+        self.set_shape_constants(input_dim, 1, n_train, n_test)
+        if n_mixture_components is None:
+            n_mixture_components = self.output_dim
+        
+        # Generate mean and scale for each mixture component
+        mean = np.random.normal(size=[n_mixture_components, input_dim])
+        scale_matrix = scale * np.random.normal(
+            size=[n_mixture_components, input_dim, input_dim]
+        )
+
+        # Initialise mixture_to_class which maps mixture components to classes
+        if n_mixture_components > 2:
+            mixture_to_class = np.full(n_mixture_components, np.nan)
+            initial_class_assignment_inds = np.random.choice(
+                n_mixture_components,
+                size=2,
+                replace=False,
+            )
+            mixture_to_class[initial_class_assignment_inds] = np.arange(2)
+            mixture_to_class[np.isnan(mixture_to_class)] = np.random.randint(
+                2,
+                size=n_mixture_components-2,
+            )
+            mixture_to_class = mixture_to_class.astype(int)
+        else:
+            mixture_to_class = np.array([0, 1])
+        
+        # Generate inputs, outputs and labels
+        self.x_train, self.y_train = _binary_mixture_of_gaussians(
+            self.input_dim,
+            self.n_train,
+            n_mixture_components,
+            scale_matrix,
+            mean,
+            mixture_to_class,
+        )
+        self.x_test, self.y_test = _binary_mixture_of_gaussians(
+            self.input_dim,
+            self.n_test,
+            n_mixture_components,
+            scale_matrix,
+            mean,
+            mixture_to_class,
+        )
+
+
 class CircleDataSet(DataSet):
     pass
 
@@ -406,5 +540,9 @@ class GaussianCurveDataSet(DataSet):
 # Create dictionary mapping name-strings to non-abstract dataset classes
 dataset_class_dict = {
     dataset_class.__name__: dataset_class
-    for dataset_class in [Sinusoidal, MixtureOfGaussians]
+    for dataset_class in [
+        Sinusoidal,
+        MixtureOfGaussians,
+        BinaryMixtureOfGaussians,
+    ]
 }
