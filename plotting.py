@@ -337,8 +337,6 @@ def plot_2D_classification(
     classification data set with 2 input dimensions and output_dim output
     dimensions. Each output dimension refers to a different class.
 
-    TODO: add plotting method for binary data
-
     Inputs:
     -   plot_name: title of the plot. Will also be used as the filename
     -   dir_name: name of directory to save plot to (will be created if it
@@ -433,7 +431,112 @@ def plot_2D_classification(
     
     # Format, save and close
     axes[0].set_xlabel("Training data")
-    axes[1].set_xlabel("Test data")
+    axes[1].set_xlabel("Test data and predictions")
+    fig.suptitle(plot_name, fontsize=16)
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
+
+def plot_2D_binary_classification(
+    plot_name,
+    dir_name,
+    dataset,
+    preds=None,
+    model=None,
+    tp=0.5,
+    figsize=[15, 6],
+    n_points_per_axis=50,
+):
+    """ Plot the training data, test data, and model predictions for binary
+    classification data set with 2 input dimensions.
+
+    Inputs:
+    -   plot_name: title of the plot. Will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   preds: (optional) predictions to plot, as a dictionary containing the
+        keys "n_points_per_dim", "x_unique", and "y_pred", which specify the
+        number of points in each direction, the unique inputs along each
+        dimension, and the 2D grid of predicted outputs, respectively
+    -   model: (optional) instance of NeuralNetwork, used to form predictions
+        if preds is not provided
+    -   tp: (optional) transparency to use for the markers for the training and
+        test data points
+    -   figsize: iterable containing the width and height of the figure in
+        inches
+    -   n_points_per_axis: number of points to use in the x and y axes when
+        plotting the predictions of the model
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
+    """
+    assert dataset.input_dim == 2
+    # Create subplots
+    fig, axes = plt.subplots(1, 2, sharey=True, figsize=figsize)
+
+    # Make predictions
+    if preds is not None:
+        n_points_per_axis = preds["n_points_per_dim"]
+        x_unique = preds["x_unique"]
+        assert x_unique.shape[0] == 2
+        x0 = x_unique[0]
+        x1 = x_unique[1]
+        y_pred = preds["y_pred"]
+    elif model is not None:
+        x01 = np.linspace(
+            dataset.x_test.min(axis=1),
+            dataset.x_test.max(axis=1),
+            axis=1,
+            num=n_points_per_axis,
+        )
+        x0 = x01[0]
+        x1 = x01[1]
+        xx0, xx1 = np.meshgrid(x0, x1)
+        x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
+        y_pred = model(x_pred)
+    else:
+        raise ValueError(
+            "Either model or preds must be provided (and not None)"
+        )
+    
+    # Plot training data
+    axes[0].scatter(
+        dataset.x_train[0],
+        dataset.x_train[1],
+        c=dataset.y_train.ravel(),
+        cmap=plt.get_cmap("bwr"),
+        vmin=0,
+        vmax=1,
+        alpha=tp,
+        ec=None,
+    )
+    # Plot test data
+    axes[1].scatter(
+        dataset.x_test[0],
+        dataset.x_test[1],
+        c=dataset.y_test.ravel(),
+        cmap=plt.get_cmap("bwr"),
+        vmin=0,
+        vmax=1,
+        alpha=tp,
+        ec=None,
+    )
+
+    # Plot predictions
+    n_levels = 10
+    levels = np.linspace(0, 1, n_levels)
+    axes[1].contour(
+        x0,
+        x1,
+        y_pred.reshape(n_points_per_axis, n_points_per_axis),
+        levels=levels,
+        cmap=plt.get_cmap("bwr"),
+    )
+    
+    # Format, save and close
+    axes[0].set_xlabel("Training data")
+    axes[1].set_xlabel("Test data and predictions")
     fig.suptitle(plot_name, fontsize=16)
     full_path = save_and_close(plot_name, dir_name, fig)
     return full_path
