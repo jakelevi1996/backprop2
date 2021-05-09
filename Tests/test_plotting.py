@@ -110,11 +110,46 @@ def test_plot_2D_classification():
     # Call plotting function under test
     plotting.plot_2D_classification(
         plot_name=(
-            "test_plot_2D_classification for 2D-%iD sinusoidal data"
+            "test_plot_2D_classification for 2D-%iD classification data"
             % output_dim
         ),
         dir_name=output_dir,
         output_dim=output_dim,
+        dataset=classification_data,
+        model=model,
+    )
+
+
+def test_plot_binary_2D_classification():
+    """ Test plotting function for binary classification data with 2 input
+    dimensions """
+    # Set random seed and input and output dimensions
+    set_random_seed_from_args("test_plot_binary_2D_classification")
+    input_dim = 2
+    n_mixture_components = np.random.randint(4, 7)
+    # Generate dataset and network
+    classification_data = data.BinaryMixtureOfGaussians(
+        input_dim=input_dim,
+        n_mixture_components=n_mixture_components,
+        n_train=2000,
+    )
+    model = get_random_network(
+        input_dim=input_dim,
+        output_dim=1,
+        low=2,
+        high=3,
+        act_funcs=[models.activations.identity, models.activations.logistic],
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=classification_data.x_train,
+            y_train=classification_data.y_train,
+        )
+    )
+    # Call plotting function under test
+    plotting.plot_2D_binary_classification(
+        plot_name=(
+            "test_plot_binary_2D_classification for 2D classification data"
+        ),
+        dir_name=output_dir,
         dataset=classification_data,
         model=model,
     )
