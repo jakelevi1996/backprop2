@@ -39,17 +39,18 @@ class DataSet():
         Inputs:
         -   input_dim: dimensionality of inputs for this data set. Should be a
             positive integer
-        -   output_dim: dimensionality of outputs for this data set. Should be a
-            positive integer
+        -   output_dim: dimensionality of outputs for this data set. Should be
+            a positive integer
         -   n_train: number of points in the training set for this data set.
-            Should be None or a positive integer. If n_train is None, then it is
-            chosen as 50 to the power of the input dimension
+            Should be None or a positive integer. If n_train is None, then it
+            is chosen as 50 to the power of the input dimension if this is less
+            than 5000, otherwise it is chosen as 5000
         -   n_test: number of points in the test set for this data set. Should
             be None or a positive integer. If n_test is None, then it is chosen
             to be equal to the number of points in the training set
         """
         if n_train is None:
-            n_train = pow(50, input_dim)
+            n_train = min(pow(50, input_dim), 5000)
         if n_test is None:
             n_test = n_train
 
