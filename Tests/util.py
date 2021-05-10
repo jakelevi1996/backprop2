@@ -1,8 +1,6 @@
-"""
-Module for containing general utilities for unit testing, EG generating random
-NeuralNetwork models and data (both from existing Dataset classes and also
-completely at random)
-"""
+""" Module for containing general utilities for unit testing, EG generating
+random NeuralNetwork models and data (both from existing Dataset classes and
+also completely at random) """
 
 import os
 import hashlib
@@ -41,12 +39,10 @@ def get_random_network(
     error_func=None,
     input_dim=None,
     output_dim=None,
-    initialiser=None
+    initialiser=None,
 ):
-    """
-    Generate a neural network with a random number of inputs, outputs, hidden
-    layers, and number of units in each hidden layer
-    """
+    """ Generate a neural network with a random number of inputs, outputs,
+    hidden layers, and number of units in each hidden layer """
     if input_dim is None:
         input_dim = np.random.randint(low, high)
     if output_dim is None:
@@ -59,7 +55,7 @@ def get_random_network(
         num_hidden_units=num_hidden_units,
         act_funcs=act_funcs,
         error_func=error_func,
-        initialiser=initialiser
+        initialiser=initialiser,
     )
     return n
 
@@ -69,32 +65,44 @@ def get_random_inputs(input_dim, N_D_low=5, N_D_high=15):
     x = np.random.normal(size=[input_dim, N_D])
     return x, N_D
 
-def get_random_targets(output_dim, N_D):
-    """ Generate random target data """
-    t = np.random.normal(size=[output_dim, N_D])
+def get_random_targets(output_dim, N_D, error_func=None):
+    """ Generate random target data. If an error function is specified, then
+    the target data is generated to have the appropriate characteristics (EG 1D
+    binary for binary classification, one-hot for multi-class classification)
+    """
+    if isinstance(error_func, data.BinaryClassification):
+        assert output_dim == 1
+        t = np.random.randint(2, size=[output_dim, N_D])
+    elif isinstance(error_func, data.Classification):
+        labels = np.random.randint(output_dim, size=N_D)
+        t = np.zeros([output_dim, N_D])
+        t[labels, np.arange(N_D)] = 1
+    else:
+        t = np.random.normal(size=[output_dim, N_D])
+    
     return t
 
 def get_random_network_inputs_targets(
-    seed,
     low=3,
     high=6,
     N_D_low=5,
     N_D_high=15,
     act_funcs=None,
     error_func=None,
-    initialiser=None
+    initialiser=None,
+    input_dim=None,
+    output_dim=None,
 ):
-    """
-    Wrapper for the following functions: np.random.seed, get_random_network,
-    get_random_inputs, get_random_targets. Return the outputs in a tuple
-    """
-    np.random.seed(seed)
+    """ Wrapper for the functions get_random_network, get_random_inputs, and
+    get_random_targets. Return the outputs in a tuple """
     n = get_random_network(
-        low,
-        high,
-        act_funcs,
-        error_func,
-        initialiser=initialiser
+        low=low,
+        high=high,
+        act_funcs=act_funcs,
+        error_func=error_func,
+        input_dim=input_dim,
+        output_dim=output_dim,
+        initialiser=initialiser,
     )
     x, N_D = get_random_inputs(n.input_dim, N_D_low, N_D_high)
     t = get_random_targets(n.output_dim, N_D)
