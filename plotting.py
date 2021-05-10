@@ -678,6 +678,39 @@ def plot_error_func(error_func, dir_name, xlims, npoints, y=None, t=None):
     plt.grid(True)
     save_and_close(error_func.name, dir_name)
 
+def plot_binary_cross_entropy_error_func(
+    error_func,
+    dir_name,
+    xlims,
+    npoints,
+):
+    """ Plot the binary cross-entropy error function and its derivatives. This
+    function is used instead of plot_error_func to deal with the requirement
+    that for the binary-cross entropy error function, each y value is in (0,
+    1). This is achieved by passing each y-value through a logistic function
+    """
+    y = np.linspace(*xlims, npoints).reshape(1, -1)
+    t = 0
+    logistic = lambda x: 1 / (1 + np.exp(-x))
+    E       = error_func.E(logistic(y), t)
+    dEdy    = error_func.dEdy(logistic(y), t)
+    d2Edy2  = error_func.d2Edy2(logistic(y), t)
+    plt.figure(figsize=[8, 6])
+    plt.plot(y[0], E[0],            'b', alpha=0.75)
+    plt.plot(y[0], dEdy[0],         'r', alpha=0.75)
+    plt.plot(y[0], d2Edy2[0, 0],    'g', alpha=0.75)
+    plt.axvline(0, c="k", ls="--", alpha=0.75)
+    plt.legend([
+        "$E(y, t)$",
+        "$\\frac{dE}{dy}(y, t)$",
+        "$\\frac{d^2E}{dy^2}(y, t)$",
+        "Target $t = 0.0$", 
+    ])
+    plt.xlabel("$\\sigma^{-1}(y)$")
+    plt.title(error_func.name)
+    plt.grid(True)
+    save_and_close(error_func.name, dir_name)
+
 def plot_result_attribute(
     plot_name,
     dir_name,

@@ -1,13 +1,10 @@
 """ This module contains error functions and their gradients, used with neural
 networks to measure performance, and for training. The classes in this module
-are private, and are exposed through public instances.
-
-TODO:
--   Make BinaryCrossEntropy work with multiple data points and test
-"""
+are private, and are exposed through public instances. """
 
 import numpy as np
 import plotting
+from scipy.special import softmax
 
 class _ErrorFunction():
     """
@@ -101,21 +98,18 @@ class _ErrorFunction():
         return subclass_type_list.index(this_type)
 
     def plot(self, dir_name=".", xlims=[-5, 5], npoints=200):
-        """
-        Plot an activation function and its derivative, and save to disk
+        """ Plot an activation function and its derivative, and save to disk
         """
         plotting.plot_error_func(self, dir_name, xlims, npoints)
     
 def get_func_from_id(func_id):
-    """
-    Given an integer ID (EG generated using get_id_from_func), return an
+    """ Given an integer ID (EG generated using get_id_from_func), return an
     instance of the activation function which has the same unique integer ID.
     This method is used when loading models (after the activation functions are
     saved using their integer IDs), to restore the correct activation function
     for each layer in the network.
 
-    TODO: should this be a class method? How do I use a class method?
-    """
+    TODO: should this be a class method? How do I use a class method? """
     # Get the list of subclasses of the _ErrorFunction class
     subclass_type_list = _ErrorFunction.__subclasses__()
     # Get the class of the activation function corresponding to id
@@ -148,38 +142,54 @@ class _SumOfSquares(_ErrorFunction):
 
 
 class _BinaryCrossEntropy(_ErrorFunction):
-    # TODO: this is not written for multi-dimensional inputs and outputs, or for
-    # multiple data poitns
+    """ Binary cross-entropy error function, used for binary classification. It
+    is assumed that y and target are both numpy arrays with shape (1, N_D) (IE
+    it is assumed that both are 1D, although multiple data points are accepted
+    simultaneously).
+
+    It is assumed that target is a binary vector containing class labels for
+    each data point, as a numpy array with shape (1, n_points), in which each
+    element is in {0, 1}, and that y is a vector containing predicted class
+    probabilities for each data point, as a numpy array with shape (1,
+    n_points), in which each element is in the open interval (0, 1). It is
+    recommended that the output layer activation function of the model used
+    with this error function is a logistic activation function. """
+
+    name = "Binary cross-entropy error function"
+
     def E(self, y, target):
-        return - (target * np.log(y) + (1.0 - target) * np.log(1.0 - y)).sum()
+        return - (target*np.log(y) + (1 - target)*np.log(1 - y))
 
     def dEdy(self, y, target):
-        return ((y - target) / (y * (1.0 - y))).sum()
+        return (y - target) / (y * (1 - y))
 
-def _softmax(x):
-    """ Apply a softmax function to the input x. It is assumed that x is a 2D
-    matrix, in which dimension 0 of the input matrix refers to different
-    dimensions of the input, and dimension 1 of the input matrix refers to
-    different data points (so for example, a matrix containing 5 3D inputs would
-    be represented by a 3x5 matrix), hence normalisation of the output is
-    applied down dimension 0. """
-    numerator = np.exp(x)
-    return numerator / numerator.sum(axis=0, keepdims=True)
+    def d2Edy2(self, y, target):
+        hessian = (y*y - target*(2*y - 1)) / np.square(y * (1 - y))
+        return hessian.reshape(1, 1, -1)
+
+    def plot(self, dir_name=".", xlims=[-1.5, 1.5], npoints=200):
+        plotting.plot_binary_cross_entropy_error_func(
+            self,
+            dir_name,
+            xlims,
+            npoints,
+        )
 
 class _SoftmaxCrossEntropy(_ErrorFunction):
     """ This error function applies softmax and a cross entropy error function,
     typically used for training a model for multi-class classification. Softmax
-    is applied here as part of the error function because it cannot be supported
-    by the activations module, because it is not a 1D element-wise function (the
-    normalisation of the output introduces dependency of each element in the
-    output vector on all elements of the input vector), and hence is not
-    compatible with the implementation of back-propagation in that module (and
-    changing the implementation would likely reduce its efficiency).
+    is applied here as part of the error function because it cannot be
+    supported by the activations module, because it is not a 1D element-wise
+    function (the normalisation of the output introduces dependency of each
+    element in the output vector on all elements of the input vector), and
+    hence is not compatible with the implementation of back-propagation in that
+    module (and changing the implementation would likely reduce its
+    efficiency).
 
-    Because softmax is applied here, a multi-class classification model which is
-    trained with this error function should have a linear activation function in
-    the output layer. To apply a softmax function for prediction, the
-    NeuralNetwork softmax_output_probabilities method should be used.
+    Because softmax is applied here, a multi-class classification model which
+    is trained with this error function should have a linear activation
+    function in the output layer. To apply a softmax function for prediction,
+    the NeuralNetwork softmax_output_probabilities method should be used.
 
     Targets are assumed to be one-hot vectors (or matrices in the case of
     multiple data points) """
@@ -187,13 +197,14 @@ class _SoftmaxCrossEntropy(_ErrorFunction):
     name = "Softmax cross-entropy error function"
 
     def E(self, y, target):
-        return -(target * np.log(_softmax(y))).sum(axis=0, keepdims=True)
+        s = softmax(y, axis=0)
+        return -(target * np.log(s)).sum(axis=0, keepdims=True)
     
     def dEdy(self, y, target):
-        return _softmax(y) - target
+        return softmax(y, axis=0) - target
     
     def d2Edy2(self, y, target):
-        s = _softmax(y)
+        s = softmax(y, axis=0)
         hessian = (- np.expand_dims(s, 0)) * np.expand_dims(s, 1)
         diag_inds = np.arange(s.shape[0])
         hessian[diag_inds, diag_inds, :] += s
