@@ -88,8 +88,22 @@ def plot_data_predictions(dataset, **kwargs):
                 "dataset.input_dim must be 1 or 2, got %r" % dataset.input_dim
             )
     
+    elif isinstance(dataset, data.BinaryClassification):
+        # Plot binary classication dataset
+        if "output_dim" in kwargs:
+            del kwargs["output_dim"]
+        if dataset.input_dim == 2:
+            full_path = plot_2D_binary_classification(
+                dataset=dataset,
+                **kwargs,
+            )
+        else:
+            raise ValueError(
+                "dataset.input_dim must be 2, got %r" % dataset.input_dim
+            )
+    
     elif isinstance(dataset, data.Classification):
-        # Plot classication dataset
+        # Plot multi-class classication dataset
         if dataset.input_dim == 2:
             full_path = plot_2D_classification(dataset=dataset, **kwargs)
         else:
@@ -99,7 +113,8 @@ def plot_data_predictions(dataset, **kwargs):
     
     else:
         raise ValueError(
-            "dataset must be either a classification or regression data set"
+            "dataset must be either a regression, binary classification, or "
+            "multi-class classification data set"
         )
     
     return full_path
@@ -472,6 +487,7 @@ def plot_2D_binary_classification(
     -   full_path: full path to the file in which the output image is saved
     """
     assert dataset.input_dim == 2
+    assert dataset.output_dim == 1
     # Create subplots
     fig, axes = plt.subplots(1, 2, sharey=True, figsize=figsize)
 

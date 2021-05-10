@@ -11,7 +11,9 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
 
-    python Scripts/train_gradient_descent.py -i2 -o5 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
+    python Scripts/train_gradient_descent.py -i2 -o10 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
+
+    python Scripts/train_gradient_descent.py -i2 -n2500 -b200 -u 20,20 -t1 --plot_preds --plot_pred_gif -dBinaryMixtureOfGaussians
 
 To get help information for the available arguments, use the following command:
 
@@ -92,24 +94,34 @@ def main(
     prediction_column_list = []
 
     # Initialise dataset object and corresponding error function
-    dataset = dataset_type(
-        input_dim=input_dim,
-        output_dim=output_dim,
-        n_train=n_train,
-    )
+    dataset_kwargs = {"input_dim": input_dim, "n_train": n_train}
+    if not issubclass(dataset_type, data.BinaryClassification):
+        dataset_kwargs["output_dim"] = output_dim
+    dataset = dataset_type(**dataset_kwargs)
 
     if isinstance(dataset, data.Regression):
         error_func = models.errors.sum_of_squares
+        act_funcs = None
         print("Using regression data set with sum of squares error function")
+    elif isinstance(dataset, data.BinaryClassification):
+        error_func = models.errors.binary_cross_entropy
+        act_funcs = [models.activations.gaussian, models.activations.logistic]
+        print(
+            "Using binary classification data set with binary cross-entropy "
+            "error function, and logistic activation function in the output "
+            "layer"
+        )
     elif isinstance(dataset, data.Classification):
         error_func = models.errors.softmax_cross_entropy
+        act_funcs = None
         print(
             "Using classification data set with softmax cross entropy error "
             "function"
         )
     else:
         raise ValueError(
-            "Data set must be either a classification or regression data set"
+            "Data set must be either a binary-classification, multi-class "
+            "classification or regression data set"
         )
 
     # Iterate through repeats
@@ -120,6 +132,7 @@ def main(
             output_dim=output_dim,
             num_hidden_units=num_hidden_units,
             error_func=error_func,
+            act_funcs=act_funcs,
         )
 
         result = optimisers.Result()
