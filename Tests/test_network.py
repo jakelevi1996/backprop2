@@ -2,30 +2,32 @@ import os
 import pytest
 import numpy as np
 from models import NeuralNetwork, activations, errors
-from .util import get_random_network_inputs_targets, get_output_dir
+from .util import (
+    get_output_dir,
+    set_random_seed_from_args,
+    get_random_network_inputs_targets,
+)
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Network")
 
-@pytest.mark.parametrize("seed", [6588, 4626, 376])
-def test_forward_propagation(seed):
-    """
-    Test forward propagation, with multi-dimensional inputs and outputs,
-    multiple hidden layers, and multiple data points, and assert that the output
-    is the correct shape
-    """
-    n, x, _, N_D = get_random_network_inputs_targets(seed)
+@pytest.mark.parametrize("repeat", range(3))
+def test_forward_propagation(repeat):
+    """ Test forward propagation, with multi-dimensional inputs and outputs,
+    multiple hidden layers, and multiple data points, and assert that the
+    output is the correct shape """
+    set_random_seed_from_args("test_forward_propagation", repeat)
+    n, x, _, N_D = get_random_network_inputs_targets()
     y = n.forward_prop(x)
     assert y.shape == (n.output_dim, N_D)
 
-@pytest.mark.parametrize("seed", [8262, 6319, 3490])
-def test_back_propagation(seed):
-    """
-    Test back propagation, with multi-dimensional inputs and outputs, and
+@pytest.mark.parametrize("repeat", range(3))
+def test_back_propagation(repeat):
+    """ Test back propagation, with multi-dimensional inputs and outputs, and
     multiple data points, and assert that the appropriate attributes of each of
-    the network layers have the correct shape
-    """
-    n, x, t, N_D = get_random_network_inputs_targets(seed)
+    the network layers have the correct shape """
+    set_random_seed_from_args("test_back_propagation", repeat)
+    n, x, t, N_D = get_random_network_inputs_targets()
     n.forward_prop(x)
     n.back_prop(x, t)
     # Iterate through each layer
@@ -36,14 +38,13 @@ def test_back_propagation(seed):
         assert layer.b_grad.shape == (layer.output_dim, N_D)
 
 
-@pytest.mark.parametrize("seed", [2770, 9098, 8645])
-def test_backprop2(seed):
-    """
-    Test 2nd order back propagation, with multi-dimensional inputs and outputs,
-    and multiple data points, and assert that the epsilons in each network
-    layer have the correct shape
-    """
-    n, x, t, N_D = get_random_network_inputs_targets(seed)
+@pytest.mark.parametrize("repeat", range(3))
+def test_backprop2(repeat):
+    """ Test 2nd order back propagation, with multi-dimensional inputs and
+    outputs, and multiple data points, and assert that the epsilons in each
+    network layer have the correct shape """
+    set_random_seed_from_args("test_backprop2", repeat)
+    n, x, t, N_D = get_random_network_inputs_targets()
     n.forward_prop(x)
     n.back_prop(x, t)
     n.back_prop2(x, t)
@@ -52,24 +53,24 @@ def test_backprop2(seed):
         # Assert that the gradients in each layer have the correct shape
         assert layer.epsilon.shape == (layer.output_dim, layer.output_dim, N_D)
 
-@pytest.mark.parametrize("seed", [3052, 4449, 5555])
-def test_get_parameter_vector(seed):
+@pytest.mark.parametrize("repeat", range(3))
+def test_get_parameter_vector(repeat):
     """ Test the public method for getting the gradient vector """
-    n, _, _, _ = get_random_network_inputs_targets(seed)
+    set_random_seed_from_args("test_get_parameter_vector", repeat)
+    n, _, _, _ = get_random_network_inputs_targets()
     param_vector = n.get_parameter_vector()
     num_params = param_vector.size
     assert param_vector.shape == (num_params, )
 
 @pytest.mark.parametrize("seed", [6210, 9010, 9042])
 def test_get_gradient_vector(seed):
-    """
-    Test the public method for getting the parameter vector, and check that the
-    gradient vector is approximately accurate using 1st order numerical
+    """ Test the public method for getting the parameter vector, and check that
+    the gradient vector is approximately accurate using 1st order numerical
     differentiation (see Scripts/find_dw_and_tol.py for how the parameters for
-    this are determined)
-    """
+    this are determined) """
     # Initialise network, inputs and targets
-    n, x, t, _ = get_random_network_inputs_targets(seed)
+    np.random.seed(seed)
+    n, x, t, _ = get_random_network_inputs_targets()
     # Get the gradient vector and check that it has the right shape
     grad_0 = n.get_gradient_vector(x, t)
     num_params = grad_0.size
@@ -93,21 +94,20 @@ def test_get_gradient_vector(seed):
 
 @pytest.mark.parametrize("seed", [5792, 1560, 3658, 0, 1, 2, 3, 4, 5, 6, 7])
 def test_get_hessian_blocks(seed):
-    """
-    Check that get_hessian_blocks returns symmetric Hessian blocks with the
+    """ Check that get_hessian_blocks returns symmetric Hessian blocks with the
     correct shape, and that the corresponding list of inds for each block has
     the correct number of elements, and that each element is unique.
 
     Also perform a numerical test on values of the 2nd order gradients in the
     Hessian blocks, based on a 1st order Taylor expansion of the change in the
     gradient vector with respect to a change in the parameters (the Hessian
-    matrix is also the Jacobian in this context) (see Scripts/find_dw_and_tol.py
-    for how the parameters for this test are determined)
-    """
+    matrix is also the Jacobian in this context) (see
+    Scripts/find_dw_and_tol.py for how the parameters for this test are
+    determined) """
 
     # Initialise network, inputs and targets
+    np.random.seed(seed)
     n, x, t, _ = get_random_network_inputs_targets(
-        seed,
         act_funcs=[activations.cauchy, activations.identity]
     )
     
@@ -181,14 +181,13 @@ def test_get_hessian_blocks(seed):
         assert np.max(np.abs(relative_error)) < tol
 
 
-@pytest.mark.parametrize("seed", [6563, 5385, 4070])
-def test_set_parameter_vector(seed):
-    """
-    Test the public method for setting the parameter vector, and assert that the
-    network outputs are different when the parameters are changed
-    """
+@pytest.mark.parametrize("repeat", range(3))
+def test_set_parameter_vector(repeat):
+    """ Test the public method for setting the parameter vector, and assert
+    that the network outputs are different when the parameters are changed """
     # Initialise network and input
-    n, x, _, N_D = get_random_network_inputs_targets(seed)
+    set_random_seed_from_args("test_set_parameter_vector", repeat)
+    n, x, _, N_D = get_random_network_inputs_targets()
     # Get a copy of the old network params and output
     y_old = n(x)
     w_old = n.get_parameter_vector().copy()
@@ -202,43 +201,42 @@ def test_set_parameter_vector(seed):
     y_new = n(x)
     assert not (y_old == y_new).all()
 
-@pytest.mark.parametrize("seed", [6544, 6633, 54])
-def test_mean_error(seed):
-    """
-    Test calculating the mean error of a network with multi-dimensional inputs
-    and outputs, and multiple data points
-    """
-    n, x, t, _ = get_random_network_inputs_targets(seed)
+@pytest.mark.parametrize("repeat", range(3))
+def test_mean_error(repeat):
+    """ Test calculating the mean error of a network with multi-dimensional
+    inputs and outputs, and multiple data points """
+    set_random_seed_from_args("test_mean_error", repeat)
+    n, x, t, _ = get_random_network_inputs_targets()
     n.forward_prop(x)
     mean_error = n.mean_error(t)
     assert mean_error.shape == ()
     assert mean_error.size == 1
 
-@pytest.mark.parametrize("seed", [8585, 4350, 4503])
-def test_save_load(seed):
+@pytest.mark.parametrize("repeat", range(3))
+def test_save_load(repeat):
     # TODO
     pass
 
-@pytest.mark.parametrize("seed", [2688, 3786, 6105])
-def test_print_weights(seed):
+@pytest.mark.parametrize("repeat", range(3))
+def test_print_weights(repeat):
+    """ Test printing the weights of a neural network with multi-dimensional
+    inputs and outputs, and multiple layers, both to stdout and to a text file
     """
-    Test printing the weights of a neural network with multi-dimensional inputs
-    and outputs, and multiple layers, both to stdout and to a text file
-    """
-    n, _, _, _ = get_random_network_inputs_targets(seed)
+    set_random_seed_from_args("test_print_weights", repeat)
+    n, _, _, _ = get_random_network_inputs_targets()
     # Print weights to stdout
     n.print_weights()
     # Print weights to file
     with open(os.path.join(output_dir, "weights.txt"), "w") as f:
         n.print_weights(f)
 
-@pytest.mark.parametrize("seed", [7629, 8258, 4020])
-def test_print_grads(seed):
-    """
-    Test printing the gradients of a neural network with multi-dimensional
+@pytest.mark.parametrize("repeat", range(3))
+def test_print_grads(repeat):
+    """ Test printing the gradients of a neural network with multi-dimensional
     inputs and outputs, and multiple layers, both to stdout and to a text file
     """
-    n, x, t, _ = get_random_network_inputs_targets(seed)
+    set_random_seed_from_args("test_print_grads", repeat)
+    n, x, t, _ = get_random_network_inputs_targets()
     n.forward_prop(x)
     n.back_prop(x, t)
     # Print gradients to stdout
@@ -253,11 +251,10 @@ def test_call_method(seed):
     pass
 
 def test_too_few_act_funcs():
-    """
-    Initialise a neural network with more hidden units than activation functions
-    in the input arguments, and make sure that there are the correct number of
-    layers, and that the activation function in each layer is set correctly
-    """
+    """ Initialise a neural network with more hidden units than activation
+    functions in the input arguments, and make sure that there are the correct
+    number of layers, and that the activation function in each layer is set
+    correctly """
     num_hidden_units = [3] * 10
     act_funcs = [activations.gaussian, activations.identity]
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
@@ -270,11 +267,10 @@ def test_too_few_act_funcs():
     assert type(n.layers[-1].act_func) is activations._Identity
     
 def test_too_many_act_funcs():
-    """
-    Initialise a neural network with more activation functions than hidden units
-    in the input arguments, and make sure that there are the correct number of
-    layers, and that the activation function in each layer is set correctly
-    """
+    """ Initialise a neural network with more activation functions than hidden
+    units in the input arguments, and make sure that there are the correct
+    number of layers, and that the activation function in each layer is set
+    correctly """
     num_hidden_units = [3, 3]
     act_funcs = ([activations.gaussian] * 10) + [activations.identity]
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)

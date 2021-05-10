@@ -1,5 +1,4 @@
-"""
-This script is used to find good parameters to use for the unit tests in
+""" This script is used to find good parameters to use for the unit tests in
 Tests/test_network.py, specifically for numerically verifying the
 implementations of first-order gradients and Hessian blocks using a first-order
 Taylor series.
@@ -17,16 +16,15 @@ and requires a high tolerance.
 At the other end of the scale, when the change in parameters is very small (on
 the order of 1e-15), the change in the error function is so small that
 calculating the difference between the error function values for different
-parameter vectors becomes very innacurate due to the fixed number of bits in the
-mantissa of the floating point representation of these values, and this
+parameter vectors becomes very innacurate due to the fixed number of bits in
+the mantissa of the floating point representation of these values, and this
 innacuracy also requires a high tolerance.
 
 At a certain scale of the change in parameters there is an optimal trade-off
 between these two effects. Results from this script suggest that this trade-off
 is found when the change in parameters is approximately 1e-7, allowing a
 tolerance in the relative error in the approximate change in error function of
-1e-5.
-"""
+1e-5. """
 
 import os
 import numpy as np
@@ -36,7 +34,10 @@ if __name__ == "__main__":
     import __init__
 import data
 from optimisers import results
-from Tests.util import get_random_network_inputs_targets
+from Tests.util import (
+    set_random_seed_from_args,
+    get_random_network_inputs_targets,
+)
 
 def print_variable(label, value):
     print("{:30} = {:.3e}".format(label, value))
@@ -51,7 +52,8 @@ for dw_max_exp in range(-20, 0):
     print_variable("dw_max", dw_max)
 
     # Get network, inputs, targets, and gradient
-    n, x, t, _ = get_random_network_inputs_targets(9011)
+    set_random_seed_from_args("Scripts/find_dw_and_tol.py")
+    n, x, t, _ = get_random_network_inputs_targets()
     grad_0 = n.get_gradient_vector(x, t).copy()
 
     # Change the weights and calculate the change in error function
