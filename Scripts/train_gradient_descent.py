@@ -15,6 +15,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -n2500 -b200 -u 20,20 -t1 --plot_preds --plot_pred_gif -dBinaryMixtureOfGaussians
 
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dXor
+
 To get help information for the available arguments, use the following command:
 
     python Scripts/train_gradient_descent.py -h
