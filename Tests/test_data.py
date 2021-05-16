@@ -19,7 +19,8 @@ def test_save_load(dataset_type, repeat):
     check that it can be saved and loaded, and that the saved and loaded
     dataset objects are equivalent """
     set_random_seed_from_args("test_save_load", dataset_type, repeat)
-    dataset, dataset_name = get_dataset_and_name_from_type(dataset_type)
+    dataset = get_dataset_and_name_from_type(dataset_type)
+    dataset_name = repr(dataset)
     dataset.save(dataset_name, output_dir)
     dataset_loaded = data.DataSet(dataset_name, output_dir)
     attr_list = [
@@ -35,12 +36,14 @@ def test_save_load(dataset_type, repeat):
 @pytest.mark.parametrize("dataset_type", data.dataset_class_dict.values())
 def test_print_data(dataset_type, repeat):
     """ Test the print_data method of an instance of a Dataset subclass """
+    # Generate random dataset
     set_random_seed_from_args("test_print_data", dataset_type, repeat)
-    dataset, dataset_name = get_dataset_and_name_from_type(dataset_type)
+    dataset = get_dataset_and_name_from_type(dataset_type)
+    dataset_name = repr(dataset)
     # Print data to stdout
     dataset.print_data()
     # Print data to file
-    filename = dataset_name + " data.txt"
+    filename = "%s.print_data().txt" % dataset_name
     path = os.path.join(output_dir, filename)
     with open(path, "w") as f:
         dataset.print_data(file=f)
