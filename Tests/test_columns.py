@@ -197,20 +197,38 @@ def test_predictions_column(input_dim, output_dim, store_hidden):
             evaluator=optimisers.Evaluator(i_interval=1),
         )
         # Print Predictions column attributes to file
-        print("x_pred:", prediction_column.x_pred, sep="\n", file=f)
+        print("\n\nx_pred:", prediction_column.x_pred, sep="\n", file=f)
         iter_list = result.get_values(columns.Iteration)
-        print("Predictions:", file=f)
+        print("\n\nPredictions:", file=f)
         for i in iter_list:
             print("i = %i:" % i, file=f)
             print(prediction_column.predictions_dict[i], file=f)
         if store_hidden:
-            print("Hidden layer outputs:", file=f)
+            print("\n\nHidden layer outputs:", file=f)
             for i in iter_list:
-                print("i = %i:" % i, file=f)
-                print(*prediction_column.hidden_outputs_dict[i], file=f, sep="\n\n")
+                print(
+                    "\ni = %i:" % i,
+                    *prediction_column.hidden_outputs_dict[i],
+                    file=f,
+                    sep="\n\n",
+                )
 
-    # Test that the OptimalBatchSize object attributes are as expected
-    assert prediction_column.x_pred.shape == (input_dim, (n_pred ** input_dim))
-    assert set(prediction_column.predictions_dict.keys()) == set(iter_list)
+    # Test that the Prediction object attributes are as expected
+    n_pred_grid = pow(n_pred, input_dim)
+    assert prediction_column.x_pred.shape == (input_dim, n_pred_grid)
+    
+    iter_set = set(iter_list)
+    assert set(prediction_column.predictions_dict.keys()) == iter_set
     for y_pred in prediction_column.predictions_dict.values():
-        assert y_pred.shape == (output_dim, (n_pred ** input_dim))
+        assert y_pred.shape == (output_dim, n_pred_grid)
+    
+    hidden_outputs_dict = prediction_column.hidden_outputs_dict
+    if store_hidden:
+        assert set(hidden_outputs_dict.keys()) == iter_set
+        for hidden_output_list in hidden_outputs_dict.values():
+            assert len(hidden_output_list) == len(model.layers) - 1
+            for i, hidden_output in enumerate(hidden_output_list):
+                expected_shape = (model.layers[i].output_dim, n_pred_grid)
+                assert hidden_output.shape == expected_shape
+    else:
+        assert len(hidden_outputs_dict) == 0
