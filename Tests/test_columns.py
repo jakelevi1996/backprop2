@@ -5,16 +5,16 @@ import os
 import numpy as np
 import pytest
 import models, data, optimisers
-from .util import get_random_network, get_output_dir
+from .util import set_random_seed_from_args, get_random_network, get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Columns")
 
 def test_standard_columns():
-    """ Test using a Result object with the standard columns, which are added to
-    a Result object by default """
+    """ Test using a Result object with the standard columns, which are added
+    to a Result object by default """
     # Initialise random seed and number of training data points and iterations
-    np.random.seed(1449)
+    set_random_seed_from_args("test_standard_columns")
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
     # Initialise model and data set
@@ -22,7 +22,7 @@ def test_standard_columns():
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     # Initialise output file
     test_name = "Test standard columns"
-    output_filename = "%s.txt" % test_name
+    output_filename = "test_standard_columns.txt"
     with open(os.path.join(output_dir, output_filename), "w") as f:
         # Initialise result object
         result = optimisers.Result(
@@ -45,13 +45,13 @@ def test_standard_columns():
 
 def test_step_size_column():
     """ Test using step size column with a Result object """
-    np.random.seed(1522)
+    set_random_seed_from_args("test_step_size_column")
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     test_name = "Test line search column"
-    output_filename = "%s.txt" % test_name
+    output_filename = "test_step_size_column.txt"
     with open(os.path.join(output_dir, output_filename), "w") as f:
         ls = optimisers.LineSearch()
         result = optimisers.Result(
@@ -72,14 +72,14 @@ def test_step_size_column():
 def test_dbs_column():
     """ Test using a DBS column with a Result object """
     # Set random seed and initialise network and dataset
-    np.random.seed(1522)
+    set_random_seed_from_args("test_dbs_column")
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     # Initialise output file and Result object
     test_name = "Test DBS column"
-    output_filename = "%s.txt" % test_name
+    output_filename = "test_dbs_columns.txt"
     with open(os.path.join(output_dir, output_filename), "w") as f:
         result = optimisers.Result(
             name=test_name,
@@ -101,14 +101,14 @@ def test_optimal_batch_size_column():
     """ Test using a column which approximates the optimal batch size on each
     iteration """
     # Set random seed and initialise network and dataset
-    np.random.seed(2231)
+    set_random_seed_from_args("test_optimal_batch_size_column")
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(10, 20)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
     # Initialise output file and Result object
     test_name = "Test optimal batch size column"
-    output_filename = "%s.txt" % test_name
+    output_filename = "test_optimal_batch_size_column.txt"
     with open(os.path.join(output_dir, output_filename), "w") as f:
         result = optimisers.Result(
             name=test_name,
@@ -149,9 +149,7 @@ def test_optimal_batch_size_column():
 def test_predictions_column(input_dim, output_dim):
     """ Test using a column which stores model predictions during training """
     # Set random seed and initialise network and dataset
-    seed = hash(("test_predictions_column", input_dim, output_dim))
-    seed &= (1 << 32) - 1
-    np.random.seed(seed)
+    set_random_seed_from_args("test_predictions_column", input_dim, output_dim)
     n_train = np.random.randint(10, 20)
     n_pred = np.random.randint(5, 10)
     n_its = np.random.randint(10, 20)
@@ -162,7 +160,7 @@ def test_predictions_column(input_dim, output_dim):
         n_train=n_train,
     )
     # Initialise output file and Result object
-    test_name = "Test prediction column (%id-%id data)" % (
+    test_name = "test_predictions_column (%id-%id data)" % (
         input_dim,
         output_dim
     )
