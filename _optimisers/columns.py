@@ -302,6 +302,7 @@ class Predictions(_Column):
         super().__init__(name, "s")
         self.n_points_per_dim = n_points_per_dim
         self.predictions_dict = dict()
+        self.hidden_outputs_dict = dict()
         self.x_unique = np.linspace(
             dataset.x_test.min(axis=1),
             dataset.x_test.max(axis=1),
@@ -311,7 +312,7 @@ class Predictions(_Column):
         x_mesh = np.meshgrid(*self.x_unique)
         self.x_pred = np.stack([xx_i.ravel() for xx_i in x_mesh], axis=0)
         self.value_list.append("Yes")
-        self._store_hidden_layer_outputs = store_hidden_layer_outputs
+        self.store_hidden_layer_outputs = store_hidden_layer_outputs
     
     def update(self, kwargs):
         """ Store the predictions of the model on this object's internal
@@ -328,9 +329,11 @@ class Predictions(_Column):
         y_pred = model(self.x_pred)
         self.predictions_dict[iteration] = y_pred
         # If specified, store the hidden layer outputs
-        if self._store_hidden_layer_outputs:
-            # TODO
-            pass
+        if self.store_hidden_layer_outputs:
+            self.hidden_outputs_dict[iteration] = [
+                layer.output.copy()
+                for layer in model.layers[:-1]
+            ]
 
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
