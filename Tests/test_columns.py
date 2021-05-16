@@ -2,6 +2,7 @@
 columns are funtioning correctly, and also to serve as usage examples for each
 column. """
 import os
+from math import ceil
 import numpy as np
 import pytest
 import models, data, optimisers
@@ -145,13 +146,19 @@ def test_optimal_batch_size_column():
         for reduction_list in reduction_dict.values():
             assert len(reduction_list) == n_repeats
 
+@pytest.mark.parametrize("store_hidden", [False, True])
 @pytest.mark.parametrize("input_dim, output_dim", [(1, 1), (2, 3)])
-def test_predictions_column(input_dim, output_dim):
+def test_predictions_column(input_dim, output_dim, store_hidden):
     """ Test using a column which stores model predictions during training """
     # Set random seed and initialise network and dataset
-    set_random_seed_from_args("test_predictions_column", input_dim, output_dim)
+    set_random_seed_from_args(
+        "test_predictions_column",
+        input_dim,
+        output_dim,
+        store_hidden,
+    )
     n_train = np.random.randint(10, 20)
-    n_pred = np.random.randint(5, 10)
+    n_pred = ceil(pow(np.random.randint(5, 10), 1/input_dim))
     n_its = np.random.randint(10, 20)
     model = get_random_network(input_dim=input_dim, output_dim=output_dim)
     sin_data = data.Sinusoidal(
@@ -160,9 +167,10 @@ def test_predictions_column(input_dim, output_dim):
         n_train=n_train,
     )
     # Initialise output file and Result object
-    test_name = "test_predictions_column (%id-%id data)" % (
+    test_name = "test_predictions_column, %id-%id data, store_hidden=%s" % (
         input_dim,
-        output_dim
+        output_dim,
+        store_hidden,
     )
     output_filename = "%s.txt" % test_name
     with open(os.path.join(output_dir, output_filename), "w") as f:
@@ -177,6 +185,7 @@ def test_predictions_column(input_dim, output_dim):
         prediction_column = columns.Predictions(
             sin_data,
             n_points_per_dim=n_pred,
+            store_hidden_layer_outputs=store_hidden,
         )
         result.add_column(prediction_column)
         # Call optimisation function
@@ -194,6 +203,11 @@ def test_predictions_column(input_dim, output_dim):
         for i in iter_list:
             print("i = %i:" % i, file=f)
             print(prediction_column.predictions_dict[i], file=f)
+        if store_hidden:
+            print("Hidden layer outputs:", file=f)
+            for i in iter_list:
+                print("i = %i:" % i, file=f)
+                print(*prediction_column.hidden_outputs_dict[i], file=f, sep="\n\n")
 
     # Test that the OptimalBatchSize object attributes are as expected
     assert prediction_column.x_pred.shape == (input_dim, (n_pred ** input_dim))
