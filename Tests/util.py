@@ -126,3 +126,44 @@ dataset_dict = {
         n_mixture_components=5,
     )
 }
+
+def get_random_dataset_params(d_low=1, d_high=6, n_low=10, n_high=20):
+    """ Randomly generate parameters needed to initialise a Dataset object,
+    specifically the input and output dimensions, and the number of points in
+    the training and test sets """
+    input_dim   = np.random.randint(d_low, d_high)
+    output_dim  = np.random.randint(d_low, d_high)
+    n_train     = np.random.randint(n_low, n_high)
+    n_test      = np.random.randint(n_low, n_high)
+    return input_dim, output_dim, n_train, n_test
+
+def get_dataset_and_name_from_type(dataset_type):
+    """ Given the type (IE class) of a dataset, generate a random number of
+    input and output dimensions and number of points in the training and test
+    sets, initialise the dataset with those parameters, and return the
+    initialised dataset along with a string containing a name which is unique
+    to that type of dataset and the parameters generated """
+    input_dim, output_dim, n_train, n_test = get_random_dataset_params()
+    dataset_kwargs = {
+        "input_dim":    input_dim,
+        "n_train":      n_train,
+        "n_test":       n_test,
+    }
+    if not issubclass(dataset_type, data.BinaryClassification):
+        dataset_kwargs["output_dim"] = output_dim
+    dataset = dataset_type(**dataset_kwargs)
+    dataset_name = "%s_%sdi_%sdo_%str_%ste" % (
+        dataset_type.__name__,
+        input_dim,
+        output_dim,
+        n_train,
+        n_test,
+    )
+    return dataset, dataset_name
+
+def get_random_dataset():
+    """ Return a dataset of a random type, with initialised with random
+    parameters """
+    dataset_type = np.random.choice(list(data.dataset_class_dict.values()))
+    dataset, _ = get_dataset_and_name_from_type(dataset_type)
+    return dataset
