@@ -1,26 +1,24 @@
-"""
-Module for creating DataSet objects, with input and output data, training and
-test partitions, and methods for batching, saving, loading, and printing the
-data.
+""" Module for creating DataSet objects, with input and output data, training
+and test partitions, and methods for batching, saving, loading, and printing
+the data.
 
-TODO: implement DataSet classes for CircleDataSet, SumOfGaussianCurvesDataSet,
-GaussianCurveDataSet. One module per class, moved over to the data directory?
-
-TODO: have a class/subclasses for generating input points (EG uniform, Gaussian,
-grid, etc), which is shared between all data classes?
+TODO:
+-   implement DataSet classes for CircleDataSet, SumOfGaussianCurvesDataSet,
+    GaussianCurveDataSet. One module per class, moved over to the data
+    directory?
+-   have a class/subclasses for generating input points (EG uniform, Gaussian,
+    grid, etc), which is shared between all data classes?
 """
 import os
 import numpy as np
 
 class DataSet():
-    """
-    Interface class for data sets, which contains shape constants and train/test
-    inputs and outputs as attributes, and methods for loading, saving, and
-    printing the data.
+    """ Interface class for data sets, which contains shape constants and
+    train/test inputs and outputs as attributes, and methods for loading,
+    saving, and printing the data.
 
     TODO: implement get_train_batch and get_test_batch and incorporate into
-    optimisers module
-    """
+    optimisers module """
     def __init__(self, filename=None, dir_name="."):
         # If a filename is specified, then load from file
         if filename is not None:
@@ -95,6 +93,20 @@ class DataSet():
             sep="\n",
             file=file
         )
+    
+    def __repr__(self):
+        """ Return a string representation of this Dataset object, including
+        the type of the object whose method is called, and the input and output
+        dimensions, and number of points in the training and test sets """
+        s = "%s(input_dim=%i, output_dim=%i, n_train=%i, n_test=%i)" % (
+            type(self).__name__,
+            self.input_dim,
+            self.output_dim,
+            self.n_train,
+            self.n_test,
+        )
+        return s
+
 
 class Regression(DataSet):
     """ Class for regression datasets. Outputs are continuous matrices with
