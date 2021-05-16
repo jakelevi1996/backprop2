@@ -108,25 +108,6 @@ def get_random_network_inputs_targets(
     t = get_random_targets(n.output_dim, N_D)
     return n, x, t, N_D
 
-dataset_dict = {
-    "1x1_sinusoidal_set_freq":      data.Sinusoidal(
-        input_dim=1,
-        output_dim=1,
-        freq=1.1,
-    ),
-    "1x1_sinusoidal_random_freq":   data.Sinusoidal(input_dim=1, output_dim=1),
-    "2x1_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=1),
-    "2x4_sinusoidal":               data.Sinusoidal(input_dim=2, output_dim=4),
-    "2x3_mixture_of_gaussians":     data.MixtureOfGaussians(
-        input_dim=1,
-        output_dim=3,
-    ),
-    "2D_binary_mixture_of_gaussians":   data.BinaryMixtureOfGaussians(
-        input_dim=2,
-        n_mixture_components=5,
-    )
-}
-
 def get_random_dataset_params(d_low=1, d_high=6, n_low=10, n_high=20):
     """ Randomly generate parameters needed to initialise a Dataset object,
     specifically the input and output dimensions, and the number of points in
