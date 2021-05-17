@@ -1584,6 +1584,7 @@ def plot_hidden_outputs_gif(
     output_dim,
     duration=5000,
     loop=0,
+    verbose=True,
 ):
     """ Make a gif of hidden layer outputs and predictions formed by a model
     during training, as well as training data, and test data.
@@ -1605,11 +1606,12 @@ def plot_hidden_outputs_gif(
     -   loop: integer number of times the GIF should loop. 0 means that it will
         loop forever. If None, then the image will not loop at all. By default,
         the image will loop forever
+    -   verbose: if True, print progress of plotting each frame to stdout
     """
     assert prediction_column.store_hidden_layer_outputs
     # Initialise list of filenames, and output directory for frame images
     filename_list = []
-    frame_dir = os.path.join(dir_name, "Regression frames")
+    frame_dir = os.path.join(dir_name, "Hidden layer frames")
     # Create a frame for each iteration during which the model was evaluated
     iterations = result.get_values(optimisers.results.columns.Iteration)
     for i in iterations:
@@ -1624,6 +1626,10 @@ def plot_hidden_outputs_gif(
             output_dim=output_dim,
         )
         filename_list.append(filename)
+        if verbose:
+            print(".", end="", flush=True)
     
     # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
+    if verbose:
+        print()
