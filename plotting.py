@@ -669,7 +669,7 @@ def plot_2D_hidden_outputs(
     y_pred,
     hidden_output_list,
     output_dim,
-    tp=0.5,
+    tp=0.75,
 ):
     """ Plot the outputs in each hidden layer of a model, along with the model
     predictions, training data, and test data for a data set with
@@ -1522,9 +1522,8 @@ def plot_predictions_gif(
     # Initialise list of filenames, and output directory for frame images
     filename_list = []
     frame_dir = os.path.join(dir_name, "Regression frames")
-    columns = optimisers.results.columns
     # Create a frame for each iteration during which the model was evaluated
-    iterations = result.get_values(columns.Iteration)
+    iterations = result.get_values(optimisers.results.columns.Iteration)
     for i in iterations:
         plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
         filename = plot_data_predictions(
@@ -1537,6 +1536,91 @@ def plot_predictions_gif(
                 "x_pred":           prediction_column.x_pred,
                 "y_pred":           prediction_column.predictions_dict[i],
             },
+            output_dim=output_dim,
+        )
+        filename_list.append(filename)
+    
+    # Make a gif out of the image frames
+    make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
+
+
+def plot_hidden_outputs(dataset, **kwargs):
+    """ Given a dataset and keyword arguments, this function calls an
+    appropriate specific function to plot the outputs from the hidden layers of
+    a model, as well as the model predictions, training data, and test data for
+    the dataset (or raises an error if no such function has been implemented).
+    This function is a wrapper for various plotting functions in this module,
+    and only one plotting function is called, depending on the properties of
+    the input dataset object.
+
+    Inputs:
+    -   dataset: an instance of data.DataSet whose training data and test data
+        will be plotted alongside hidden layer outputs and predictions from the
+        model
+    -   kwargs: extra keyword arguments that will be passed on to the specific
+        plotting function, EG the name of the plot
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
+    """
+    if dataset.input_dim == 1:
+        full_path = plot_1D_hidden_outputs(dataset=dataset, **kwargs)
+    elif dataset.input_dim == 2:
+        full_path = plot_2D_hidden_outputs(dataset=dataset, **kwargs)
+    else:
+        raise ValueError(
+            "dataset.input_dim must be 1 or 2, got %r" % dataset.input_dim
+        )
+    
+    return full_path
+
+
+def plot_hidden_outputs_gif(
+    plot_name,
+    dir_name,
+    result,
+    prediction_column,
+    dataset,
+    output_dim,
+    duration=5000,
+    loop=0,
+):
+    """ Make a gif of hidden layer outputs and predictions formed by a model
+    during training, as well as training data, and test data.
+
+    Inputs:
+    -   plot_name: title that will be given to the plot, and also the filename
+        that the plot will be saved to
+    -   dir_name: directory in which the plot will be saved. Will be created if
+        it doesn't already exist
+    -   result: instance of Result that was used for the model during training
+    -   prediction_column: instance of Predictions (this must have been added
+        to the Result object using the add_column method before the start of
+        training)
+    -   dataset: instance of DataSet that the model was trained on
+    -   input_dim: input dimension for the model and the dataset
+    -   output_dim: input dimension for the model and the dataset
+    -   duration: duration each frame of the gif should last for in
+        milliseconds
+    -   loop: integer number of times the GIF should loop. 0 means that it will
+        loop forever. If None, then the image will not loop at all. By default,
+        the image will loop forever
+    """
+    assert prediction_column.store_hidden_layer_outputs
+    # Initialise list of filenames, and output directory for frame images
+    filename_list = []
+    frame_dir = os.path.join(dir_name, "Regression frames")
+    # Create a frame for each iteration during which the model was evaluated
+    iterations = result.get_values(optimisers.results.columns.Iteration)
+    for i in iterations:
+        plot_name_frame = "%s, iteration = %05i" % (plot_name, i)
+        filename = plot_hidden_outputs(
+            plot_name=plot_name_frame,
+            dir_name=frame_dir,
+            dataset=dataset,
+            x_pred=prediction_column.x_pred,
+            y_pred=prediction_column.predictions_dict[i],
+            hidden_output_list=prediction_column.hidden_outputs_dict[i],
             output_dim=output_dim,
         )
         filename_list.append(filename)
