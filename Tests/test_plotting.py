@@ -52,7 +52,7 @@ def test_plot_1D_hidden_outputs(output_dim):
     """ Test plotting function for outputs from the hidden layers of a model
     1-dimensional inputs, and a variable number of outputs """
     # Set random seed and parameters
-    set_random_seed_from_args("test_plot_1D_regression", output_dim)
+    set_random_seed_from_args("test_plot_1D_hidden_outputs", output_dim)
     n_train = np.random.randint(50, 100)
     n_test  = np.random.randint(50, 100)
     n_pred  = np.random.randint(50, 100)
@@ -96,17 +96,71 @@ def test_plot_1D_hidden_outputs(output_dim):
         dir_name=os.path.join(output_dir, "test_plot_1D_hidden_outputs"),
         dataset=sin_data,
         x_pred=prediction_column.x_pred,
-        hidden_output_list=prediction_column.hidden_outputs_dict[0],
         y_pred=prediction_column.predictions_dict[0],
+        hidden_output_list=prediction_column.hidden_outputs_dict[0],
         output_dim=output_dim,
     )
 
 
-@pytest.mark.parametrize("seed, output_dim", [(1815, 1), (1743, 3)])
-def test_plot_2D_regression(seed, output_dim):
-    """ Test plotting function for regression data with 2 input dimensions and a
-    variable number of output dimensions """
-    np.random.seed(seed)
+@pytest.mark.parametrize("output_dim", [1, 2, 3])
+def test_plot_2D_hidden_outputs(output_dim):
+    """ Test plotting function for outputs from the hidden layers of a model
+    1-dimensional inputs, and a variable number of outputs """
+    # Set random seed and parameters
+    set_random_seed_from_args("test_plot_2D_hidden_outputs", output_dim)
+    n_train = np.random.randint(50, 100)
+    n_test  = np.random.randint(50, 100)
+    n_pred  = np.random.randint(50, 100)
+    # Initialise data and model
+    sin_data = data.Sinusoidal(
+        input_dim=2,
+        output_dim=output_dim,
+        n_train=n_train,
+        n_test=n_test,
+    )
+    model = get_random_network(
+        input_dim=2,
+        output_dim=output_dim,
+        low=2,
+        high=6,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=sin_data.x_train,
+            y_train=sin_data.y_train,
+        ),
+    )
+    # Initialise result and column objects
+    result = optimisers.Result(verbose=False, add_default_columns=False)
+    input_dim = 2
+    prediction_column = optimisers.results.columns.Predictions(
+        sin_data,
+        n_points_per_dim=ceil(pow(n_pred, 1/input_dim)),
+        store_hidden_layer_outputs=True,
+    )
+    result.add_column(prediction_column)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        terminator=optimisers.Terminator(i_lim=1),
+    )
+    # Call plotting function under test
+    plotting.plot_2D_hidden_outputs(
+        plot_name="test_plot_2D_hidden_outputs, output_dim=%i" % output_dim,
+        dir_name=os.path.join(output_dir, "test_plot_2D_hidden_outputs"),
+        dataset=sin_data,
+        x_pred=prediction_column.x_pred,
+        y_pred=prediction_column.predictions_dict[0],
+        hidden_output_list=prediction_column.hidden_outputs_dict[0],
+        output_dim=output_dim,
+    )
+
+
+@pytest.mark.parametrize("output_dim", [1, 2, 3])
+def test_plot_2D_regression(output_dim):
+    """ Test plotting function for regression data with 2 input dimensions and
+    a variable number of output dimensions """
+    set_random_seed_from_args("test_plot_2D_regression", output_dim)
     input_dim = 2
     x_lo = -2
     x_hi = 2
