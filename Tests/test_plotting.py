@@ -1,24 +1,23 @@
-"""
-Module containing unit tests for the plotting module. The functions for plotting
-activation and error functions are not tested here, but in the test modules for
-the activation and error function modules. Similarly, the function for plotting
-training curves is tested in the test module for the optimiser module.
-"""
+""" Module containing unit tests for the plotting module. The functions for
+plotting activation and error functions are not tested here, but in the test
+modules for the activation and error function modules. Similarly, the function
+for plotting training curves is tested in the test module for the optimiser
+module. """
 import os
 import numpy as np
 from math import ceil
 import pytest
 import plotting, data, optimisers, models
-from .util import get_random_network, get_output_dir, set_random_seed_from_args
+from .util import get_output_dir, set_random_seed_from_args, get_random_network
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Plotting")
 
-@pytest.mark.parametrize("output_dim, seed", [(1, 8974), (2, 4798), (3, 1812)])
-def test_plot_1D_regression(output_dim, seed):
+@pytest.mark.parametrize("output_dim", [1, 2, 3])
+def test_plot_1D_regression(output_dim):
     """ Test plotting function for regression data with 1-dimensional inputs,
-    amd a variable number of outputs """
-    np.random.seed(seed)
+    and a variable number of outputs """
+    set_random_seed_from_args("test_plot_1D_regression", output_dim)
     # Initialise data and model
     sin_data = data.Sinusoidal(
         input_dim=1,
@@ -40,10 +39,65 @@ def test_plot_1D_regression(output_dim, seed):
     )
     # Call plotting function under test
     plotting.plot_1D_regression(
-        plot_name="Random predictions for 1D-%iD sinusoidal data" % output_dim,
-        dir_name=output_dir,
+        plot_name="test_plot_1D_regression, output_dim=%i" % output_dim,
+        dir_name=os.path.join(output_dir, "test_plot_1D_regression"),
         dataset=sin_data,
         model=model,
+        output_dim=output_dim,
+    )
+
+
+@pytest.mark.parametrize("output_dim", [1, 2, 3])
+def test_plot_1D_hidden_outputs(output_dim):
+    """ Test plotting function for outputs from the hidden layers of a model
+    1-dimensional inputs, and a variable number of outputs """
+    # Set random seed and parameters
+    set_random_seed_from_args("test_plot_1D_regression", output_dim)
+    n_train = np.random.randint(50, 100)
+    n_test  = np.random.randint(50, 100)
+    n_pred  = np.random.randint(50, 100)
+    # Initialise data and model
+    sin_data = data.Sinusoidal(
+        input_dim=1,
+        output_dim=output_dim,
+        n_train=n_train,
+        n_test=n_test,
+        x_lo=0,
+        x_hi=1,
+    )
+    model = get_random_network(
+        input_dim=1,
+        output_dim=output_dim,
+        low=2,
+        high=6,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=sin_data.x_train,
+            y_train=sin_data.y_train,
+        ),
+    )
+    # Initialise result and column objects
+    result = optimisers.Result(verbose=False, add_default_columns=False)
+    prediction_column = optimisers.results.columns.Predictions(
+        sin_data,
+        n_points_per_dim=n_pred,
+        store_hidden_layer_outputs=True,
+    )
+    result.add_column(prediction_column)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        sin_data,
+        result=result,
+        terminator=optimisers.Terminator(i_lim=1),
+    )
+    # Call plotting function under test
+    plotting.plot_1D_hidden_outputs(
+        plot_name="test_plot_1D_hidden_outputs, output_dim=%i" % output_dim,
+        dir_name=os.path.join(output_dir, "test_plot_1D_hidden_outputs"),
+        dataset=sin_data,
+        x_pred=prediction_column.x_pred,
+        hidden_output_list=prediction_column.hidden_outputs_dict[0],
+        y_pred=prediction_column.predictions_dict[0],
         output_dim=output_dim,
     )
 
