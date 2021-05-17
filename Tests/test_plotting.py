@@ -556,3 +556,50 @@ def test_plot_predictions_gif(dataset_type):
         output_dim=output_dim,
         duration=1000,
     )
+
+
+def test_plot_hidden_outputs_gif():
+    """ Test function to make a gif of hidden layer outputs and predictions
+    formed by the model during training, for regression or classification """
+    # Set random seed and initialise network and dataset
+    set_random_seed_from_args("test_plot_hidden_outputs_gif")
+    n_train = np.random.randint(10, 20)
+    n_pred = np.random.randint(5, 10)
+    n_its = 2
+    dataset = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    model = get_random_network(
+        input_dim=1,
+        output_dim=1,
+        initialiser=models.initialisers.ConstantPreActivationStatistics(
+            x_train=dataset.x_train,
+            y_train=dataset.y_train,
+        ),
+    )
+    # Initialise Result and Predictions column object
+    result = optimisers.Result(verbose=False)
+    pred_column = optimisers.results.columns.Predictions(
+        dataset,
+        n_pred,
+        store_hidden_layer_outputs=True,
+    )
+    result.add_column(pred_column)
+    # Call optimisation function
+    optimisers.gradient_descent(
+        model,
+        dataset,
+        result=result,
+        terminator=optimisers.Terminator(i_lim=n_its),
+        evaluator=optimisers.Evaluator(i_interval=1),
+        line_search=optimisers.LineSearch(),
+    )
+    # Call plotting function
+    plot_name = "test_plot_hidden_outputs_gif"
+    plotting.plot_hidden_outputs_gif(
+        plot_name=plot_name,
+        dir_name=os.path.join(output_dir, plot_name),
+        result=result,
+        prediction_column=pred_column,
+        dataset=dataset,
+        output_dim=1,
+        duration=1000,
+    )
