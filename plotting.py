@@ -339,7 +339,7 @@ def plot_1D_hidden_outputs(
     tp=0.5,
 ):
     """ Plot the outputs in each hidden layer of a model, along with the model
-    predictions, training data, and test data for a regression data set with
+    predictions, training data, and test data for a data set with
     one-dimensional inputs.
 
     Inputs:
@@ -660,6 +660,108 @@ def plot_2D_binary_classification(
     fig.suptitle(plot_name, fontsize=16)
     full_path = save_and_close(plot_name, dir_name, fig)
     return full_path
+
+def plot_2D_hidden_outputs(
+    plot_name,
+    dir_name,
+    dataset,
+    x_pred,
+    y_pred,
+    hidden_output_list,
+    output_dim,
+    tp=0.5,
+):
+    """ Plot the outputs in each hidden layer of a model, along with the model
+    predictions, training data, and test data for a data set with
+    two-dimensional inputs.
+
+    Inputs:
+    -   plot_name: title of the plot. Will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   x_pred: inputs that are propagated through the model in order to
+        calculate the hidden layer outputs and predictions. Should be in a
+        numpy array with shape (2, n_pred), where n_pred is the number of
+        points for which hidden layer outputs are being calculated
+    -   y_pred: outputs from the model after x_pred has been propagated
+        through. Should be in a numpy array with shape (output_dim, n_pred)
+    -   hidden_output_list: list of numpy arrays containing the outputs from
+        each hidden layer of the model (IE each layer except for the last
+        layer, which is the output layer). The length of this list should be
+        one less than the total number of layers in the network, and each
+        element of the list should be a numpy array with shape
+        (layer_output_dim, n_pred), where layer_output_dim is the output
+        dimension for each hidden layer in the network (they don't all have to
+        be equal)
+    -   output_dim: number of output dimensions
+    -   tp: (optional) transparency to use for plotting
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
+    """
+    assert dataset.input_dim == 2
+    # Create figure and axes and define plotting formats
+    num_hidden_outputs = sum(
+        hidden_output.shape[0] for hidden_output in hidden_output_list
+    )
+    num_plots = num_hidden_outputs + (output_dim * 3)
+    num_cols = ceil(sqrt(num_plots))
+    num_rows = ceil(num_plots / num_cols)
+    fig, axes = plt.subplots(
+        nrows=num_rows,
+        ncols=num_cols,
+        figsize=[6 * num_rows, 4 * num_cols],
+    )
+    axes_iter = iter(axes.flat)
+    # Plot hidden outputs
+    for i, hidden_output in enumerate(hidden_output_list):
+        for j in range(hidden_output.shape[0]):
+            ax = next(axes_iter)
+            ax.scatter(
+                x_pred[0],
+                x_pred[1],
+                c=hidden_output[j],
+                alpha=tp,
+            )
+            ax.set_title("Layer %i, unit %i" % (i + 1, j + 1))
+    # Plot output predictions, training and test data
+    for i in range(output_dim):
+        ax = next(axes_iter)
+        ax.scatter(
+            x_pred[0],
+            x_pred[1],
+            c=y_pred[i],
+            alpha=tp,
+        )
+        ax.set_title("Output layer, unit %i" % (i + 1))
+    for i in range(output_dim):
+        ax = next(axes_iter)
+        ax.scatter(
+            dataset.x_train[0],
+            dataset.x_train[1],
+            c=dataset.y_train[i],
+            alpha=tp,
+        )
+        ax.set_title("Train data, dimension %i" % (i + 1))
+    for i in range(output_dim):
+        ax = next(axes_iter)
+        ax.scatter(
+            dataset.x_test[0],
+            dataset.x_test[1],
+            c=dataset.y_test[i],
+            alpha=tp,
+        )
+        ax.set_title("Test data, dimension %i" % (i + 1))
+    # Format, save and close
+    for _ in range((num_rows * num_cols) - num_plots):
+        next(axes_iter).axis("off")
+    fig.suptitle(plot_name, fontsize=16)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
+
 
 def plot_training_curves(
     result_list,
