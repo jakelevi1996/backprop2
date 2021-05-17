@@ -17,7 +17,7 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dXor
 
-    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dDisk
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dDisk --plot_hidden_gif
 
 To get help information for the available arguments, use the following command:
 
@@ -45,6 +45,7 @@ def main(
     t_eval,
     plot_preds,
     plot_pred_gif,
+    plot_hidden_gif,
     dataset_type,
 ):
     """
@@ -67,6 +68,7 @@ def main(
     -   t_eval: TODO
     -   plot_preds: TODO
     -   plot_pred_gif: TODO
+    -   plot_hidden_gif: TODO
     -   dataset_type: TODO
     """
     np.random.seed(1913)
@@ -145,8 +147,11 @@ def main(
             line_search_col = optimisers.results.columns.StepSize(line_search)
             result.add_column(line_search_col)
 
-        if plot_pred_gif:
-            pred_column = optimisers.results.columns.Predictions(dataset)
+        if plot_pred_gif or plot_hidden_gif:
+            pred_column = optimisers.results.columns.Predictions(
+                dataset=dataset,
+                store_hidden_layer_outputs=plot_hidden_gif,
+            )
             result.add_column(pred_column)
 
         # Perform gradient descent
@@ -163,7 +168,7 @@ def main(
         # Store results
         result_list.append(result)
         model_list.append(model)
-        if plot_pred_gif:
+        if plot_pred_gif or plot_hidden_gif:
             prediction_column_list.append(pred_column)
     
     # Make output plots
@@ -189,6 +194,17 @@ def main(
             print("Plotting gif of predictions during training...")
             plotting.plot_predictions_gif(
                 plot_name="Model predictions during training",
+                dir_name=output_dir_repeat,
+                result=result_list[i],
+                prediction_column=prediction_column_list[i],
+                dataset=dataset,
+                output_dim=output_dim,
+                duration=t_eval*1000,
+            )
+        if plot_hidden_gif:
+            print("Plotting gif of hidden layer outputs during training...")
+            plotting.plot_hidden_outputs_gif(
+                plot_name="Hidden layer outputs during training",
                 dir_name=output_dir_repeat,
                 result=result_list[i],
                 prediction_column=prediction_column_list[i],
@@ -296,6 +312,13 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "--plot_hidden_gif",
+        help="If this flag is included, then after training has finished, "
+        "plot a gif of the outputs from the hidden layers of the model "
+        "evolving during training (only valid for 1D or 2D inputs)",
+        action="store_true",
+    )
+    parser.add_argument(
         "-d",
         "--dataset_type",
         help="Type of dataset to use. Options include regression and "
@@ -306,6 +329,7 @@ if __name__ == "__main__":
         default="Sinusoidal",
         type=str,
         dest="dataset_type_str",
+        choices=data.dataset_class_dict.keys(),
     )
 
     # Parse arguments
@@ -340,6 +364,7 @@ if __name__ == "__main__":
         t_eval=args.t_eval,
         plot_preds=args.plot_preds,
         plot_pred_gif=args.plot_pred_gif,
+        plot_hidden_gif=args.plot_hidden_gif,
         dataset_type=dataset_type,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
