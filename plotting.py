@@ -129,9 +129,7 @@ def plot_1D_regression(
     tp=0.75,
 ):
     """ Plot the training data, test data, and model predictions for a
-    regression data set with one-dimensional inputs. The dataset argument
-    should be an instance of data.DataSet, and should contain x_train, y_train,
-    x_test, and y_test attributes.
+    regression data set with one-dimensional inputs
 
     Inputs:
     -   plot_name: title of the plot. Will also be used as the filename
@@ -230,7 +228,7 @@ def plot_2D_regression(
 ):
     """ Plot the training data, test data, and model predictions for a
     regression data set with 2 input dimensions and output_dim output
-    dimensions.
+    dimensions
 
     Inputs:
     -   plot_name: title of the plot. Will also be used as the filename
@@ -330,12 +328,118 @@ def plot_2D_regression(
     full_path = save_and_close(plot_name, dir_name, fig)
     return full_path
 
-def plot_1D_layer_acts(filename, neural_network, xlims=[-1, 1]):
+def plot_1D_hidden_outputs(
+    plot_name,
+    dir_name,
+    dataset,
+    x_pred,
+    y_pred,
+    hidden_output_list,
+    output_dim,
+    tp=0.5,
+):
+    """ Plot the outputs in each hidden layer of a model, along with the model
+    predictions, training data, and test data for a regression data set with
+    one-dimensional inputs.
+
+    Inputs:
+    -   plot_name: title of the plot. Will also be used as the filename
+    -   dir_name: name of directory to save plot to (will be created if it
+        doesn't already exist)
+    -   dataset: should be an instance of data.DataSet, and should contain
+        x_train, y_train, x_test, and y_test attributes
+    -   x_pred: inputs that are propagated through the model in order to
+        calculate the hidden layer outputs and predictions. Should be in a
+        numpy array with shape (1, n_pred), where n_pred is the number of
+        points for which hidden layer outputs are being calculated
+    -   y_pred: outputs from the model after x_pred has been propagated
+        through. Should be in a numpy array with shape (output_dim, n_pred)
+    -   hidden_output_list: list of numpy arrays containing the outputs from
+        each hidden layer of the model (IE each layer except for the last
+        layer, which is the output layer). The length of this list should be
+        one less than the total number of layers in the network, and each
+        element of the list should be a numpy array with shape
+        (layer_output_dim, n_pred), where layer_output_dim is the output
+        dimension for each hidden layer in the network (they don't all have to
+        be equal)
+    -   output_dim: number of output dimensions
+    -   tp: (optional) transparency to use for plotting
+
+    Outputs:
+    -   full_path: full path to the file in which the output image is saved
     """
-    Function to plot the activations of each hidden and output unit in a neural
-    network, with a 1-dimensional input
-    """
-    raise NotImplementedError
+    assert dataset.input_dim == 1
+    # Create figure and axes and define plotting formats
+    fig, axes = plt.subplots(
+        nrows=1,
+        ncols=2,
+        figsize=[12, 6],
+        gridspec_kw={"width_ratios": [5, 1]},
+    )
+    train_data_fmt  = {"color": "b", "marker": "o", "linestyle": ""}
+    test_data_fmt   = {"color": "r", "marker": "o", "linestyle": ""}
+    num_hidden_outputs = sum(
+        hidden_output.shape[0] for hidden_output in hidden_output_list
+    )
+    colours = plt.get_cmap("cool")(np.linspace(0, 1, num_hidden_outputs))
+    colours_iter = iter(colours)
+    # Plot hidden outputs
+    for hidden_output in hidden_output_list:
+        for i in range(hidden_output.shape[0]):
+            axes[0].plot(
+                x_pred.flat,
+                hidden_output[i],
+                color=next(colours_iter),
+                alpha=tp,
+            )
+    # Plot data and output predictions
+    for i in range(output_dim):
+        axes[0].plot(
+            dataset.x_train.flat,
+            dataset.y_train[i],
+            **train_data_fmt,
+            alpha=tp,
+        )
+        axes[0].plot(
+            dataset.x_test.flat,
+            dataset.y_test[i],
+            **test_data_fmt,
+            alpha=tp,
+        )
+        axes[0].plot(
+            x_pred.flat,
+            y_pred[i],
+            color="r",
+            alpha=tp,
+        )
+    # Format, save and close
+    axes[0].grid(True)
+    first_hidden_output_label = "Output from hidden layer 1/%i, unit 1/%i" % (
+        len(hidden_output_list),
+        hidden_output_list[0].shape[0],
+    )
+    last_hidden_output_label = "Output from hidden layer %i/%i, unit %i/%i" % (
+        len(hidden_output_list),
+        len(hidden_output_list),
+        hidden_output_list[-1].shape[0],
+        hidden_output_list[-1].shape[0],
+    )
+    axes[1].legend(
+        handles=[
+            get_handle(label=first_hidden_output_label, color=colours[0]),
+            get_handle(label=last_hidden_output_label,  color=colours[-1]),
+            get_handle(label="Predictions",             color="r"),
+            get_handle(label="Training data",           **train_data_fmt),
+            get_handle(label="Test data",               **test_data_fmt),
+        ],
+        loc="center",
+    )
+    axes[1].axis("off")
+    fig.suptitle(plot_name, fontsize=16)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    full_path = save_and_close(plot_name, dir_name, fig)
+    return full_path
+
 
 def plot_2D_classification(
     plot_name,
