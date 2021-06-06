@@ -418,6 +418,23 @@ class NeuralNetwork():
         """
         return self._error_func(self.y, t).mean()
 
+    def std_error(self, t):
+        """ Calculate the standard deviation (across all data points) of the
+        error between the given targets and the network's predictions for the
+        most recent set of inputs that were propagated through the network.
+
+        Inputs:
+        -   t: targets that the neural network is trying to predict. Should be
+            a numpy array with shape (output_dim, N_D), where N_D is the number
+            of data points (size of dimension 1) of the most recent set of
+            inputs that were propagated through the network
+
+        Outputs:
+        -   e: standard deviation of the error across all data points, as a
+            numpy float64 scalar
+        """
+        return self._error_func(self.y, t).std()
+
     def softmax_output_probabilities(self, x):
         """ Given an input matrix x, propagate that input through the network,
         and apply a softmax function to the output to calculate output
