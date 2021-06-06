@@ -279,7 +279,8 @@ class Predictions(_Column):
         self,
         dataset,
         n_points_per_dim=50,
-        store_hidden_layer_outputs=True,
+        store_hidden_layer_outputs=False,
+        store_hidden_layer_preactivations=False,
         name="Predictions",
     ):
         """ Initialise this Predictions column.
@@ -296,6 +297,17 @@ class Predictions(_Column):
             prediction outputs, but also the outputs from each hidden layer in
             the model (this can be used to plot the evolution of each hidden
             unit during training)
+        -   store_hidden_layer_preactivations: if True, and
+            store_hidden_layer_outputs is True, then the preactivations for
+            each hidden layer are stored (IE the output from the linear
+            transformation of the layer's input, used as input to the layer's
+            activation function), instead of the outputs from the hidden
+            layer's activation function. If store_hidden_layer_outputs is
+            False, then this argument has no effect. This argument might be
+            useful EG if plotting the outputs from multiple hidden layers, when
+            all activations are limited to a specific range such as [0, 1], to
+            make it easier to tell the difference between the outputs from
+            different units
         -   name: name of the column object, used as the column heading when
             evaluating the model
         """
@@ -313,6 +325,7 @@ class Predictions(_Column):
         self.x_pred = np.stack([xx_i.ravel() for xx_i in x_mesh], axis=0)
         self.value_list.append("Yes")
         self.store_hidden_layer_outputs = store_hidden_layer_outputs
+        self.store_preactivations = store_hidden_layer_preactivations
     
     def update(self, kwargs):
         """ Store the predictions of the model on this object's internal
@@ -328,12 +341,18 @@ class Predictions(_Column):
         # Calculate and store the predictions of the model
         y_pred = model(self.x_pred)
         self.predictions_dict[iteration] = y_pred
-        # If specified, store the hidden layer outputs
+        # If specified, store the hidden layer outputs or preactivations
         if self.store_hidden_layer_outputs:
-            self.hidden_outputs_dict[iteration] = [
-                layer.output.copy()
-                for layer in model.layers[:-1]
-            ]
+            if self.store_preactivations:
+                self.hidden_outputs_dict[iteration] = [
+                    layer.pre_activation.copy()
+                    for layer in model.layers[:-1]
+                ]
+            else:
+                self.hidden_outputs_dict[iteration] = [
+                    layer.output.copy()
+                    for layer in model.layers[:-1]
+                ]
 
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
