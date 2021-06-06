@@ -133,7 +133,7 @@ def main(
         )
 
     # Iterate through repeats
-    for _ in range(n_repeats):
+    for i in range(n_repeats):
         # Initialise model and Result object
         model = models.NeuralNetwork(
             input_dim=input_dim,
@@ -143,7 +143,7 @@ def main(
             act_funcs=act_funcs,
         )
 
-        result = optimisers.Result()
+        result = optimisers.Result(name="Repeat %i" % (i + 1))
 
         if line_search is not None:
             line_search_col = optimisers.results.columns.StepSize(line_search)
