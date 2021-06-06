@@ -8,6 +8,7 @@ test-set error during the current iteration) will be displayed every time the
 model is evaluated. """
 
 import numpy as np
+from scipy.stats import norm
 from optimisers.batch import ConstantBatchSize as _ConstantBatchSize
 from optimisers.linesearch import LineSearch as _LineSearch
 from optimisers.terminator import Terminator as _Terminator
@@ -353,6 +354,47 @@ class Predictions(_Column):
                     layer.output.copy()
                     for layer in model.layers[:-1]
                 ]
+
+class TestSetImprovementProbabilitySimple(_Column):
+    """ This column is for comparing the probability of improving the error in
+    the test set between successive iterations, by comparing the mean test-set
+    error during the previous iteration that this column was updated with the
+    mean and standard deviation of the test-set error during the current
+    iteration.
+
+    Simple (in the name of this class) refers to not also using the standard
+    deviation of the test-set error during the previous iteration that this
+    column was updated.
+
+    Note that if the error function for the given model and data-set
+    combination is not bounded below (EG separable binary mixture of Gaussians
+    with a single-layer model with logistic activation function and no
+    regularisation), then it may be inappropriate to use the values calculated
+    by this column as a metric for convergence, because the probability of
+    improving may not be expected to converge towards 50% """
+
+    def __init__(
+        self,
+        model,
+        dataset,
+        name="P(E_(i) < E_(i-m))",
+        format_spec=".5f",
+    ):
+        super().__init__(name, format_spec)
+        model.forward_prop(dataset.x_test)
+        self.prev_mean_test_error = model.mean_error(dataset.y_test)
+    
+    def update(self, kwargs):
+        dataset = kwargs["dataset"]
+        model = kwargs["model"]
+        model.forward_prop(dataset.x_test)
+        mean_test_error = model.mean_error(dataset.y_test)
+        std_test_error = model.std_error(dataset.y_test)
+        p_improve = norm.cdf(
+            (self.prev_mean_test_error - mean_test_error) / std_test_error
+        )
+        self.value_list.append(p_improve)
+        self.prev_mean_test_error = mean_test_error
 
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
