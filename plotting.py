@@ -451,6 +451,7 @@ def plot_2D_classification(
     tp=0.5,
     figsize=[15, 6],
     n_points_per_axis=50,
+    autoscale_contours=False,
 ):
     """ Plot the training data, test data, and model predictions for a
     classification data set with 2 input dimensions and output_dim output
@@ -475,6 +476,10 @@ def plot_2D_classification(
         inches
     -   n_points_per_axis: number of points to use in the x and y axes when
         plotting the predictions of the model
+    -   autoscale_contours: if True, then the colours for the contour lines are
+        chosen automatically based on the observed model predictions. If False
+        (default), then the colours for the contour lines are chosen to be
+        linearly spaced between 0 and 1
 
     Outputs:
     -   full_path: full path to the file in which the output image is saved
@@ -535,9 +540,12 @@ def plot_2D_classification(
     for i in range(output_dim):
         # Make colour map for predictions for this class
         n_levels = 10
-        levels = np.linspace(0, 1, n_levels)
         cmap_table = np.tile(colours[i], [n_levels, 1])
         cmap_table[:, 3] = np.linspace(0, 1, n_levels)
+        if autoscale_contours:
+            levels = n_levels
+        else:
+            levels = np.linspace(0, 1, n_levels)
 
         # Plot predictions
         axes[1].contour(

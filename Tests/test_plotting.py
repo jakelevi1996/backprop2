@@ -225,6 +225,7 @@ def test_plot_2D_classification():
         output_dim=output_dim,
         dataset=classification_data,
         model=model,
+        autoscale_contours=True,
     )
 
 
