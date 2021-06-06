@@ -209,7 +209,8 @@ def main(
                 columns.TestError,
                 columns.TestSetImprovementProbabilitySimple,
                 columns.StepSize,
-            ]
+            ],
+            log_axes_attributes=[columns.StepSize],
         )
 
     for i, model in enumerate(model_list):
