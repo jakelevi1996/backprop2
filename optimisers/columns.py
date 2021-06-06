@@ -8,11 +8,11 @@ test-set error during the current iteration) will be displayed every time the
 model is evaluated. """
 
 import numpy as np
-from _optimisers.batch import ConstantBatchSize as _ConstantBatchSize
-from _optimisers.linesearch import LineSearch as _LineSearch
-from _optimisers.terminator import Terminator as _Terminator
-from _optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
-from _optimisers.abstract_result import AbstractResult as _AbstractResult
+from optimisers.batch import ConstantBatchSize as _ConstantBatchSize
+from optimisers.linesearch import LineSearch as _LineSearch
+from optimisers.terminator import Terminator as _Terminator
+from optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
+from optimisers.abstract_result import AbstractResult as _AbstractResult
 
 class _Column:
     """ Abstract column class, to be subclassed. All subclasses should override

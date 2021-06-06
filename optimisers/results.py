@@ -1,8 +1,8 @@
 import os
 import numpy as np
-from _optimisers import columns
-from _optimisers.abstract_result import AbstractResult
-from _optimisers.timer import Timer
+from optimisers import columns
+from optimisers.abstract_result import AbstractResult
+from optimisers.timer import Timer
 
 # Initialise default column types added to a Result object
 DEFAULT_COLUMN_TYPES = [

@@ -23,7 +23,7 @@ TODO:
 """
 import numpy as np
 from scipy.stats import norm
-from _optimisers.terminator import Terminator
+from optimisers.terminator import Terminator
 
 class _BatchGetter():
     """ Abstract parent class for batch-getters, containing the get_batch

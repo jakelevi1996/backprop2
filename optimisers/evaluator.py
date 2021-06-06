@@ -1,4 +1,4 @@
-from _optimisers.timer import TimedObject
+from optimisers.timer import TimedObject
 
 class Evaluator(TimedObject):
     """ The Evaluator class is used to decide when to evaluate a model's
@@ -12,7 +12,7 @@ class Evaluator(TimedObject):
     
     def set_initial_iteration(self, i):
         """ Use the initial iteration to set the next iteration to evaluate.
-        This method is called in _optimisers/abstract_optimiser.py, in the
+        This method is called in optimisers/abstract_optimiser.py, in the
         AbstractOptimiser.optimise method, before the main optimisation loop.
 
         If the current iteration is 0, then we will evaluate during iteration 0,

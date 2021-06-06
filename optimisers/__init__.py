@@ -1,16 +1,16 @@
 """
 Wrapper for modules, classes and functions related to optimisation, found in the
-_optimisers directory. See unit tests and scripts for usage examples.
+optimisers directory. See unit tests and scripts for usage examples.
 """
-from _optimisers.gradient_descent import gradient_descent, GradientDescent
-from _optimisers.gradient_descent import GradientDescentFixedLearningRate
-from _optimisers.generalised_newton import generalised_newton
-from _optimisers.evaluator import Evaluator, DoNotEvaluate
-from _optimisers.terminator import Terminator
-from _optimisers.linesearch import LineSearch
-from _optimisers import results
-from _optimisers.results import Result
-from _optimisers import batch
+from optimisers.gradient_descent import gradient_descent, GradientDescent
+from optimisers.gradient_descent import GradientDescentFixedLearningRate
+from optimisers.generalised_newton import generalised_newton
+from optimisers.evaluator import Evaluator, DoNotEvaluate
+from optimisers.terminator import Terminator
+from optimisers.linesearch import LineSearch
+from optimisers import results
+from optimisers.results import Result
+from optimisers import batch
 import data, models
 
 def warmup(n_its=1000):

@@ -1,6 +1,6 @@
 import numpy as np
-from _optimisers.abstract_optimiser import AbstractOptimiser
-from _optimisers.results import Result
+from optimisers.abstract_optimiser import AbstractOptimiser
+from optimisers.results import Result
 
 class GeneralisedNewton(AbstractOptimiser):
     def __init__(

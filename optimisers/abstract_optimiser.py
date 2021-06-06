@@ -1,11 +1,11 @@
 """ This module contains only the AbstractOptimiser class """
 
-from _optimisers.results import Result
-from _optimisers.evaluator import Evaluator
-from _optimisers.terminator import Terminator
-from _optimisers.batch import FullTrainingSet
-from _optimisers.columns import Iteration
-from _optimisers.timer import Timer
+from optimisers.results import Result
+from optimisers.evaluator import Evaluator
+from optimisers.terminator import Terminator
+from optimisers.batch import FullTrainingSet
+from optimisers.columns import Iteration
+from optimisers.timer import Timer
 
 class AbstractOptimiser:
     """ This class is an abstract class for model-optimisation, with common

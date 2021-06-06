@@ -1,4 +1,4 @@
-from _optimisers.timer import TimedObject
+from optimisers.timer import TimedObject
 
 class Terminator(TimedObject):
     """ The Terminator class is used to decide when to exit the main loop in the
@@ -15,7 +15,7 @@ class Terminator(TimedObject):
     
     def set_initial_iteration(self, i):
         """ Use the initial iteration number to set the iteration number limit.
-        This method is called in _optimisers/abstract_optimiser.py, in the
+        This method is called in optimisers/abstract_optimiser.py, in the
         AbstractOptimiser.optimise method, before the main optimisation loop.
         """
         if self._num_iterations is not None:
