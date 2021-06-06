@@ -993,8 +993,8 @@ def plot_result_attributes_subplots(
     figsize=[16, 9],
     alpha=0.7,
     marker=None,
-    line_style=None,
-    log_axes_attributes=None
+    line_style="--",
+    log_axes_attributes=None,
 ):
     """ Similar to the plot_result_attribute function, except accept a list of
     attribute types, and use a different subplot for each attribute (and one
@@ -1008,13 +1008,13 @@ def plot_result_attributes_subplots(
     """
     # Set number of plots, rows and columns, and log_axes_attributes
     num_plots = len(attribute_list) + 1
-    if num_rows is None and num_cols is None:
+    if (num_rows is None) and (num_cols is None):
         num_cols = ceil(sqrt(num_plots))
     if num_rows is None:
         num_rows = ceil(num_plots / num_cols)
     if num_cols is None:
         num_cols = ceil(num_plots / num_rows)
-    if num_rows * num_cols < num_plots:
+    if (num_rows * num_cols) < num_plots:
         raise ValueError("Not enough rows/columns for attribute list")
     if log_axes_attributes is None:
         log_axes_attributes = []
@@ -1040,7 +1040,7 @@ def plot_result_attributes_subplots(
                 c=colour_dict[result.name],
                 alpha=alpha,
                 marker=marker,
-                ls=line_style
+                ls=line_style,
             )
         ax.set_xlabel("Iteration")
         ax.set_ylabel(result_list[0].get_column_name(attribute))
@@ -1057,7 +1057,8 @@ def plot_result_attributes_subplots(
             for c, name in zip(colour_list, unique_names_list)
         ]
     )
-    axes.flat[legend_subplot_index].axis("off")
+    for i in range(legend_subplot_index, axes.size):
+        axes.flat[i].axis("off")
     save_and_close(plot_name.replace("\n", ", "), dir_name, fig)
 
 
