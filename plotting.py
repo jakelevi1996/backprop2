@@ -1499,6 +1499,7 @@ def plot_predictions_gif(
     output_dim,
     duration=5000,
     loop=0,
+    verbose=True,
 ):
     """ Make a gif of predictions formed by the model during training.
 
@@ -1518,6 +1519,7 @@ def plot_predictions_gif(
     -   loop: integer number of times the GIF should loop. 0 means that it will
         loop forever. If None, then the image will not loop at all. By default,
         the image will loop forever
+    -   verbose: if True, print progress of plotting each frame to stdout
     """
     # Initialise list of filenames, and output directory for frame images
     filename_list = []
@@ -1539,9 +1541,13 @@ def plot_predictions_gif(
             output_dim=output_dim,
         )
         filename_list.append(filename)
+        if verbose:
+            print(".", end="", flush=True)
     
     # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
+    if verbose:
+        print()
 
 
 def plot_hidden_outputs(dataset, **kwargs):
