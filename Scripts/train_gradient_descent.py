@@ -9,7 +9,9 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_pred_gif --plot_hidden_gif
 
-    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
+    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_test_set_improvement_probability
+
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability
 
     python Scripts/train_gradient_descent.py -i2 -o10 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
 
@@ -31,6 +33,7 @@ import numpy as np
 if __name__ == "__main__":
     import __init__
 import data, models, optimisers, plotting
+from optimisers.results import columns
 
 def main(
     input_dim,
@@ -48,6 +51,7 @@ def main(
     plot_hidden_gif,
     plot_hidden_preactivations_gif,
     dataset_type,
+    plot_test_set_improvement_probability,
 ):
     """
     Main function for the script. See module docstring for more info.
@@ -72,6 +76,7 @@ def main(
     -   plot_hidden_gif: TODO
     -   plot_hidden_preactivations_gif: TODO
     -   dataset_type: TODO
+    -   plot_test_set_improvement_probability: TODO
     """
     np.random.seed(1913)
 
@@ -92,6 +97,8 @@ def main(
         "Train gradient descent",
         param_str
     )
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
 
     # Perform warmup experiment
     optimisers.warmup()
@@ -146,11 +153,11 @@ def main(
         result = optimisers.Result(name="Repeat %i" % (i + 1))
 
         if line_search is not None:
-            line_search_col = optimisers.results.columns.StepSize(line_search)
+            line_search_col = columns.StepSize(line_search)
             result.add_column(line_search_col)
 
         if plot_pred_gif or plot_hidden_gif:
-            pred_column = optimisers.results.columns.Predictions(
+            pred_column = columns.Predictions(
                 dataset=dataset,
                 store_hidden_layer_outputs=plot_hidden_gif,
                 store_hidden_layer_preactivations=(
@@ -158,6 +165,12 @@ def main(
                 ),
             )
             result.add_column(pred_column)
+        
+        if plot_test_set_improvement_probability:
+            test_set_improvement_column = (
+                columns.TestSetImprovementProbabilitySimple(model, dataset)
+            )
+            result.add_column(test_set_improvement_column)
 
         # Perform gradient descent
         optimisers.gradient_descent(
@@ -178,12 +191,27 @@ def main(
     
     # Make output plots
     print("Plotting output plots in \"%s\"..." % output_dir)
+    os.system("explorer \"%s\"" % output_dir)
+    print("Plotting training curves...")
     plotting.plot_training_curves(
         result_list,
         dir_name=output_dir,
         e_lims=error_lims,
     )
-    os.system("explorer \"%s\"" % output_dir)
+    if plot_test_set_improvement_probability:
+        print("Plotting test set improvement probability...")
+        plotting.plot_result_attributes_subplots(
+            plot_name="Test set improvement probability",
+            dir_name=output_dir,
+            result_list=result_list,
+            attribute_list=[
+                columns.TrainError,
+                columns.TestError,
+                columns.TestSetImprovementProbabilitySimple,
+                columns.StepSize,
+            ]
+        )
+
     for i, model in enumerate(model_list):
         output_dir_repeat = os.path.join(output_dir, "Repeat %i" % (i + 1))
         if plot_preds:
@@ -350,6 +378,12 @@ if __name__ == "__main__":
         dest="dataset_type_str",
         choices=data.dataset_class_dict.keys(),
     )
+    parser.add_argument(
+        "--plot_test_set_improvement_probability",
+        help="If this flag is included, then plot the probability of the test "
+        "set error improving each time the Result object is updated",
+        action="store_true",
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -386,5 +420,8 @@ if __name__ == "__main__":
         plot_hidden_gif=args.plot_hidden_gif,
         plot_hidden_preactivations_gif=args.plot_hidden_preactivations_gif,
         dataset_type=dataset_type,
+        plot_test_set_improvement_probability=(
+            args.plot_test_set_improvement_probability
+        ),
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
