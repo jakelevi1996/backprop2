@@ -995,6 +995,7 @@ def plot_result_attributes_subplots(
     marker=None,
     line_style="--",
     log_axes_attributes=None,
+    n_iqr=2,
 ):
     """ Similar to the plot_result_attribute function, except accept a list of
     attribute types, and use a different subplot for each attribute (and one
@@ -1046,6 +1047,19 @@ def plot_result_attributes_subplots(
         ax.set_ylabel(result_list[0].get_column_name(attribute))
         ax.grid(which="major", ls="-")
         ax.grid(which="minor", ls=":", alpha=0.5)
+
+        if attribute not in log_axes_attributes:
+            # Set axis limits
+            y_list = [
+                y
+                for y in result.get_values(attribute)
+                for result in result_list
+            ]
+            median = np.median(y_list)
+            iqr = stats.iqr(y_list)
+            y_lo = min(median - n_iqr*iqr, 0)
+            y_hi = max(median + n_iqr*iqr, 0)
+            ax.set_ylim(y_lo, y_hi)
 
     # Format, save and close
     fig.suptitle(plot_name, fontsize=20)
