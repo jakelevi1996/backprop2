@@ -30,8 +30,8 @@ happens under the hood).
 """
 
 import numpy as np
-from _models import activations, errors, initialisers
-from _models.layer import NeuralLayer
+from models import activations, errors, initialisers
+from models.layer import NeuralLayer
 
 class NeuralNetwork():
     def __init__(
