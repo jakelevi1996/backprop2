@@ -147,8 +147,14 @@ def test_optimal_batch_size_column():
             assert len(reduction_list) == n_repeats
 
 @pytest.mark.parametrize("store_hidden", [False, True])
+@pytest.mark.parametrize("store_preactivations", [False, True])
 @pytest.mark.parametrize("input_dim, output_dim", [(1, 1), (2, 3)])
-def test_predictions_column(input_dim, output_dim, store_hidden):
+def test_predictions_column(
+    input_dim,
+    output_dim,
+    store_hidden,
+    store_preactivations,
+):
     """ Test using a column which stores model predictions during training """
     # Set random seed and initialise network and dataset
     set_random_seed_from_args(
@@ -186,6 +192,7 @@ def test_predictions_column(input_dim, output_dim, store_hidden):
             sin_data,
             n_points_per_dim=n_pred,
             store_hidden_layer_outputs=store_hidden,
+            store_hidden_layer_preactivations=store_preactivations,
         )
         result.add_column(prediction_column)
         # Call optimisation function
