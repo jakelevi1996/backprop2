@@ -7,7 +7,7 @@ optional (by default, a line-search will be used). Optionally also plot:
 
 Below are some examples for calling this script:
 
-    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_pred_gif
+    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_pred_gif --plot_hidden_gif
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds
 
@@ -17,7 +17,7 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dXor
 
-    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dDisk --plot_hidden_gif
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dDisk
 
 To get help information for the available arguments, use the following command:
 
@@ -46,6 +46,7 @@ def main(
     plot_preds,
     plot_pred_gif,
     plot_hidden_gif,
+    plot_hidden_preactivations_gif,
     dataset_type,
 ):
     """
@@ -69,19 +70,20 @@ def main(
     -   plot_preds: TODO
     -   plot_pred_gif: TODO
     -   plot_hidden_gif: TODO
+    -   plot_hidden_preactivations_gif: TODO
     -   dataset_type: TODO
     """
     np.random.seed(1913)
 
     # Get output directory which is specific to the script parameters
     param_str = " ".join([
+        "d%s"   % dataset_type.__name__[:3],
         "i%s"   % input_dim,
         "o%s"   % output_dim,
         "t%s"   % t_lim,
         "n%s"   % n_train,
         "b%s"   % batch_size,
         "u%s"   % num_hidden_units,
-        "d%s"   % dataset_type.__name__[:3],
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -151,6 +153,9 @@ def main(
             pred_column = optimisers.results.columns.Predictions(
                 dataset=dataset,
                 store_hidden_layer_outputs=plot_hidden_gif,
+                store_hidden_layer_preactivations=(
+                    plot_hidden_preactivations_gif
+                ),
             )
             result.add_column(pred_column)
 
@@ -202,9 +207,14 @@ def main(
                 duration=t_eval*1000,
             )
         if plot_hidden_gif:
-            print("Plotting gif of hidden layer outputs during training...")
+            print("Plotting gif of hidden layers during training...")
+            if plot_hidden_preactivations_gif:
+                plot_name="Hidden layer preactivations during training"
+            else:
+                plot_name="Hidden layer outputs during training"
+
             plotting.plot_hidden_outputs_gif(
-                plot_name="Hidden layer outputs during training",
+                plot_name=plot_name,
                 dir_name=output_dir_repeat,
                 result=result_list[i],
                 prediction_column=prediction_column_list[i],
@@ -319,6 +329,15 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "--plot_hidden_preactivations_gif",
+        help="If this flag is included, and the --plot_hidden_gif flag is "
+        "included, then when plotting the gif of the hidden layers of the "
+        "model during training, the hidden layer preactivations are used "
+        "instead of the hidden layer outputs. If the --plot_hidden_gif flag "
+        "is not included, then this flag has no effect.",
+        action="store_true",
+    )
+    parser.add_argument(
         "-d",
         "--dataset_type",
         help="Type of dataset to use. Options include regression and "
@@ -365,6 +384,7 @@ if __name__ == "__main__":
         plot_preds=args.plot_preds,
         plot_pred_gif=args.plot_pred_gif,
         plot_hidden_gif=args.plot_hidden_gif,
+        plot_hidden_preactivations_gif=args.plot_hidden_preactivations_gif,
         dataset_type=dataset_type,
     )
     print("Main function run in %.3f s" % (perf_counter() - t_start))
