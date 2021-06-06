@@ -58,7 +58,7 @@ def test_step_size_column():
         result = optimisers.Result(
             name=test_name,
             file=f,
-            add_default_columns=True
+            add_default_columns=True,
         )
         result.add_column(optimisers.results.columns.StepSize(ls))
         optimisers.gradient_descent(
@@ -67,7 +67,39 @@ def test_step_size_column():
             result=result,
             terminator=optimisers.Terminator(i_lim=n_its),
             evaluator=optimisers.Evaluator(i_interval=1),
-            line_search=ls
+            line_search=ls,
+        )
+
+def test_test_set_improvement_probability_simple_column():
+    """ Test using a column which measures the probability of improvement in
+    the test set """
+    set_random_seed_from_args("test_step_size_column")
+    n_train = np.random.randint(10, 20)
+    n_its = np.random.randint(50, 100)
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    test_name = "Test TestSetImprovementProbabilitySimple column"
+    output_filename = "test_test_set_improvement_probability_simple_column.txt"
+    with open(os.path.join(output_dir, output_filename), "w") as f:
+        ls = optimisers.LineSearch()
+        result = optimisers.Result(
+            name=test_name,
+            file=f,
+            add_default_columns=True,
+        )
+        result.add_column(
+            optimisers.results.columns.TestSetImprovementProbabilitySimple(
+                model,
+                sin_data,
+            )
+        )
+        optimisers.gradient_descent(
+            model,
+            sin_data,
+            result=result,
+            terminator=optimisers.Terminator(i_lim=n_its),
+            evaluator=optimisers.Evaluator(i_interval=1),
+            line_search=ls,
         )
 
 def test_dbs_column():
