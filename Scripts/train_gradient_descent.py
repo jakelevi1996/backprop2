@@ -35,67 +35,31 @@ if __name__ == "__main__":
 import data, models, optimisers, plotting
 from optimisers.results import columns
 
-def main(
-    input_dim,
-    output_dim,
-    n_train,
-    batch_size,
-    t_lim,
-    num_hidden_units,
-    error_lims,
-    n_repeats,
-    line_search,
-    t_eval,
-    plot_preds,
-    plot_pred_gif,
-    plot_hidden_gif,
-    plot_hidden_preactivations_gif,
-    dataset_type,
-    plot_test_set_improvement_probability,
-):
+def main(args):
     """
     Main function for the script. See module docstring for more info.
 
     Inputs:
-    -   input_dim: positive integer number of input dimensions
-    -   output_dim: positive integer number of output dimensions
-    -   n_train: positive integer number of points in the training set
-    -   batch_size: positive integer batch size to use for training
-    -   t_lim: positive float, length of time to train for each experiment
-    -   num_hidden_units: list of positive integers, number of hidden units in
-        each hidden layer of the NeuralNetwork, EG [10] or [20, 20]
-    -   error_lims: list of 2 floats, used as axis limits for the error function
-        axes in the output plots, or None, in which case the axis limits are
-        automatically calculated
-    -   n_repeats: positive integer number of repeats to perform of each
-        experiment
-    -   line_search: TODO
-    -   t_eval: TODO
-    -   plot_preds: TODO
-    -   plot_pred_gif: TODO
-    -   plot_hidden_gif: TODO
-    -   plot_hidden_preactivations_gif: TODO
-    -   dataset_type: TODO
-    -   plot_test_set_improvement_probability: TODO
+    -   args: object containing modified command line arguments as attributes
     """
     np.random.seed(1913)
 
     # Get output directory which is specific to the script parameters
     param_str = " ".join([
-        "d%s"   % dataset_type.__name__[:3],
-        "i%s"   % input_dim,
-        "o%s"   % output_dim,
-        "t%s"   % t_lim,
-        "n%s"   % n_train,
-        "b%s"   % batch_size,
-        "u%s"   % num_hidden_units,
+        "d%s"   % args.dataset_type.__name__[:3],
+        "i%s"   % args.input_dim,
+        "o%s"   % args.output_dim,
+        "t%s"   % args.t_lim,
+        "n%s"   % args.n_train,
+        "b%s"   % args.batch_size,
+        "u%s"   % args.num_hidden_units,
     ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
         current_dir,
         "Outputs",
         "Train gradient descent",
-        param_str
+        param_str,
     )
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -109,10 +73,13 @@ def main(
     prediction_column_list = []
 
     # Initialise dataset object and corresponding error function
-    dataset_kwargs = {"input_dim": input_dim, "n_train": n_train}
-    if not issubclass(dataset_type, data.BinaryClassification):
-        dataset_kwargs["output_dim"] = output_dim
-    dataset = dataset_type(**dataset_kwargs)
+    dataset_kwargs = {
+        "input_dim":   args.input_dim,
+        "n_train":     args.n_train,
+    }
+    if not issubclass(args.dataset_type, data.BinaryClassification):
+        dataset_kwargs["output_dim"] = args.output_dim
+    dataset = args.dataset_type(**dataset_kwargs)
 
     if isinstance(dataset, data.Regression):
         error_func = models.errors.sum_of_squares
@@ -140,33 +107,33 @@ def main(
         )
 
     # Iterate through repeats
-    for i in range(n_repeats):
+    for i in range(args.n_repeats):
         # Initialise model and Result object
         model = models.NeuralNetwork(
-            input_dim=input_dim,
-            output_dim=output_dim,
-            num_hidden_units=num_hidden_units,
+            input_dim=args.input_dim,
+            output_dim=args.output_dim,
+            num_hidden_units=args.num_hidden_units,
             error_func=error_func,
             act_funcs=act_funcs,
         )
 
         result = optimisers.Result(name="Repeat %i" % (i + 1))
 
-        if line_search is not None:
-            line_search_col = columns.StepSize(line_search)
-            result.add_column(line_search_col)
+        if args.line_search is not None:
+            args.line_search_col = columns.StepSize(args.line_search)
+            result.add_column(args.line_search_col)
 
-        if plot_pred_gif or plot_hidden_gif:
+        if args.plot_pred_gif or args.plot_hidden_gif:
             pred_column = columns.Predictions(
                 dataset=dataset,
-                store_hidden_layer_outputs=plot_hidden_gif,
+                store_hidden_layer_outputs=args.plot_hidden_gif,
                 store_hidden_layer_preactivations=(
-                    plot_hidden_preactivations_gif
+                    args.plot_hidden_preactivations_gif
                 ),
             )
             result.add_column(pred_column)
         
-        if plot_test_set_improvement_probability:
+        if args.plot_test_set_improvement_probability:
             test_set_improvement_column = (
                 columns.TestSetImprovementProbabilitySimple(model, dataset)
             )
@@ -176,17 +143,20 @@ def main(
         optimisers.gradient_descent(
             model,
             dataset,
-            line_search=line_search,
+            line_search=args.line_search,
             result=result,
-            evaluator=optimisers.Evaluator(t_interval=t_eval),
-            terminator=optimisers.Terminator(t_lim=t_lim),
-            batch_getter=optimisers.batch.ConstantBatchSize(batch_size, False),
+            evaluator=optimisers.Evaluator(t_interval=args.t_eval),
+            terminator=optimisers.Terminator(t_lim=args.t_lim),
+            batch_getter=optimisers.batch.ConstantBatchSize(
+                args.batch_size,
+                False,
+            ),
         )
 
         # Store results
         result_list.append(result)
         model_list.append(model)
-        if plot_pred_gif or plot_hidden_gif:
+        if args.plot_pred_gif or args.plot_hidden_gif:
             prediction_column_list.append(pred_column)
     
     # Make output plots
@@ -196,9 +166,9 @@ def main(
     plotting.plot_training_curves(
         result_list,
         dir_name=output_dir,
-        e_lims=error_lims,
+        e_lims=args.error_lims,
     )
-    if plot_test_set_improvement_probability:
+    if args.plot_test_set_improvement_probability:
         print("Plotting test set improvement probability...")
         plotting.plot_result_attributes_subplots(
             plot_name="Test set improvement probability",
@@ -215,16 +185,16 @@ def main(
 
     for i, model in enumerate(model_list):
         output_dir_repeat = os.path.join(output_dir, "Repeat %i" % (i + 1))
-        if plot_preds:
+        if args.plot_preds:
             print("Plotting final predictions...")
             plotting.plot_data_predictions(
                 plot_name="Final predictions",
                 dir_name=output_dir_repeat,
                 dataset=dataset,
-                output_dim=output_dim,
+                output_dim=args.output_dim,
                 model=model,
             )
-        if plot_pred_gif:
+        if args.plot_pred_gif:
             print("Plotting gif of predictions during training...")
             plotting.plot_predictions_gif(
                 plot_name="Model predictions during training",
@@ -232,12 +202,12 @@ def main(
                 result=result_list[i],
                 prediction_column=prediction_column_list[i],
                 dataset=dataset,
-                output_dim=output_dim,
-                duration=t_eval*1000,
+                output_dim=args.output_dim,
+                duration=args.t_eval*1000,
             )
-        if plot_hidden_gif:
+        if args.plot_hidden_gif:
             print("Plotting gif of hidden layers during training...")
-            if plot_hidden_preactivations_gif:
+            if args.plot_hidden_preactivations_gif:
                 plot_name="Hidden layer preactivations during training"
             else:
                 plot_name="Hidden layer outputs during training"
@@ -248,8 +218,8 @@ def main(
                 result=result_list[i],
                 prediction_column=prediction_column_list[i],
                 dataset=dataset,
-                output_dim=output_dim,
-                duration=t_eval*1000,
+                output_dim=args.output_dim,
+                duration=args.t_eval*1000,
             )
 
 
@@ -310,6 +280,7 @@ if __name__ == "__main__":
         help="Comma-separated list of hidden units per layer, EG 4,5,6",
         default="10",
         type=str,
+        dest="num_hidden_units_str",
     )
     parser.add_argument(
         "-e",
@@ -389,13 +360,15 @@ if __name__ == "__main__":
     # Parse arguments
     args = parser.parse_args()
 
-    num_hidden_units = [int(i) for i in args.num_hidden_units.split(",")]
+    args.num_hidden_units = [
+        int(i) for i in args.num_hidden_units_str.split(",")
+    ]
     
-    line_search = None if args.no_line_search else optimisers.LineSearch()
+    args.line_search = None if args.no_line_search else optimisers.LineSearch()
 
     args.t_eval = args.t_lim / 50 if args.t_eval is None else args.t_eval
 
-    dataset_type = data.dataset_class_dict[args.dataset_type_str]
+    args.dataset_type = data.dataset_class_dict[args.dataset_type_str]
 
     if args.error_lims is not None:
         float_fmt = lambda e: -float(e[1:]) if e.startswith("n") else float(e)
@@ -405,24 +378,5 @@ if __name__ == "__main__":
 
     # Call main function using command-line arguments
     t_start = perf_counter()
-    main(
-        input_dim=args.input_dim,
-        output_dim=args.output_dim,
-        n_train=args.n_train,
-        batch_size=args.batch_size,
-        t_lim=args.t_lim,
-        num_hidden_units=num_hidden_units,
-        error_lims=args.error_lims,
-        n_repeats=args.n_repeats,
-        line_search=line_search,
-        t_eval=args.t_eval,
-        plot_preds=args.plot_preds,
-        plot_pred_gif=args.plot_pred_gif,
-        plot_hidden_gif=args.plot_hidden_gif,
-        plot_hidden_preactivations_gif=args.plot_hidden_preactivations_gif,
-        dataset_type=dataset_type,
-        plot_test_set_improvement_probability=(
-            args.plot_test_set_improvement_probability
-        ),
-    )
+    main(args)
     print("Main function run in %.3f s" % (perf_counter() - t_start))
