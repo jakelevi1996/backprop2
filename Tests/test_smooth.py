@@ -30,3 +30,24 @@ def test_plot_smoother(smoother_type):
         ],
     )
 
+@pytest.mark.parametrize("smoother_type", [
+    smooth.Identity,
+    smooth.Exponential,
+    smooth.MovingAverage,
+])
+def test_smoother_constant_input_output(smoother_type):
+    """ Test that, for appropriate types of smoothers, a constant input signal
+    gives a constant output signal over the course of multiple data points, and
+    that after the constant input signal, a change in the input signal causes a
+    change in the output signal """
+    set_random_seed_from_args("test_plot_smoother", smoother_type)
+    x0 = np.random.normal()
+    n = np.random.randint(50, 100)
+    smoother = smoother_type(x0)
+    for _ in range(n):
+        y = smoother.smooth(x0)
+        assert y == x0
+    
+    x1 = x0 + 1
+    y = smoother.smooth(x1)
+    assert y != x0
