@@ -71,7 +71,7 @@ class MovingAverage(_Smoother):
         self._buffer[self._i] = x
         self._i += 1
         if self._i == self._n:
-            self._i -= self._n
+            self._i = 0
         y = mean(self._buffer)
         return y
 
