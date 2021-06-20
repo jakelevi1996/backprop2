@@ -75,6 +75,30 @@ class MovingAverage(_Smoother):
         y = mean(self._buffer)
         return y
 
+class MovingMaximum(_Smoother):
+    def __init__(self, x0, n=5):
+        """ Initialise a moving maximum smoother, which smooths a noisy signal
+        x according to the following equation:
+
+            y(m) = max(x(m), x(m-1), ... , x(m-n+1))
+
+        Inputs:
+        -   x0: initial value of x, also used as assumed values of x for m < 0
+        -   n: number of most recent input values to store in order to
+            calculate the smoothed output value
+        """
+        self._buffer = [x0] * n
+        self._i = 0
+        self._n = n
+    
+    def smooth(self, x):
+        self._buffer[self._i] = x
+        self._i += 1
+        if self._i == self._n:
+            self._i = 0
+        y = max(self._buffer)
+        return y
+
 class KalmanFilter(_Smoother):
     def __init__(self):
         raise NotImplementedError
@@ -85,5 +109,6 @@ smoother_dict = {
         Identity,
         Exponential,
         MovingAverage,
+        MovingMaximum,
     ]
 }

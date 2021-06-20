@@ -34,6 +34,7 @@ def test_plot_smoother(smoother_type):
     smooth.Identity,
     smooth.Exponential,
     smooth.MovingAverage,
+    smooth.MovingMaximum,
 ])
 def test_smoother_constant_input_output(smoother_type):
     """ Test that, for appropriate types of smoothers, a constant input signal
