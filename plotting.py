@@ -995,6 +995,7 @@ def plot_result_attributes_subplots(
     marker=None,
     line_style="--",
     log_axes_attributes=None,
+    iqr_axis_scaling=False,
     n_iqr=2,
 ):
     """ Similar to the plot_result_attribute function, except accept a list of
@@ -1048,7 +1049,7 @@ def plot_result_attributes_subplots(
         ax.grid(which="major", ls="-")
         ax.grid(which="minor", ls=":", alpha=0.5)
 
-        if attribute not in log_axes_attributes:
+        if iqr_axis_scaling and (attribute not in log_axes_attributes):
             # Set axis limits
             y_list = [
                 y
