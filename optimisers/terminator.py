@@ -1,9 +1,9 @@
 from optimisers.timer import TimedObject
 
 class Terminator(TimedObject):
-    """ The Terminator class is used to decide when to exit the main loop in the
-    AbstractOptimiser.optimise method, based on either time, iteration number,
-    or error value.
+    """ The Terminator class is used to decide when to exit the main loop in
+    the AbstractOptimiser.optimise method, based on either time, iteration
+    number, or error value.
 
     TODO: add support for DBS
     """
@@ -12,6 +12,7 @@ class Terminator(TimedObject):
         self.t_lim = t_lim
         self.e_lim = e_lim
         self._num_iterations = i_lim
+        self._init_timer()
     
     def set_initial_iteration(self, i):
         """ Use the initial iteration number to set the iteration number limit.

@@ -9,14 +9,15 @@ class Evaluator(TimedObject):
         self.t_interval = t_interval
         self.i_interval = i_interval
         self.t_next_print = 0
+        self._init_timer()
     
     def set_initial_iteration(self, i):
         """ Use the initial iteration to set the next iteration to evaluate.
         This method is called in optimisers/abstract_optimiser.py, in the
         AbstractOptimiser.optimise method, before the main optimisation loop.
 
-        If the current iteration is 0, then we will evaluate during iteration 0,
-        because we want to know the initial performance of the model, before
+        If the current iteration is 0, then we will evaluate during iteration
+        0, because we want to know the initial performance of the model, before
         optimisation starts. Otherwise we must be re-entering the optimise
         method, therefore we assume that the current iteration has been
         evaluated after the end of the last optimisation loop, so the next time

@@ -11,14 +11,15 @@ class AbstractResult(TimedObject):
     every time the optimisation function is called """
     def __init__(self):
         """ Initialise an AbstractResult object, which by default is not
-        verbose, and has already "begun" (so that there is no need for a "begin"
-        method) """
+        verbose, and has already "begun" (so that there is no need for a
+        "begin" method) """
         self.verbose = False
         self.begun = True
+        self._init_timer()
 
     def get_iteration_number(self):
-        """ Called by AbstractOptimiser.optimise when initialising the iteration
-        number """
+        """ Called by AbstractOptimiser.optimise when initialising the
+        iteration number """
         return 0
 
     def update(self, **kwargs):

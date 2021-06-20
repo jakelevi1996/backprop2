@@ -3,8 +3,9 @@
 from time import perf_counter
 
 class Timer:
-    """ Timer object, which can be shared between different classes, for example
-    Result, Evaluator, Terminator, which all require access to a shared timer
+    """ Timer object, which can be shared between different classes, for
+    example Result, Evaluator, Terminator, which all require access to a shared
+    timer
     """
     def __init__(self):
         """ Initialise a Timer object """
@@ -22,10 +23,16 @@ class Timer:
         return perf_counter() - self._start_time
 
 class TimedObject:
-    """ Class representing an object which has a timer. This timer can be shared
-    between multiple objects (EG a Result, an Evaluator, and a Terminator). This
-    class is intended to be inherited from, but not instantiated directly """
-    _timer = None
+    """ Class representing an object which has a timer. This timer can be
+    shared between multiple objects (EG a Result, an Evaluator, and a
+    Terminator). This class is intended to be inherited from, but not
+    instantiated directly """
+    
+    def _init_timer(self):
+        """ Initialise a _timer attrinute for this TimedObject object. This
+        method MUST be called by all subclasses of TimedObject when they are
+        initialised """
+        self._timer = None
 
     def set_timer(self, timer):
         """ Set the timer for this object """

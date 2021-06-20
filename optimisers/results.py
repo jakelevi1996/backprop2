@@ -15,8 +15,8 @@ DEFAULT_COLUMN_TYPES = [
 class Result(AbstractResult):
     """
     Class to store the results of optimisation in a single object which can be
-    passed directly to plotting and/or analysis functions. Also contains methods
-    for updating and displaying results.
+    passed directly to plotting and/or analysis functions. Also contains
+    methods for updating and displaying results.
 
     NOTE: saving and loading of Result objects is currently deprecated, because
     due to updating this module with Column objects, implementing saving and
@@ -47,6 +47,7 @@ class Result(AbstractResult):
         self.begun = False
         if add_default_columns:
             self._add_default_columns()
+        self._init_timer()
 
     def _add_default_columns(self):
         for col in DEFAULT_COLUMN_TYPES:
@@ -81,14 +82,15 @@ class Result(AbstractResult):
     
     def begin(self):
         """ Display column headers for the columns in this result (if this
-        result object is verbose, and these column headers have not already been
-        displayed by calling this method previously), and if this result does
-        not have a timer object, then add a timer object, and tell it to begin.
+        result object is verbose, and these column headers have not already
+        been displayed by calling this method previously), and if this result
+        does not have a timer object, then add a timer object, and tell it to
+        begin.
 
         If a specific timer object is to be added to this Result class, which
         can be done using the set_timer method (inherited from the TimedObject
-        class via the AbstractResult class), then the set_timer method should be
-        called before this method (Result.begin), in order to avoid
+        class via the AbstractResult class), then the set_timer method should
+        be called before this method (Result.begin), in order to avoid
         unnecessarily initialising an extra timer object """
         if self.verbose:
             self._display_headers()
