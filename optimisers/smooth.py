@@ -25,7 +25,6 @@ class Identity(_Smoother):
 
 class Exponential(_Smoother):
     def __init__(self, x0, alpha=0.25):
-    # def __init__(self, x0, alpha=0.1):
         """ Initialise an exponential smoother, which smooths a noisy signal x
         according to the following equation:
 
