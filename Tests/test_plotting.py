@@ -396,13 +396,13 @@ def test_make_gif():
     for t_i in t:
         y = np.sin(2 * np.pi * (x - t_i))
         plot_name = "Test make gif, t = %.2f" % t_i
-        plotting.simple_plot(x, y, "x", "y", plot_name, dir_name, 1, "b-")
+        plotting.simple_plot([x, y, "b-"], plot_name, dir_name)
         output_filename = "%s.png" % plot_name
         output_path = os.path.join(dir_name, output_filename)
         image_path_list.append(output_path)
     # Now turn image files into a gif
     plotting.make_gif(
-        output_name="Test make gif",
+        output_name="test_make_gif",
         output_dir=dir_name,
         input_path_list=image_path_list,
         duration=(1000 / n_frames)

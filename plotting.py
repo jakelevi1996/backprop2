@@ -35,27 +35,40 @@ def get_handle(*args, **kwargs):
     return Line2D([], [], *args, **kwargs)
 
 def simple_plot(
-    x,
-    y,
-    x_label,
-    y_label,
+    plot_args,
     plot_name,
     dir_name,
-    alpha=0.5,
-    fmt="bo"
+    x_label=None,
+    y_label=None,
+    legend_kwarg_list=None,
 ):
-    """ Make a simple plot, with x and y data, axis labels, a title,
-    configurable transparency and marker/line format, and save in an image file
-    with the same name as the title, in the specified directory """
+    """ Make a simple plot, with data, a title, and optional axis labels and
+    legend entries, and save the output image to disk in an image file with the
+    same name as the title, in the specified directory.
+
+    plot_args should be a list of positional arguments which are unpacked and
+    passed to the matplotlib.pyplot.plot function, EG [x, y, "bo--].
+
+    legend_kwarg_list is optional, and if provided, should be a list of
+    dictionaries, where each dictionary refers to a legend entry, and contains
+    keyword arguments which describe the properties of the legend entry, EG
+    [{"label": "x", "c": "b"}, {"label": "y", "c": "r"}] """
     # Create figure and plot
     plt.figure(figsize=[8, 6])
-    plt.plot(x, y, fmt, alpha=alpha)
+    plt.plot(*plot_args)
     # Format, save and close the figure
     plt.title(plot_name)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
     plt.tight_layout()
     plt.grid(True)
+    if x_label is not None:
+        plt.xlabel(x_label)
+    if y_label is not None:
+        plt.ylabel(y_label)
+    if legend_kwarg_list is not None:
+        plt.legend(handles=[
+            get_handle(**kwargs)
+            for kwargs in legend_kwarg_list
+        ])
     save_and_close(plot_name, dir_name)
 
 def plot_data_predictions(dataset, **kwargs):
