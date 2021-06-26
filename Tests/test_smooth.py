@@ -55,7 +55,7 @@ def test_smoother_constant_input_output(smoother_type):
 
 def test_moving_average_parameters():
     """ Test moving average filters with a range of buffer lengths """
-    set_random_seed_from_args("test_moving_average_parameters")
+    set_random_seed_from_args("test_smoother_parameters")
     t = np.linspace(0, 3, 100)
     x = np.sin(2 * np.pi * t) + 0.5*np.random.normal(size=t.shape)
     y_list = [
@@ -67,7 +67,7 @@ def test_moving_average_parameters():
         for smoother in [smooth.MovingAverage(x[0], n=n)]
     ]
     plotting.simple_plot(
-        [t, x, "bo-"] + [x for y in y_list for x in [t, y, "r-"]],
+        [t, x, "bo-"] + [i for y in y_list for i in [t, y, "r-"]],
         "test_moving_average_parameters",
         output_dir,
         legend_kwarg_list=[
@@ -79,7 +79,7 @@ def test_moving_average_parameters():
 def test_exponential_parameters():
     """ Test exponential smoothers with a range of values for alpha (smoothing
     constant) """
-    set_random_seed_from_args("test_exponential_parameters")
+    set_random_seed_from_args("test_smoother_parameters")
     t = np.linspace(0, 3, 100)
     x = np.sin(2 * np.pi * t) + 0.5*np.random.normal(size=t.shape)
     y_list = [
@@ -91,7 +91,7 @@ def test_exponential_parameters():
         for smoother in [smooth.Exponential(x[0], alpha=alpha)]
     ]
     plotting.simple_plot(
-        [t, x, "bo-"] + [x for y in y_list for x in [t, y, "r-"]],
+        [t, x, "bo-"] + [i for y in y_list for i in [t, y, "r-"]],
         "test_exponential_parameters",
         output_dir,
         legend_kwarg_list=[
