@@ -53,7 +53,7 @@ def test_smoother_constant_input_output(smoother_type):
     y = smoother.smooth(x1)
     assert y != x0
 
-def test_moving_average_parameters():
+def test_moving_average_parameters(n_lo=5, n_hi=25):
     """ Test moving average filters with a range of buffer lengths """
     set_random_seed_from_args("test_smoother_parameters")
     t = np.linspace(0, 3, 100)
@@ -63,7 +63,7 @@ def test_moving_average_parameters():
             smoother.smooth(xi)
             for xi in x
         ]
-        for n in range(5, 25, 2)
+        for n in range(n_lo, n_hi, 2)
         for smoother in [smooth.MovingAverage(x[0], n=n)]
     ]
     plotting.simple_plot(
@@ -72,11 +72,15 @@ def test_moving_average_parameters():
         output_dir,
         legend_kwarg_list=[
             {"label": "Input signal", "c": "b", "ls": "-", "marker": "o"},
-            {"label": "Smoothed signal, $5\\leq n<25$", "c": "r", "ls": "-"},
+            {
+                "label": "Smoothed signal, $%i\\leq n<%i$" % (n_lo, n_hi),
+                "c": "r",
+                "ls": "-",
+            },
         ],
     )
 
-def test_exponential_parameters():
+def test_exponential_parameters(alpha_lo=0.05, alpha_hi=0.25):
     """ Test exponential smoothers with a range of values for alpha (smoothing
     constant) """
     set_random_seed_from_args("test_smoother_parameters")
@@ -87,7 +91,7 @@ def test_exponential_parameters():
             smoother.smooth(xi)
             for xi in x
         ]
-        for alpha in np.linspace(0.1, 0.5, 10)
+        for alpha in np.linspace(alpha_lo, alpha_hi, 10)
         for smoother in [smooth.Exponential(x[0], alpha=alpha)]
     ]
     plotting.simple_plot(
@@ -97,7 +101,8 @@ def test_exponential_parameters():
         legend_kwarg_list=[
             {"label": "Input signal", "c": "b", "ls": "-", "marker": "o"},
             {
-                "label": "Smoothed signal, $0.1\\leq \\alpha<0.5$",
+                "label": "Smoothed signal, $%.2f\\leq \\alpha<%.2f$"
+                % (alpha_lo, alpha_hi),
                 "c": "r",
                 "ls": "-",
             },
