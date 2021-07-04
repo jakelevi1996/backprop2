@@ -185,6 +185,7 @@ def main(args):
                 columns.StepSize,
             ],
             log_axes_attributes=[columns.StepSize],
+            iqr_axis_scaling=True,
         )
 
     for i, model in enumerate(model_list):
