@@ -135,7 +135,11 @@ def main(args):
         
         if args.plot_test_set_improvement_probability:
             test_set_improvement_column = (
-                columns.TestSetImprovementProbabilitySimple(model, dataset)
+                columns.TestSetImprovementProbabilitySimple(
+                    model,
+                    dataset,
+                    smoother=optimisers.smooth.MovingAverage(0, n=10),
+                )
             )
             result.add_column(test_set_improvement_column)
 

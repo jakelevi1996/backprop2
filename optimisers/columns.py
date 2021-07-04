@@ -14,6 +14,7 @@ from optimisers.linesearch import LineSearch as _LineSearch
 from optimisers.terminator import Terminator as _Terminator
 from optimisers.evaluator import DoNotEvaluate as _DoNotEvaluate
 from optimisers.abstract_result import AbstractResult as _AbstractResult
+from optimisers import smooth
 
 class _Column:
     """ Abstract column class, to be subclassed. All subclasses should override
@@ -379,10 +380,14 @@ class TestSetImprovementProbabilitySimple(_Column):
         dataset,
         name="P(E_(i) < E_(i-m))",
         format_spec=".5f",
+        smoother=None,
+        use_cdf=False,
     ):
         super().__init__(name, format_spec)
         model.forward_prop(dataset.x_test)
         self.prev_mean_test_error = model.mean_error(dataset.y_test)
+        self._smoother = smoother
+        self._use_cdf = use_cdf
     
     def update(self, kwargs):
         dataset = kwargs["dataset"]
@@ -390,9 +395,13 @@ class TestSetImprovementProbabilitySimple(_Column):
         model.forward_prop(dataset.x_test)
         mean_test_error = model.mean_error(dataset.y_test)
         std_test_error = model.std_error(dataset.y_test)
-        p_improve = norm.cdf(
+        p_improve = (
             (self.prev_mean_test_error - mean_test_error) / std_test_error
         )
+        if self._use_cdf:
+            p_improve = norm.cdf(p_improve)
+        if self._smoother is not None:
+            p_improve = self._smoother.smooth(p_improve)
         self.value_list.append(p_improve)
         self.prev_mean_test_error = mean_test_error
 
