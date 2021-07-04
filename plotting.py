@@ -1035,7 +1035,7 @@ def plot_result_attributes_subplots(
         log_axes_attributes = []
 
     # Create subplots, name list, colour list, and colour dictionary
-    fig, axes = plt.subplots(num_rows, num_cols, sharex=True, figsize=figsize)
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=figsize)
     name_list = [result.name for result in result_list]
     unique_names_list = sorted(list(set(name_list)))
     num_colours = len(unique_names_list)
