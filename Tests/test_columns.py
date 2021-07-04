@@ -70,7 +70,15 @@ def test_step_size_column():
             line_search=ls,
         )
 
-def test_test_set_improvement_probability_simple_column():
+@pytest.mark.parametrize(
+    "smoother_type",
+    [None, optimisers.smooth.MovingAverage],
+)
+@pytest.mark.parametrize("use_cdf", [False, True])
+def test_test_set_improvement_probability_simple_column(
+    smoother_type,
+    use_cdf,
+):
     """ Test using a column which measures the probability of improvement in
     the test set """
     set_random_seed_from_args("test_step_size_column")
@@ -78,8 +86,15 @@ def test_test_set_improvement_probability_simple_column():
     n_its = np.random.randint(50, 100)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
-    test_name = "Test TestSetImprovementProbabilitySimple column"
-    output_filename = "test_test_set_improvement_probability_simple_column.txt"
+    test_name = (
+        "test_test_set_improvement_probability_simple_column, "
+        "use_cdf=%s, smoother_type=%s" % (use_cdf, (
+            None
+            if (smoother_type is None)
+            else smoother_type.__name__
+        ))
+    )
+    output_filename = "%s.txt" % test_name
     with open(os.path.join(output_dir, output_filename), "w") as f:
         ls = optimisers.LineSearch()
         result = optimisers.Result(
@@ -87,10 +102,17 @@ def test_test_set_improvement_probability_simple_column():
             file=f,
             add_default_columns=True,
         )
+        # if smoother_type is not None:
+        #     smoother = smoother_type(0)
+        # else:
+        #     smoother = None
+        smoother = None if (smoother_type is None) else smoother_type(0)
         result.add_column(
             optimisers.results.columns.TestSetImprovementProbabilitySimple(
-                model,
-                sin_data,
+                model=model,
+                dataset=sin_data,
+                smoother=smoother,
+                use_cdf=use_cdf,
             )
         )
         optimisers.gradient_descent(
