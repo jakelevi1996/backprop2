@@ -1006,7 +1006,7 @@ def plot_result_attributes_subplots(
     figsize=[16, 9],
     alpha=0.7,
     marker=None,
-    line_style="--",
+    line_style="-",
     log_axes_attributes=None,
     iqr_axis_scaling=False,
     n_iqr=2,
