@@ -213,16 +213,14 @@ def test_mean_error(repeat):
     assert mean_error.size == 1
 
 @pytest.mark.parametrize("repeat", range(3))
-def test_std_error(repeat):
-    """ Test calculating the standard deviation of the error of a network with
+def test_error(repeat):
+    """ Test calculating the error of a network in predicting a dataset with
     multi-dimensional inputs and outputs, and multiple data points """
     set_random_seed_from_args("test_std_error", repeat)
-    n, x, t, _ = get_random_network_inputs_targets()
+    n, x, t, N_D = get_random_network_inputs_targets()
     n.forward_prop(x)
-    std_error = n.std_error(t)
-    assert std_error.shape == ()
-    assert std_error.size == 1
-    assert std_error > 0
+    error = n.error(t)
+    assert error.shape == (1, N_D)
 
 @pytest.mark.parametrize("repeat", range(3))
 def test_save_load(repeat):
