@@ -378,7 +378,7 @@ class TestSetImprovementProbabilitySimple(_Column):
         self,
         model,
         dataset,
-        name="P(E_(i) < E_(i-m))",
+        name="p(improve)_test_set",
         format_spec=".5f",
         smoother=None,
         use_cdf=False,
@@ -406,6 +406,23 @@ class TestSetImprovementProbabilitySimple(_Column):
         self.value_list.append(p_improve)
         self.prev_mean_test_error = mean_test_error
 
+
+class BatchImprovementProbability(_Column):
+    def __init__(
+        self,
+        dynamic_terminator,
+        name="p(improve)_batch",
+        format_spec=".4f",
+    ):
+        """ Initialise a column to track the most recent probability of
+        improvement on each consecutive batch, according to a DynamicTerminator
+        object. A DynamicTerminator must be used during optimisation, and this
+        column must be initialised with that DynamicTerminator object """
+        self._dynamic_terminator = dynamic_terminator
+        super().__init__(name, format_spec)
+    
+    def update(self, kwargs):
+        self.value_list.append(self._dynamic_terminator._p_improve_list[-1])
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
