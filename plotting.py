@@ -11,7 +11,8 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize, ListedColormap
 from scipy import stats
 from scipy.special import softmax
-import data, optimisers
+import data
+import optimisers
 
 def save_and_close(plot_name, dir_name, fig=None, file_ext="png"):
     """ Save and close the figure, first creating the output directory if it
