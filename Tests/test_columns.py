@@ -81,7 +81,9 @@ def test_test_set_improvement_probability_simple_column(
 ):
     """ Test using a column which measures the probability of improvement in
     the test set """
-    set_random_seed_from_args("test_step_size_column")
+    set_random_seed_from_args(
+        "test_test_set_improvement_probability_simple_column",
+    )
     n_train = np.random.randint(10, 20)
     n_its = np.random.randint(50, 100)
     model = get_random_network(input_dim=1, output_dim=1)
@@ -102,10 +104,6 @@ def test_test_set_improvement_probability_simple_column(
             file=f,
             add_default_columns=True,
         )
-        # if smoother_type is not None:
-        #     smoother = smoother_type(0)
-        # else:
-        #     smoother = None
         smoother = None if (smoother_type is None) else smoother_type(0)
         result.add_column(
             optimisers.results.columns.TestSetImprovementProbabilitySimple(
@@ -120,6 +118,58 @@ def test_test_set_improvement_probability_simple_column(
             sin_data,
             result=result,
             terminator=optimisers.Terminator(i_lim=n_its),
+            evaluator=optimisers.Evaluator(i_interval=1),
+            line_search=ls,
+        )
+
+@pytest.mark.parametrize(
+    "smoother_type",
+    [None, optimisers.smooth.MovingAverage],
+)
+def test_batch_improvement_probability_column(smoother_type):
+    """ Test using a column which measures the probability of improvement in
+    each consecutive batch """
+    set_random_seed_from_args("test_step_size_column")
+    n_train = np.random.randint(10, 20)
+    n_its = np.random.randint(50, 100)
+    model = get_random_network(input_dim=1, output_dim=1)
+    sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
+    batch_size = np.random.randint(3, sin_data.n_train)
+    test_name = (
+        "test_batch_improvement_probability_column, smoother_type=%s"
+        % (
+            None
+            if (smoother_type is None)
+            else smoother_type.__name__
+        )
+    )
+    output_filename = "%s.txt" % test_name
+    with open(os.path.join(output_dir, output_filename), "w") as f:
+        ls = optimisers.LineSearch()
+        result = optimisers.Result(
+            name=test_name,
+            file=f,
+            add_default_columns=True,
+        )
+        smoother = None if (smoother_type is None) else smoother_type(0)
+        dynamic_terminator = optimisers.DynamicTerminator(
+            model=model,
+            dataset=sin_data,
+            batch_size=batch_size,
+            smoother=smoother,
+            i_lim=n_its,
+        )
+        result.add_column(
+            optimisers.results.columns.BatchImprovementProbability(
+                dynamic_terminator,
+            )
+        )
+        optimisers.gradient_descent(
+            model,
+            sin_data,
+            result=result,
+            terminator=dynamic_terminator,
+            batch_getter=dynamic_terminator,
             evaluator=optimisers.Evaluator(i_interval=1),
             line_search=ls,
         )
