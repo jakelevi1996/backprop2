@@ -48,6 +48,6 @@ def test_dynamic_terminator(repeat):
         x_batch, y_batch = dynamic_terminator.get_batch(dataset)
         assert x_batch.shape == (dataset.input_dim, batch_size)
         assert y_batch.shape == (dataset.output_dim, batch_size)
-        assert len(dynamic_terminator._p_improve_list) == (i + 1)
+        assert len(dynamic_terminator._p_improve_list) == (i + 2)
     
     assert dynamic_terminator.ready_to_terminate(num_iters)

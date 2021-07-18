@@ -78,14 +78,14 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self._prev_mean_error = model.mean_error(dataset.y_train)
         self._model = model
         self._smoother = smoother
-        self._p_improve_list = []
+        self._p_improve_list = [0]
 
     def ready_to_terminate(self, i=None, error=None):
         """ Return True if ready to break out of the minimisation loop,
         otherwise return False """
 
-        if self._p_improve_list[-1] < -1:
-            print(self._p_improve_list)
+        if self._p_improve_list[-1] < -1: # TODO: make this threshold configurable
+            print(self._p_improve_list) # TODO: delete this line <---
             return True
 
         if self.t_lim is not None:
