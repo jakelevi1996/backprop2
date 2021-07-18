@@ -6,7 +6,7 @@ from optimisers.gradient_descent import gradient_descent, GradientDescent
 from optimisers.gradient_descent import GradientDescentFixedLearningRate
 from optimisers.generalised_newton import generalised_newton
 from optimisers.evaluator import Evaluator, DoNotEvaluate
-from optimisers.terminator import Terminator
+from optimisers.terminator import Terminator, DynamicTerminator
 from optimisers.linesearch import LineSearch
 from optimisers import results
 from optimisers.results import Result

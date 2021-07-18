@@ -1,4 +1,6 @@
+import numpy as np
 from optimisers.timer import TimedObject
+from optimisers.batch import _BatchGetter
 
 class Terminator(TimedObject):
     """ The Terminator class is used to decide when to exit the main loop in
@@ -42,3 +44,87 @@ class Terminator(TimedObject):
                 return True
         
         return False
+
+class DynamicTerminator(Terminator, _BatchGetter):
+    """ Class for a terminator which terminates dynamically when the model is
+    no longer providing consistent improvements in recently unseen points from
+    the training set. If this class is used as the terminator for optimisation,
+    then it must also be used as the batch-getter.
+
+    TODO: implement dynamic batch sizing based on probability of improvement on
+    recently unseen points
+    """
+    def __init__(
+        self,
+        model,
+        dataset,
+        batch_size,
+        replace=True,
+        smoother=None,
+        t_lim=None,
+        i_lim=None,
+    ):
+        self.t_lim = t_lim
+        self._num_iterations = i_lim
+        self._init_timer()
+
+        if type(batch_size) is not int:
+            raise TypeError("batch_size argument must be an integer")
+
+        self.batch_size = batch_size
+        self.replace = replace
+
+        model.forward_prop(dataset.x_train)
+        self._prev_mean_error = model.mean_error(dataset.y_train)
+        self._model = model
+        self._smoother = smoother
+        self._p_improve_list = []
+
+    def ready_to_terminate(self, i=None, error=None):
+        """ Return True if ready to break out of the minimisation loop,
+        otherwise return False """
+
+        if self._p_improve_list[-1] < -1:
+            print(self._p_improve_list)
+            return True
+
+        if self.t_lim is not None:
+            if self.time_elapsed() >= self.t_lim:
+                return True
+        
+        if self.i_lim is not None:
+            if i >= self.i_lim:
+                return True
+        
+        return False
+
+    def get_batch(self, dataset):
+        """ Get a batch for the next iteration, and also calculate the
+        probability of improvement using the new batch, which will be used when
+        the ready_to_terminate method is called """
+        # Choose the batch
+        batch_inds = np.random.choice(
+            dataset.n_train,
+            size=self.batch_size,
+            replace=self.replace
+        )
+        x_batch = dataset.x_train[:, batch_inds]
+        y_batch = dataset.y_train[:, batch_inds]
+
+        # Calculate the probability of improvement
+        self._model.forward_prop(x_batch)
+        error = self._model.error(y_batch)
+        mean_error = error.mean()
+        std_error = error.std()
+        p_improve = (
+            (self._prev_mean_error - mean_error) / std_error
+        )
+        if self._smoother is not None:
+            p_improve = self._smoother.smooth(p_improve)
+        
+        self._p_improve_list.append(p_improve)
+        self._prev_mean_error = mean_error
+
+        # Return the inputs and outputs for the new batch
+        return x_batch, y_batch
+
