@@ -8,10 +8,9 @@ from optimisers.generalised_newton import generalised_newton
 from optimisers.evaluator import Evaluator, DoNotEvaluate
 from optimisers.terminator import Terminator, DynamicTerminator
 from optimisers.linesearch import LineSearch
-from optimisers import results
 from optimisers.results import Result
-from optimisers import batch
-import data, models
+import data
+import models
 
 def warmup(n_its=1000):
     """
