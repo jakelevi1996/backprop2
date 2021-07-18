@@ -43,26 +43,3 @@ def test_constant_batch_size_non_integer_fail():
     batch_size = 3.7
     with pytest.raises(TypeError):
         batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
-
-@pytest.mark.parametrize("repeat", range(3))
-def test_dynamic_batch_size(repeat):
-    """ Test using a dynamic batch size with the
-    optimisers.batch.DynamicBatchSize class """
-    set_random_seed_from_args("test_dynamic_batch_size", repeat)
-    dataset = get_random_dataset()
-    model = models.NeuralNetwork(dataset.input_dim, dataset.output_dim)
-    batch_size = np.random.randint(10, 20)
-    batch_getter = optimisers.batch.DynamicBatchSize(model, dataset)
-    n_iters = np.random.randint(50, 100)
-    output_fname = "test_dynamic_batch_size, dataset = %s.txt" % repr(dataset)
-    with open(os.path.join(output_dir, output_fname), "w") as f:
-        result = optimisers.Result(file=f)
-        result.add_column(optimisers.results.columns.BatchSize(batch_getter))
-        result = optimisers.gradient_descent(
-            model,
-            dataset,
-            result=result,
-            batch_getter=batch_getter,
-            terminator=optimisers.Terminator(i_lim=n_iters),
-            evaluator=optimisers.Evaluator(i_interval=1)
-        )
