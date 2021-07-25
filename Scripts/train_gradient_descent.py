@@ -11,7 +11,11 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_test_set_improvement_probability
 
+    python Scripts/train_gradient_descent.py -i1 -o1 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator
+
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability
+
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator
 
     python Scripts/train_gradient_descent.py -i2 -o10 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
 
@@ -44,7 +48,7 @@ def main(args):
     """
     np.random.seed(1913)
 
-    # Get output directory which is specific to the script parameters
+    # Get output directory which is specific to the relevant script parameters
     param_str = " ".join([
         "d%s"   % args.dataset_type.__name__[:3],
         "i%s"   % args.input_dim,
@@ -54,6 +58,9 @@ def main(args):
         "b%s"   % args.batch_size,
         "u%s"   % args.num_hidden_units,
     ])
+    if args.dynamic_terminator:
+        param_str += " dyn"
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
         current_dir,
@@ -142,6 +149,29 @@ def main(args):
                 )
             )
             result.add_column(test_set_improvement_column)
+        
+        if args.dynamic_terminator:
+            dynamic_terminator = optimisers.DynamicTerminator(
+                model=model,
+                dataset=dataset,
+                batch_size=args.batch_size,
+                replace=False,
+                smoother=optimisers.smooth.MovingAverage(0, n=100),
+                t_lim=args.t_lim,
+            )
+            terminator = dynamic_terminator
+            batch_getter = dynamic_terminator
+
+            dynamic_terminator_column = columns.BatchImprovementProbability(
+                dynamic_terminator,
+            )
+            result.add_column(dynamic_terminator_column)
+        else:
+            terminator = optimisers.Terminator(t_lim=args.t_lim)
+            batch_getter = optimisers.batch.ConstantBatchSize(
+                args.batch_size,
+                False,
+            )
 
         # Perform gradient descent
         optimisers.gradient_descent(
@@ -150,11 +180,8 @@ def main(args):
             line_search=args.line_search,
             result=result,
             evaluator=optimisers.Evaluator(t_interval=args.t_eval),
-            terminator=optimisers.Terminator(t_lim=args.t_lim),
-            batch_getter=optimisers.batch.ConstantBatchSize(
-                args.batch_size,
-                False,
-            ),
+            terminator=terminator,
+            batch_getter=batch_getter,
         )
 
         # Store results
@@ -172,18 +199,23 @@ def main(args):
         dir_name=output_dir,
         e_lims=args.error_lims,
     )
-    if args.plot_test_set_improvement_probability:
-        print("Plotting test set improvement probability...")
+    if args.plot_test_set_improvement_probability or args.dynamic_terminator:
+        attribute_list=[
+            columns.TrainError,
+            columns.TestError,
+            columns.StepSize,
+        ]
+        if args.plot_test_set_improvement_probability:
+            print("Plotting test set improvement probability...")
+            attribute_list.append(columns.TestSetImprovementProbabilitySimple)
+        if args.dynamic_terminator:
+            print("Plotting batch improvement probability...")
+            attribute_list.append(columns.BatchImprovementProbability)
         plotting.plot_result_attributes_subplots(
-            plot_name="Test set improvement probability",
+            plot_name="Improvement probability",
             dir_name=output_dir,
             result_list=result_list,
-            attribute_list=[
-                columns.TrainError,
-                columns.TestError,
-                columns.TestSetImprovementProbabilitySimple,
-                columns.StepSize,
-            ],
+            attribute_list=attribute_list,
             log_axes_attributes=[columns.StepSize],
             iqr_axis_scaling=True,
         )
@@ -359,6 +391,13 @@ if __name__ == "__main__":
         "--plot_test_set_improvement_probability",
         help="If this flag is included, then plot the probability of the test "
         "set error improving each time the Result object is updated",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--dynamic_terminator",
+        help="If this flag is included, then use a dynamic terminator, and "
+        "plot the probability of improvement during each iteration for each "
+        "repeat",
         action="store_true",
     )
 
