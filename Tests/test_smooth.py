@@ -47,7 +47,7 @@ def test_smoother_constant_input_output(smoother_type):
     smoother = smoother_type(x0)
     for _ in range(n):
         y = smoother.smooth(x0)
-        assert y == x0
+        assert np.isclose(x0, y)
     
     x1 = x0 + 1
     y = smoother.smooth(x1)
