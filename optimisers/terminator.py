@@ -85,7 +85,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self._p_improve_list = [1]
 
         self._i_interval = i_interval
-        self._i_next_update = i_interval
+        self._i_next_update = 0
         self._i = 0
 
     def ready_to_terminate(self, i=None, error=None):
@@ -119,7 +119,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         x_batch = dataset.x_train[:, batch_inds]
         y_batch = dataset.y_train[:, batch_inds]
 
-        if self._i > self._i_next_update:
+        if self._i >= self._i_next_update:
             # Calculate the probability of improvement
             self._model.forward_prop(x_batch)
             error = self._model.error(y_batch)

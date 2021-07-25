@@ -42,6 +42,7 @@ def test_dynamic_terminator(repeat):
         dataset=dataset,
         batch_size=batch_size,
         i_lim=num_iters,
+        i_interval=1,
     )
     dynamic_terminator.set_initial_iteration(0)
     for i in range(num_iters):
