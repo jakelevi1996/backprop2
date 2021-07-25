@@ -184,7 +184,7 @@ def test_plot_2D_regression(output_dim):
     )
     # Call plotting function under test
     plotting.plot_2D_regression(
-        plot_name="Random predictions for 2D-%iD sinusoidal data" % output_dim,
+        plot_name="test_plot_2D_regression, output_dim = %i" % output_dim,
         dir_name=output_dir,
         output_dim=output_dim,
         dataset=sin_data,
