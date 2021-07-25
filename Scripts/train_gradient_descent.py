@@ -217,7 +217,7 @@ def main(args):
             print("Plotting batch improvement probability...")
             attribute_list.append(columns.BatchImprovementProbability)
         plotting.plot_result_attributes_subplots(
-            plot_name="Improvement probability",
+            plot_name="Improvement probability\n%s" % param_str,
             dir_name=output_dir,
             result_list=result_list,
             attribute_list=attribute_list,
