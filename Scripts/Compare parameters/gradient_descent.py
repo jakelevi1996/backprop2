@@ -154,6 +154,9 @@ def main(
     # Write the results of all experiments to a text file
     experiment.save_results_as_text()
 
+    # Open the output plot directory
+    os.system("explorer \"%s\"" % output_dir)
+
 if __name__ == "__main__":
     # Define CLI using argparse
     parser = argparse.ArgumentParser(
