@@ -1,6 +1,6 @@
 """ Module containing different classes for smoothing an input signal """
 
-from statistics import mean
+import numpy as np
 
 class _Smoother:
     """ Abstract parent class for smoothers """
@@ -63,7 +63,7 @@ class MovingAverage(_Smoother):
         -   n: number of most recent input values to average in order to
             calculate the smoothed output value
         """
-        self._buffer = [x0] * n
+        self._buffer = np.full(n, x0, dtype=float)
         self._i = 0
         self._n = n
     
@@ -72,7 +72,7 @@ class MovingAverage(_Smoother):
         self._i += 1
         if self._i == self._n:
             self._i = 0
-        y = mean(self._buffer)
+        y = self._buffer.mean()
         return y
 
 class MovingMaximum(_Smoother):
