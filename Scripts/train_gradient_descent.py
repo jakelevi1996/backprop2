@@ -145,7 +145,7 @@ def main(args):
                 columns.TestSetImprovementProbabilitySimple(
                     model,
                     dataset,
-                    smoother=optimisers.smooth.MovingAverage(0, n=10),
+                    smoother=optimisers.smooth.MovingAverage(1, n=10),
                 )
             )
             result.add_column(test_set_improvement_column)
@@ -156,7 +156,7 @@ def main(args):
                 dataset=dataset,
                 batch_size=args.batch_size,
                 replace=False,
-                smoother=optimisers.smooth.MovingAverage(0, n=100),
+                smoother=optimisers.smooth.MovingAverage(1, n=100),
                 t_lim=args.t_lim,
             )
             terminator = dynamic_terminator
