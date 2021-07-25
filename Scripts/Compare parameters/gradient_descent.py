@@ -46,18 +46,19 @@ def main(
     t_eval,
     n_repeats,
     find_best_params,
-    batch_size
+    batch_size,
 ):
     # Get name of output directory, and create it if it doesn't exist
     param_str = (
         "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f, "
-        "num_repeats = %i, find_best_params = %s" % (
+        "num_repeats = %i, find_best_params = %s"
+        % (
             input_dim,
             output_dim,
             n_train,
             t_lim,
             n_repeats,
-            find_best_params
+            find_best_params,
         )
     )
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -65,7 +66,7 @@ def main(
         current_dir,
         "Outputs",
         "Gradient descent",
-        param_str
+        param_str,
     )
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -78,7 +79,7 @@ def main(
         n_train,
         x_lo=-2,
         x_hi=2,
-        freq=1
+        freq=1,
     )
     if batch_size < n_train:
         batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
@@ -94,14 +95,14 @@ def main(
         alpha,
         beta,
         act_func,
-        max_steps
+        max_steps,
     ):
         # Initialise network
         model = NeuralNetwork(
             input_dim=1,
             output_dim=1,
             num_hidden_units=[num_units for _ in range(num_layers)],
-            act_funcs=[act_func, models.activations.identity]
+            act_funcs=[act_func, models.activations.identity],
         )
         # Perform gradient descent
         result = optimisers.gradient_descent(
@@ -113,9 +114,9 @@ def main(
                 s0=pow(10, log10_s0), 
                 alpha=alpha, 
                 beta=beta,
-                max_its=max_steps
+                max_its=max_steps,
             ),
-            batch_getter=batch_getter
+            batch_getter=batch_getter,
         )
         # Return the final test error
         TestError = optimisers.results.columns.TestError
@@ -139,7 +140,7 @@ def main(
             models.activations.cauchy,
             models.activations.logistic,
             models.activations.relu,
-        ]
+        ],
     )
 
     # Call warmup function
@@ -160,7 +161,8 @@ def main(
 if __name__ == "__main__":
     # Define CLI using argparse
     parser = argparse.ArgumentParser(
-        description="Compare parameters for gradient descent with a line search"
+        description="Compare parameters for gradient descent with a line "
+        "search"
     )
 
     parser.add_argument(
@@ -168,28 +170,28 @@ if __name__ == "__main__":
         "--input_dim",
         help="Number of input dimensions for the data set",
         default=1,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-o",
         "--output_dim",
         help="Number of output dimensions for the data set",
         default=1,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-n",
         "--n_train",
         help="Number of data points in the training set",
         default=50,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-t",
         "--t_lim",
         help="How long to run each experiment for in seconds",
         default=3,
-        type=float
+        type=float,
     )
     parser.add_argument(
         "-e",
@@ -197,21 +199,21 @@ if __name__ == "__main__":
         help="How frequently to evaluate the performance of each model in "
         "seconds",
         default=0.5,
-        type=float
+        type=float,
     )
     parser.add_argument(
         "-r",
         "--n_repeats",
         help="Number of repeats to perform of each experiment",
         default=5,
-        type=int
+        type=int,
     )
     parser.add_argument(
         "-f",
         "--find_best_params",
         help="Iterate experiments and update parameters until the best "
         "parameters have been found",
-        action="store_true"
+        action="store_true",
     )
     parser.add_argument(
         "-b",
@@ -219,7 +221,7 @@ if __name__ == "__main__":
         help="Batch size to use in optimisation (only used if less than the "
         "number of data points in the training set)",
         default=100,
-        type=int
+        type=int,
     )
 
     # Parse arguments
@@ -235,7 +237,7 @@ if __name__ == "__main__":
         args.t_eval,
         args.n_repeats,
         args.find_best_params,
-        args.batch_size
+        args.batch_size,
     )
 
     # Print time taken
