@@ -17,6 +17,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator
 
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator --dt_buffer_length 200
+
     python Scripts/train_gradient_descent.py -i2 -o10 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
 
     python Scripts/train_gradient_descent.py -i2 -n2500 -b200 -u 20,20 -t1 --plot_preds --plot_pred_gif -dBinaryMixtureOfGaussians
@@ -59,7 +61,7 @@ def main(args):
         "u%s"   % args.num_hidden_units,
     ])
     if args.dynamic_terminator:
-        param_str += " dyn"
+        param_str += " dyn%i" % args.dt_buffer_length
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -156,7 +158,10 @@ def main(args):
                 dataset=dataset,
                 batch_size=args.batch_size,
                 replace=False,
-                smoother=optimisers.smooth.MovingAverage(1, n=100),
+                smoother=optimisers.smooth.MovingAverage(
+                    x0=1,
+                    n=args.dt_buffer_length,
+                ),
                 t_lim=args.t_lim,
             )
             terminator = dynamic_terminator
@@ -399,6 +404,14 @@ if __name__ == "__main__":
         "plot the probability of improvement during each iteration for each "
         "repeat",
         action="store_true",
+    )
+    parser.add_argument(
+        "--dt_buffer_length",
+        help="Length of the buffer used by the dynamic terminator to smooth "
+        "the estimated probability of improvement (a higher number means a "
+        "smoother estimation and a slower reaction time)",
+        type=int,
+        default=100,
     )
 
     # Parse arguments
