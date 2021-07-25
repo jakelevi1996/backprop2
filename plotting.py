@@ -1431,7 +1431,8 @@ def plot_parameter_sweep_results(
     std  = np.array([np.std( experiment_results[val]) for val in val_list])
 
     # Plot data
-    for val, error_list in experiment_results.items():
+    for val in val_list:
+        error_list = experiment_results[val]
         for error in error_list:
             plt.plot(val, error, **data_point_fmt)
     plt.plot(val_list, mean, **mean_fmt)
