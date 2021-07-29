@@ -18,7 +18,7 @@ this script:
 
     python "Scripts\Compare parameters\gradient_descent.py"
 
-    python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3
+    python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3 -n2500
 
     python "Scripts\Compare parameters\gradient_descent.py" -t"0.1"
 
@@ -34,30 +34,24 @@ from time import perf_counter
 import numpy as np
 if __name__ == "__main__":
     import __init__
-from models import NeuralNetwork
-import models, data, optimisers
+import models
+import data
+import optimisers
+import plotting
 from experiment import Experiment, Parameter
 
-def main(
-    input_dim,
-    output_dim,
-    n_train,
-    t_lim,
-    t_eval,
-    n_repeats,
-    find_best_params,
-):
+def main(args):
     # Get name of output directory, and create it if it doesn't exist
     param_str = (
         "input_dim = %i, output_dim = %i, n_train = %i, t_lim = %.2f, "
         "num_repeats = %i, find_best_params = %s"
         % (
-            input_dim,
-            output_dim,
-            n_train,
-            t_lim,
-            n_repeats,
-            find_best_params,
+            args.input_dim,
+            args.output_dim,
+            args.n_train,
+            args.t_lim,
+            args.n_repeats,
+            args.find_best_params,
         )
     )
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -73,12 +67,12 @@ def main(
     # Initialise data set
     np.random.seed(6763)
     sin_data = data.Sinusoidal(
-        input_dim,
-        output_dim,
-        n_train,
+        args.input_dim,
+        args.output_dim,
+        args.n_train,
         x_lo=-2,
         x_hi=2,
-        freq=(1 if input_dim == 1 else None),
+        freq=(1 if args.input_dim == 1 else None),
     )
 
     # Define function to be run for each experiment
@@ -94,14 +88,14 @@ def main(
         batch_replace,
     ):
         # Initialise network and batch getter
-        model = NeuralNetwork(
-            input_dim=input_dim,
-            output_dim=output_dim,
+        model = models.NeuralNetwork(
+            input_dim=args.input_dim,
+            output_dim=args.output_dim,
             num_hidden_units=[num_units for _ in range(num_layers)],
             act_funcs=[act_func, models.activations.identity],
         )
 
-        if (batch_size is None) or (batch_size >= n_train):
+        if (batch_size is None) or (batch_size >= args.n_train):
             batch_getter = optimisers.batch.FullTrainingSet()
         else:
             batch_getter = optimisers.batch.ConstantBatchSize(
@@ -113,8 +107,8 @@ def main(
         result = optimisers.gradient_descent(
             model,
             sin_data,
-            terminator=optimisers.Terminator(t_lim=t_lim),
-            evaluator=optimisers.Evaluator(t_interval=t_eval),
+            terminator=optimisers.Terminator(t_lim=args.t_lim),
+            evaluator=optimisers.Evaluator(t_interval=args.t_eval),
             line_search=optimisers.LineSearch(
                 s0=pow(10, log10_s0), 
                 alpha=alpha, 
@@ -129,7 +123,7 @@ def main(
         return final_test_error
 
     # Initialise the Experiment object, and add parameters
-    experiment = Experiment(run_experiment, output_dir, n_repeats)
+    experiment = Experiment(run_experiment, output_dir, args.n_repeats)
     addp = lambda *args: experiment.add_parameter(Parameter(*args))
     addp("num_units",       10,     [5, 10, 15, 20]                         )
     addp("num_layers",      1,      [1, 2, 3]                               )
@@ -154,7 +148,7 @@ def main(
     optimisers.warmup()
 
     # Call function to run all experiments
-    if find_best_params:
+    if args.find_best_params:
         experiment.find_best_parameters()
     else:
         experiment.sweep_all_parameters()
@@ -228,15 +222,7 @@ if __name__ == "__main__":
 
     # Call main function using command-line arguments
     t_start = perf_counter()
-    main(
-        args.input_dim,
-        args.output_dim,
-        args.n_train,
-        args.t_lim,
-        args.t_eval,
-        args.n_repeats,
-        args.find_best_params,
-    )
+    main(args)
 
     # Print time taken
     t_total = perf_counter() - t_start
