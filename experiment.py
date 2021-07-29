@@ -110,7 +110,7 @@ class Experiment:
             _get_best_param_val method)
         """
         # Initialise dictionary mapping parameter names to their default values
-        experiment_params = self._get_default_dictionary()
+        experiment_params = self.get_default_param_dictionary()
         # Initialise dictionary mapping parameter values to results lists
         param_sweep_results = dict()
 
@@ -227,7 +227,7 @@ class Experiment:
                 file=f
             )
 
-    def _get_default_dictionary(self):
+    def get_default_param_dictionary(self):
         """ Return a dictionary in which the keys are the names of each of the
         Parameter objects which have been added to this Experiment object, and
         the values are the default values for each of those Parameter objects
