@@ -86,6 +86,7 @@ def main(args):
         max_steps,
         batch_size,
         batch_replace,
+        plot_preds=False,
     ):
         # Initialise network and batch getter
         model = models.NeuralNetwork(
@@ -117,6 +118,18 @@ def main(args):
             ),
             batch_getter=batch_getter,
         )
+
+        # If specified, plot the final model predictions
+        if plot_preds:
+            print("Plotting final predictions...")
+            plotting.plot_data_predictions(
+                plot_name="Final predictions",
+                dir_name=output_dir,
+                dataset=sin_data,
+                output_dim=args.output_dim,
+                model=model,
+            )
+
         # Return the final test error
         TestError = optimisers.results.columns.TestError
         final_test_error = result.get_values(TestError)[-1]
@@ -158,6 +171,11 @@ def main(args):
 
     # Open the output plot directory
     os.system("explorer \"%s\"" % output_dir)
+
+    # Plot the predictions using the model with the optimal hyper-parameters
+    if args.plot_preds:
+        default_param_dict = experiment.get_default_param_dictionary()
+        run_experiment(**default_param_dict, plot_preds=True)
 
 if __name__ == "__main__":
     # Define CLI using argparse
@@ -214,6 +232,13 @@ if __name__ == "__main__":
         "--find_best_params",
         help="Iterate experiments and update parameters until the best "
         "parameters have been found",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--plot_preds",
+        help="If this flag is included, then after the experiment has "
+        "finished running, plot the final predictions of the model on the "
+        "data-set (only valid for 1D or 2D inputs)",
         action="store_true",
     )
 
