@@ -46,7 +46,6 @@ def main(
     t_eval,
     n_repeats,
     find_best_params,
-    batch_size,
 ):
     # Get name of output directory, and create it if it doesn't exist
     param_str = (
@@ -71,7 +70,7 @@ def main(
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # Initialise data set and batch getter
+    # Initialise data set
     np.random.seed(6763)
     sin_data = data.Sinusoidal(
         input_dim,
@@ -79,13 +78,8 @@ def main(
         n_train,
         x_lo=-2,
         x_hi=2,
-        freq=1,
+        freq=(1 if input_dim == 1 else None),
     )
-    if batch_size < n_train:
-        batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
-    else:
-        batch_getter = optimisers.batch.FullTrainingSet()
-
 
     # Define function to be run for each experiment
     def run_experiment(
@@ -96,14 +90,25 @@ def main(
         beta,
         act_func,
         max_steps,
+        batch_size,
+        batch_replace,
     ):
-        # Initialise network
+        # Initialise network and batch getter
         model = NeuralNetwork(
-            input_dim=1,
-            output_dim=1,
+            input_dim=input_dim,
+            output_dim=output_dim,
             num_hidden_units=[num_units for _ in range(num_layers)],
             act_funcs=[act_func, models.activations.identity],
         )
+
+        if (batch_size is None) or (batch_size >= n_train):
+            batch_getter = optimisers.batch.FullTrainingSet()
+        else:
+            batch_getter = optimisers.batch.ConstantBatchSize(
+                batch_size,
+                batch_replace,
+            )
+        
         # Perform gradient descent
         result = optimisers.gradient_descent(
             model,
@@ -126,12 +131,14 @@ def main(
     # Initialise the Experiment object, and add parameters
     experiment = Experiment(run_experiment, output_dir, n_repeats)
     addp = lambda *args: experiment.add_parameter(Parameter(*args))
-    addp("num_units",   10,     [5, 10, 15, 20]                         )
-    addp("num_layers",  1,      [1, 2, 3]                               )
-    addp("log10_s0",    0,      np.linspace(-1, 3, 5)                   )
-    addp("alpha",       0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
-    addp("beta",        0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
-    addp("max_steps",   10,     [5, 10, 15, 20]                         )
+    addp("num_units",       10,     [5, 10, 15, 20]                         )
+    addp("num_layers",      1,      [1, 2, 3]                               )
+    addp("log10_s0",        0,      np.linspace(-1, 3, 5)                   )
+    addp("alpha",           0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
+    addp("beta",            0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
+    addp("max_steps",       10,     [5, 10, 15, 20]                         )
+    addp("batch_size",      100,    [25, 50, 75, 100, 150, 200, 300, None]  )
+    addp("batch_replace",   True,   [True, False]                           )
     addp(
         "act_func",
         models.activations.gaussian,
@@ -215,14 +222,6 @@ if __name__ == "__main__":
         "parameters have been found",
         action="store_true",
     )
-    parser.add_argument(
-        "-b",
-        "--batch_size",
-        help="Batch size to use in optimisation (only used if less than the "
-        "number of data points in the training set)",
-        default=100,
-        type=int,
-    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -237,7 +236,6 @@ if __name__ == "__main__":
         args.t_eval,
         args.n_repeats,
         args.find_best_params,
-        args.batch_size,
     )
 
     # Print time taken
