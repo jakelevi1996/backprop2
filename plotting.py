@@ -1459,7 +1459,8 @@ def plot_parameter_sweep_results(
         mean - n_sigma*std,
         **std_fmt,
     )
-    plt.axvline(val_fmt_dict[param.default], **param_default_fmt)
+    if param.default in val_fmt_dict:
+        plt.axvline(val_fmt_dict[param.default], **param_default_fmt)
     
     # Format, save and close the figure
     plt.title(plot_name)
