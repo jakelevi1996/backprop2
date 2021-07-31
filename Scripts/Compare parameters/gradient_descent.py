@@ -22,6 +22,8 @@ this script:
 
     python "Scripts\Compare parameters\gradient_descent.py" -t"0.1"
 
+    python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3 -n2500 -t"0.1"
+
     python "Scripts\Compare parameters\gradient_descent.py" -f
 
 To get help information for the available arguments, use the following command:
