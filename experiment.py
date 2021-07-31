@@ -143,13 +143,11 @@ class Experiment:
                 self._has_updated_any_parameters = True
         
         if plot:
-            self._print("Plotting results for parameter %r..." % parameter.name)
-            # Format the dictionary keys
-            param_sweep_results = self._format_result_keys(param_sweep_results)
+            self._print("Plotting results for parameter %r" % parameter.name)
             # Call plotting function
             plotting.plot_parameter_sweep_results(
+                parameter,
                 param_sweep_results,
-                parameter.name,
                 "Varying parameter %s" % parameter.name,
                 self._output_dir,
                 self._n_sigma
@@ -329,22 +327,3 @@ class Experiment:
         """ Print the string s to the output file for this Experiment object, or
         to stdout if self._file is None """
         print(s, file=self._file)
-
-    def _format_result_keys(self, param_sweep_results):
-        """ Given a dictionary of results from the sweep_parameter method,
-        format the dictionary keys so that they will look nice when plotted
-        (these dictionary keys will be used as the x-values) """
-        # Test if all dictionary keys are numeric
-        all_numeric = all(
-            isinstance(k, int) or isinstance(k, float)
-            for k in param_sweep_results.keys()
-        )
-        # If not all dictionary keys are numeric, then format as strings
-        if not all_numeric:
-            param_sweep_results = {
-                str(key).replace("activation function", "").rstrip(): value
-                for key, value in param_sweep_results.items()
-            }
-        
-        # Return the dictionary
-        return param_sweep_results

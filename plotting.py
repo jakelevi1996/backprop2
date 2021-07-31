@@ -1386,8 +1386,8 @@ def make_gif(
     )
 
 def plot_parameter_sweep_results(
+    param,
     experiment_results,
-    param_name,
     plot_name,
     dir_name,
     n_sigma=2
@@ -1396,11 +1396,13 @@ def plot_parameter_sweep_results(
     values of a parameter, with multiple repeats of each experiment.
 
     Inputs:
-    -   experiment_results: a dictionary in which each dictionary-key is a value
-        for the parameter-under-test, and each dictionary-value is a list of the
-        final test set errors for each repeat of the experiment with
+    -   param: instance of experiment.Parameter, used for the name of the
+        parameter, and the order of x-values (which is useful particularly when
+        there is a mixture of numeric and non-numeric x-values)
+    -   experiment_results: a dictionary in which each dictionary-key is a
+        value for the parameter-under-test, and each dictionary-value is a list
+        of the final test set errors for each repeat of the experiment with
         parameter-under-test taking the corresponding value
-    -   param_name: name of the parameter under test (used as the x-axis label)
     -   plot_name: title for the plot, and filename that the output image is
         saved to
     -   dir_name: directory in which to save the output image
@@ -1426,26 +1428,32 @@ def plot_parameter_sweep_results(
     mean_fmt = {"c": "b", "ls": "--", "label": "Mean", "zorder": 30}
     
     # Calculate mean and standard deviation, in ordered numpy arrays
-    val_list = sorted(list(experiment_results.keys()))
+    val_list = param.val_range
     mean = np.array([np.mean(experiment_results[val]) for val in val_list])
     std  = np.array([np.std( experiment_results[val]) for val in val_list])
 
+    # Create list of formatted x-values for plotting
+    val_fmt_list = [
+        str(x).replace("activation function", "").rstrip()
+        for x in val_list
+    ]
+
     # Plot data
-    for val in val_list:
+    for val, val_fmt in zip(val_list, val_fmt_list):
         error_list = experiment_results[val]
         for error in error_list:
-            plt.plot(val, error, **data_point_fmt)
-    plt.plot(val_list, mean, **mean_fmt)
+            plt.plot(val_fmt, error, **data_point_fmt)
+    plt.plot(val_fmt_list, mean, **mean_fmt)
     plt.fill_between(
-        val_list,
+        val_fmt_list,
         mean + n_sigma*std,
         mean - n_sigma*std,
-        **std_fmt
+        **std_fmt,
     )
     
     # Format, save and close the figure
     plt.title(plot_name)
-    plt.xlabel(param_name)
+    plt.xlabel(param.name)
     plt.ylabel("Final test set error")
     plt.legend(
         handles=[
