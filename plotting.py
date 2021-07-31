@@ -1397,8 +1397,9 @@ def plot_parameter_sweep_results(
 
     Inputs:
     -   param: instance of experiment.Parameter, used for the name of the
-        parameter, and the order of x-values (which is useful particularly when
-        there is a mixture of numeric and non-numeric x-values)
+        parameter, the default parameter value, and the order of x-values
+        (which is useful particularly when there is a mixture of numeric and
+        non-numeric x-values)
     -   experiment_results: a dictionary in which each dictionary-key is a
         value for the parameter-under-test, and each dictionary-value is a list
         of the final test set errors for each repeat of the experiment with
@@ -1415,31 +1416,39 @@ def plot_parameter_sweep_results(
         "color": "b",
         "alpha": 0.3,
         "zorder": 10,
-        "label": "$\\pm%i\\sigma$" % n_sigma
+        "label": "$\\pm%i\\sigma$" % n_sigma,
     }
     data_point_fmt = {
         "color": "k",
         "marker": "o",
         "ls": "",
-        "label": "Result",
         "alpha": 0.5,
-        "zorder": 20
+        "zorder": 20,
+        "label": "Result",
     }
-    mean_fmt = {"c": "b", "ls": "--", "label": "Mean", "zorder": 30}
+    param_default_fmt = {
+        "color": "r",
+        "ls": "--",
+        "zorder": 30,
+        "label": "Default",
+    }
+    mean_fmt = {"c": "b", "ls": "--", "zorder": 30, "label": "Mean"}
     
     # Calculate mean and standard deviation, in ordered numpy arrays
     val_list = param.val_range
     mean = np.array([np.mean(experiment_results[val]) for val in val_list])
     std  = np.array([np.std( experiment_results[val]) for val in val_list])
 
-    # Create list of formatted x-values for plotting
-    val_fmt_list = [
-        str(x).replace("activation function", "").rstrip()
+    # Create dictionary and list of formatted x-values for plotting
+    val_fmt_dict = {
+        x: str(x).replace("activation function", "").rstrip()
         for x in val_list
-    ]
+    }
+    val_fmt_list = [val_fmt_dict[x] for x in val_list]
 
     # Plot data
-    for val, val_fmt in zip(val_list, val_fmt_list):
+    for val in val_list:
+        val_fmt = val_fmt_dict[val]
         error_list = experiment_results[val]
         for error in error_list:
             plt.plot(val_fmt, error, **data_point_fmt)
@@ -1450,6 +1459,7 @@ def plot_parameter_sweep_results(
         mean - n_sigma*std,
         **std_fmt,
     )
+    plt.axvline(val_fmt_dict[param.default], **param_default_fmt)
     
     # Format, save and close the figure
     plt.title(plot_name)
@@ -1460,6 +1470,7 @@ def plot_parameter_sweep_results(
             Line2D([], [], **data_point_fmt),
             Line2D([], [], **mean_fmt),
             Patch(**std_fmt),
+            Line2D([], [], **param_default_fmt),
         ],
     )
     plt.tight_layout()
