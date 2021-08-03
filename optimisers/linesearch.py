@@ -1,7 +1,7 @@
 import numpy as np
 
 class LineSearch:
-    def __init__(self, s0=1.0, alpha=0.5, beta=0.5, max_its=10):
+    def __init__(self, s0=0.1, alpha=0.5, beta=0.5, max_its=15):
         """ Initialise a LineSearch object. This object can be passed to a
         minimisation function (such as gradient_descent or generalised_newton),
         and to the initialiser for a Result object.

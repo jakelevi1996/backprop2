@@ -172,7 +172,7 @@ def main(args):
             terminator = optimisers.Terminator(t_lim=args.t_lim)
             batch_getter = optimisers.batch.ConstantBatchSize(
                 args.batch_size,
-                False,
+                True,
             )
 
         # Perform gradient descent
