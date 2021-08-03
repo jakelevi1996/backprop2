@@ -120,12 +120,12 @@ def test_sweep_all_parameters(seed):
             addp(name, default, val_range)
 
         # Get dictionary of original parameter names and defaults
-        param_defaults_original = experiment._get_default_dictionary()
+        param_defaults_original = experiment.get_default_param_dictionary()
         # Call the method to sweep over all the parameter values
         f.write("Calling sweep_all_parameters with update_parameters=False\n")
         experiment.sweep_all_parameters(plot=False, update_parameters=False)
         # Get dictionary of updated parameter names and defaults
-        param_defaults_new = experiment._get_default_dictionary()
+        param_defaults_new = experiment.get_default_param_dictionary()
         # Assert that the parameter defaults haven't changed
         assert param_defaults_new == param_defaults_original
         
@@ -133,7 +133,7 @@ def test_sweep_all_parameters(seed):
         f.write("Calling sweep_all_parameters with update_parameters=True\n")
         experiment.sweep_all_parameters(plot=False, update_parameters=True)
         # Get dictionary of updated parameter names and defaults
-        param_defaults_new = experiment._get_default_dictionary()
+        param_defaults_new = experiment.get_default_param_dictionary()
         # Assert that this time the parameter defaults HAVE changed
         assert param_defaults_new != param_defaults_original
 
