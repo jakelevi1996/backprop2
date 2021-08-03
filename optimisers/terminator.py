@@ -1,6 +1,7 @@
 import numpy as np
 from optimisers.timer import TimedObject
 from optimisers.batch import _BatchGetter
+from optimisers.smooth import MovingAverage
 
 class Terminator(TimedObject):
     """ The Terminator class is used to decide when to exit the main loop in
@@ -63,10 +64,14 @@ class DynamicTerminator(Terminator, _BatchGetter):
         dataset,
         batch_size,
         replace=True,
-        smoother=None,
         t_lim=None,
         i_lim=None,
         i_interval=5,
+        smooth_output=False,
+        smooth_mean_reduction=False,
+        smooth_std=False,
+        smooth_n=100,
+        smooth_x0=1,
     ):
         self.t_lim = t_lim
         self._num_iterations = i_lim
@@ -81,18 +86,30 @@ class DynamicTerminator(Terminator, _BatchGetter):
         model.forward_prop(dataset.x_train)
         self._prev_mean_error = model.mean_error(dataset.y_train)
         self._model = model
-        self._smoother = smoother
-        self._p_improve_list = [1]
 
         self._i_interval = i_interval
         self._i_next_update = 0
         self._i = 0
+        self._p_improve_list = [smooth_x0]
+
+        if smooth_output:
+            self._output_smoother = MovingAverage(smooth_x0, smooth_n)
+        else:
+            self._output_smoother = None
+        if smooth_mean_reduction:
+            self._mean_reduction_smoother = MovingAverage(smooth_x0, smooth_n)
+        else:
+            self._mean_reduction_smoother = None
+        if smooth_std:
+            self._std_smoother = MovingAverage(smooth_x0, smooth_n)
+        else:
+            self._std_smoother = None
 
     def ready_to_terminate(self, i=None, error=None):
         """ Return True if ready to break out of the minimisation loop,
         otherwise return False """
 
-        if self._p_improve_list[-1] < -1: # TODO: make this threshold configurable
+        if self._p_improve_list[-1] < -1: # TODO: make this threshold configurable. From experiments, a threshold of 0.001 with a buffer length of 50 and triple-smoothed should work well
             print(self._p_improve_list) # TODO: delete this line <---
             return True
 
@@ -124,12 +141,17 @@ class DynamicTerminator(Terminator, _BatchGetter):
             self._model.forward_prop(x_batch)
             error = self._model.error(y_batch)
             mean_error = error.mean()
+            mean_reduction = self._prev_mean_error - mean_error
+            if self._mean_reduction_smoother is not None:
+                mean_reduction = self._mean_reduction_smoother.smooth(
+                    mean_reduction,
+                )
             std_error = error.std()
-            p_improve = (
-                (self._prev_mean_error - mean_error) / std_error
-            )
-            if self._smoother is not None:
-                p_improve = self._smoother.smooth(p_improve)
+            if self._std_smoother is not None:
+                std_error = self._std_smoother.smooth(std_error)
+            p_improve = mean_reduction / std_error
+            if self._output_smoother is not None:
+                p_improve = self._output_smoother.smooth(p_improve)
             
             self._p_improve_list.append(p_improve)
             self._prev_mean_error = mean_error

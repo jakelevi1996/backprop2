@@ -27,9 +27,23 @@ def test_terminator(repeat):
     
     assert terminator.ready_to_terminate(num_iters)
 
-@pytest.mark.parametrize("repeat", [1, 2, 3])
-def test_dynamic_terminator(repeat):
-    set_random_seed_from_args("test_dynamic_terminator", repeat)
+@pytest.mark.parametrize("smooth_output",           [True, False])
+@pytest.mark.parametrize("smooth_mean_reduction",   [True, False])
+@pytest.mark.parametrize("smooth_std",              [True, False])
+@pytest.mark.parametrize("i_interval",              [1, 10, 100])
+def test_dynamic_terminator(
+    smooth_output,
+    smooth_mean_reduction,
+    smooth_std,
+    i_interval,
+):
+    set_random_seed_from_args(
+        "test_dynamic_terminator",
+        smooth_output,
+        smooth_mean_reduction,
+        smooth_std,
+        i_interval,
+    )
     num_iters = np.random.randint(20, 50)
     dataset = get_random_dataset()
     model = get_random_network(
@@ -42,13 +56,20 @@ def test_dynamic_terminator(repeat):
         dataset=dataset,
         batch_size=batch_size,
         i_lim=num_iters,
-        i_interval=1,
+        i_interval=i_interval,
+        smooth_output=smooth_output,
+        smooth_mean_reduction=smooth_mean_reduction,
+        smooth_std=smooth_std,
     )
     dynamic_terminator.set_initial_iteration(0)
     for i in range(num_iters):
         x_batch, y_batch = dynamic_terminator.get_batch(dataset)
         assert x_batch.shape == (dataset.input_dim, batch_size)
         assert y_batch.shape == (dataset.output_dim, batch_size)
-        assert len(dynamic_terminator._p_improve_list) == (i + 2)
+        if i_interval == 1:
+            assert len(dynamic_terminator._p_improve_list) == (i + 2)
+        elif i_interval == 100:
+            assert len(dynamic_terminator._p_improve_list) == 2
+            # assert False
     
     assert dynamic_terminator.ready_to_terminate(num_iters)

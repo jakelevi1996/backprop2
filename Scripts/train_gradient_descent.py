@@ -158,10 +158,7 @@ def main(args):
                 dataset=dataset,
                 batch_size=args.batch_size,
                 replace=False,
-                smoother=optimisers.smooth.MovingAverage(
-                    x0=1,
-                    n=args.dt_buffer_length,
-                ),
+                smooth_n=args.dt_buffer_length,
                 t_lim=args.t_lim,
             )
             terminator = dynamic_terminator
