@@ -18,13 +18,15 @@ this script:
 
     python "Scripts\Compare parameters\gradient_descent.py"
 
+    python "Scripts\Compare parameters\gradient_descent.py" -f
+
     python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3 -n2500
+
+    python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3 -n2500 -r20 -f
 
     python "Scripts\Compare parameters\gradient_descent.py" -t"0.1"
 
     python "Scripts\Compare parameters\gradient_descent.py" -i2 -o3 -n2500 -t"0.1"
-
-    python "Scripts\Compare parameters\gradient_descent.py" -f
 
 To get help information for the available arguments, use the following command:
 
@@ -143,8 +145,8 @@ def main(args):
     addp("num_units",       10,     [5, 10, 15, 20]                         )
     addp("num_layers",      1,      [1, 2, 3]                               )
     addp("log10_s0",        0,      np.linspace(-1, 3, 5)                   )
-    addp("alpha",           0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
-    addp("beta",            0.5,    np.linspace(0.5, 1, 5, endpoint=False)  )
+    addp("alpha",           0.5,    np.linspace(0.1, 1, 9, endpoint=False)  )
+    addp("beta",            0.5,    np.linspace(0.1, 1, 9, endpoint=False)  )
     addp("max_steps",       10,     [5, 10, 15, 20]                         )
     addp("batch_size",      100,    [25, 50, 75, 100, 150, 200, 300, None]  )
     addp("batch_replace",   True,   [True, False]                           )
