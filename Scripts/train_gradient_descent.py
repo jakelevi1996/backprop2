@@ -19,6 +19,10 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator --dt_buffer_length 200
 
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator --dt_x0 0 --dt_smooth_mrse --dt_no_smooth_output
+
+    python Scripts/train_gradient_descent.py -i2 -o3 -n2500 -b200 -u 20,20 -t10 --plot_preds --plot_test_set_improvement_probability --dynamic_terminator --dt_x0 0 --dt_smooth_mrse --dt_buffer_length 50
+
     python Scripts/train_gradient_descent.py -i2 -o10 -n2500 -b200 -u 20,20 -t2 --plot_preds -dMixtureOfGaussians
 
     python Scripts/train_gradient_descent.py -i2 -n2500 -b200 -u 20,20 -t1 --plot_preds --plot_pred_gif -dBinaryMixtureOfGaussians
@@ -61,7 +65,12 @@ def main(args):
         "u%s"   % args.num_hidden_units,
     ])
     if args.dynamic_terminator:
-        param_str += " dyn%i" % args.dt_buffer_length
+        dt_str = "dyn"
+        if args.dt_smooth_output:
+            dt_str += "sOut"
+        if args.dt_smooth_mrse:
+            dt_str += "sMrStd"
+        param_str += " %s%i" % (dt_str, args.dt_buffer_length)
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
@@ -158,8 +167,12 @@ def main(args):
                 dataset=dataset,
                 batch_size=args.batch_size,
                 replace=False,
-                smooth_n=args.dt_buffer_length,
                 t_lim=args.t_lim,
+                smooth_n=args.dt_buffer_length,
+                smooth_x0=args.dt_x0,
+                smooth_output=args.dt_smooth_output,
+                smooth_mean_reduction=args.dt_smooth_mrse,
+                smooth_std=args.dt_smooth_mrse,
             )
             terminator = dynamic_terminator
             batch_getter = dynamic_terminator
@@ -409,6 +422,29 @@ if __name__ == "__main__":
         "smoother estimation and a slower reaction time)",
         type=int,
         default=100,
+    )
+    parser.add_argument(
+        "--dt_x0",
+        help="Initial buffer value for the dynamic terminator",
+        type=float,
+        default=1,
+    )
+    parser.add_argument(
+        "--dt_no_smooth_output",
+        help="If this argument is included, then do not apply a "
+        "moving-average smoothing filter to the output of the dynamic "
+        "terminator (if one is being used). Default is to smooth the output.",
+        action="store_false",
+        dest="dt_smooth_output",
+    )
+    parser.add_argument(
+        "--dt_smooth_mrse",
+        help="If this argument is included, apply moving-average smoothing "
+        "filters to the intermediate stages of the dynamic terminator "
+        "calculations (if a dynamic terminator is being used), specifically "
+        "the reduction in mean batch error between iterations, and the "
+        "standard devation of batch error",
+        action="store_true",
     )
 
     # Parse arguments
