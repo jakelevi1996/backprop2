@@ -5,6 +5,8 @@ class Dinosaur:
 
     def __init__(self):
         """ Initialise a dinosaur object """
+        self.mean = None
+        self.scale = None
     
     def meta_learn(self, task_set, terminator=None):
         """ Learn meta-parameters for a task-set """
