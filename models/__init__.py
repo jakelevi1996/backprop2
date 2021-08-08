@@ -5,3 +5,5 @@ from models.neuralnetwork import NeuralNetwork
 from models import activations
 from models import errors
 from models import initialisers
+from models import dinosaur
+from models.dinosaur import Dinosaur
