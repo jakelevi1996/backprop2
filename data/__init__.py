@@ -20,6 +20,7 @@ from data.xor import Xor
 from data.disk import Disk
 from data.circle import Circle
 from data.guassian_curve import GaussianCurve, SumOfGaussianCurves
+from data.task import TaskSet
 
 # Create dictionary mapping name-strings to non-abstract dataset classes
 dataset_class_dict = {
