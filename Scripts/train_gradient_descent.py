@@ -37,12 +37,15 @@ To get help information for the available arguments, use the following command:
 
 """
 import os
-from argparse import ArgumentParser
-from time import perf_counter
+import argparse
+import time
 import numpy as np
 if __name__ == "__main__":
     import __init__
-import data, models, optimisers, plotting
+import data
+import models
+import optimisers
+import plotting
 from optimisers.results import columns
 
 def main(args):
@@ -278,7 +281,7 @@ def main(args):
 if __name__ == "__main__":
     
     # Define CLI using argparse
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="train a model on a dataset using gradient descent, and "
         "plot the resulting learning curve"
     )
@@ -467,6 +470,6 @@ if __name__ == "__main__":
         assert len(args.error_lims) == 2, error_msg
 
     # Call main function using command-line arguments
-    t_start = perf_counter()
+    t_start = time.perf_counter()
     main(args)
-    print("Main function run in %.3f s" % (perf_counter() - t_start))
+    print("Main function run in %.3f s" % (time.perf_counter() - t_start))
