@@ -4,4 +4,5 @@ class SumOfGaussianCurves(Regression):
     pass
 
 class GaussianCurve(Regression):
-    pass
+    def __init__(self, input_loc=None, input_scale=None):
+        """ Initialise a GaussianCurve object """
