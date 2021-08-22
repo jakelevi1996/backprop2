@@ -55,7 +55,7 @@ def main(args):
     Inputs:
     -   args: object containing modified command line arguments as attributes
     """
-    np.random.seed(1913)
+    np.random.seed(args.seed)
 
     # Get output directory which is specific to the relevant script parameters
     param_str = " ".join([
@@ -286,6 +286,13 @@ if __name__ == "__main__":
         "plot the resulting learning curve"
     )
 
+    parser.add_argument(
+        "--seed",
+        help="Seed to use for random number generation, should be a positive "
+        "integer",
+        default=0,
+        type=int,
+    )
     parser.add_argument(
         "-i",
         "--input_dim",
