@@ -31,5 +31,6 @@ dataset_class_dict = {
         BinaryMixtureOfGaussians,
         Xor,
         Disk,
+        GaussianCurve,
     ]
 }
