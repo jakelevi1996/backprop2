@@ -10,18 +10,16 @@ def _noisy_gaussian(
     noise_std,
     output_dim,
 ):
+    x_affine_transformed = np.dot(input_scale, x - input_offset)
+    y_pre_affine_transformation = (
+        np.exp(-np.square(x_affine_transformed).sum(axis=0))
+    )
     noisy_offset = np.random.normal(
         loc=output_offset,
         scale=noise_std,
         size=[output_dim, x.shape[1]],
     )
-    y = (
-        (
-            np.exp(-np.square(input_scale @ (x - input_offset)).sum(axis=0))
-            * output_scale
-        )
-        + noisy_offset
-    )
+    y = (y_pre_affine_transformation * output_scale) + noisy_offset
     return y
 
 class SumOfGaussianCurves(Regression):
