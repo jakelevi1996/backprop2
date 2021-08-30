@@ -12,12 +12,12 @@ class _Regulariser:
         effectively """
         raise NotImplementedError()
 
-    def get_error(self, w, mean, scale):
+    def get_error(self, w):
         """ Get the regularisation error for the given task-specific parameters
         and meta-parameters (mean and scale) """
         raise NotImplementedError()
 
-    def get_gradient(self, w, mean, scale):
+    def get_gradient(self, w):
         """ Get the gradient of the regularisation function with respect to the
         task-specific parameters, for the given task-specific parameters and
         meta-parameters (mean and scale) """
@@ -32,10 +32,10 @@ class Quadratic(_Regulariser):
         self.mean = np.mean(w_list, axis=0)
         self.scale = np.var(np.array(w_list) - self.mean, axis=0)
     
-    def get_error(self, w, mean, scale):
+    def get_error(self, w):
         error = (np.square(w - self.mean) / self.scale).sum()
         return error
     
-    def get_gradient(self, w, mean, scale):
+    def get_gradient(self, w):
         dEdw = 2.0 * (w - self.mean) / self.scale
         return dEdw
