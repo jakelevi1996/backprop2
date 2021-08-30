@@ -13,3 +13,8 @@ class _Regulariser:
         task-specific parameters, for the given task-specific parameters and
         meta-parameters (mean and scale) """
         raise NotImplementedError()
+
+class Quadratic(_Regulariser):
+    """ Regulariser with a quadratic error function. This regulariser is not
+    expected to perform well, but is expected to be simple to implement, and
+    serve as a benchmark for better regularisers """
