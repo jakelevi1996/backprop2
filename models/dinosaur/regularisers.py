@@ -6,6 +6,10 @@ import numpy as np
 class _Regulariser:
     """ Abstract parent class for regularisers """
 
+    def __init__(self, mean=None, scale=None):
+        self.mean = None
+        self.scale = None
+
     def update(self, w_list):
         """ Given a list of adapted weight-vectors, update the meta-parameters
         so that the meta-learning model fits the observed tasks more
