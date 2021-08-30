@@ -13,14 +13,13 @@ np.random.seed(0)
 input_dim = 2
 output_dim = 1
 
-# Initialise models
+# Initialise network model
 num_hidden_units = [1]
 network = models.NeuralNetwork(
     input_dim=input_dim,
     output_dim=output_dim,
     num_hidden_units=num_hidden_units,
 )
-dinosaur = models.Dinosaur(network)
 
 # Get directory for saving outputs to disk
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -62,12 +61,21 @@ for x in [0.3, 0.9]:
             model=network,
         )
 
+# Initialise meta-learning model
+regulariser = models.dinosaur.regularisers.Quadratic()
+dinosaur = models.Dinosaur(
+    network=network,
+    regulariser=regulariser,
+    primary_initialisation_task=task_set.task_list[0],
+    secondary_initialisation_task=task_set.task_list[1],
+)
+
 for _ in range(10):
     # Perform one outer-loop iteration of meta-learning
     dinosaur.meta_learn(task_set, terminator=optimisers.Terminator(i_lim=1))
     # Check that the mean and scale are converging to sensible values
-    print(dinosaur.mean)
-    print(dinosaur.scale)
+    print(regulariser.mean)
+    print(regulariser.scale)
     # TODO: adapt to one test task that matches the distribution of training
     # tasks, and one test task that does not match that distribution, and
     # verify that a better reconstruction error, regularisation error, and
