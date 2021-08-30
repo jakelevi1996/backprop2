@@ -1,4 +1,7 @@
-""" This module contains regulariser classes for the Dinosaur class """
+""" This module contains regulariser classes for the Dinosaur class for
+meta-learning """
+
+import numpy as np
 
 class _Regulariser:
     """ Abstract parent class for regularisers """
@@ -24,3 +27,15 @@ class Quadratic(_Regulariser):
     """ Regulariser with a quadratic error function. This regulariser is not
     expected to perform well, but is expected to be simple to implement, and
     serve as a benchmark for better regularisers """
+
+    def update(self, w_list):
+        self.mean = np.mean(w_list, axis=0)
+        self.scale = np.var(np.array(w_list) - self.mean, axis=0)
+    
+    def get_error(self, w, mean, scale):
+        error = (np.square(w - self.mean) / self.scale).sum()
+        return error
+    
+    def get_gradient(self, w, mean, scale):
+        dEdw = 2.0 * (w - self.mean) / self.scale
+        return dEdw
