@@ -4,7 +4,20 @@ import models
 import data
 import optimisers
 
-dinosaur = models.Dinosaur()
+# Define input and output dimensions for models and data
+input_dim = 2
+output_dim = 1
+
+# Initialise models
+num_hidden_units = [1]
+network = models.NeuralNetwork(
+    input_dim=input_dim,
+    output_dim=output_dim,
+    num_hidden_units=num_hidden_units,
+)
+dinosaur = models.Dinosaur(network)
+
+# Initialise task set
 task_set = data.TaskSet()
 for x in [1, 3]:
     for y in [1.5, 2.5]:
