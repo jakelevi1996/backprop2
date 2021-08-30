@@ -1,3 +1,4 @@
+import numpy as np
 if __name__ == "__main__":
     import __init__
 import models
@@ -19,9 +20,21 @@ dinosaur = models.Dinosaur(network)
 
 # Initialise task set
 task_set = data.TaskSet()
-for x in [1, 3]:
-    for y in [1.5, 2.5]:
-        task_set.add_task(data.GaussianCurve(input_loc=[x, y]))
+for x in [0.3, 0.9]:
+    for y in [0.5, 0.7]:
+        task = data.GaussianCurve(
+            input_dim=input_dim,
+            output_dim=output_dim,
+            n_train=2000,
+            n_test=2000,
+            x_lo=-1,
+            x_hi=1,
+            input_offset=np.array([x, y]).reshape([input_dim, 1]),
+            input_scale=5,
+            output_offset=0,
+            output_scale=10,
+        )
+        task_set.add_task(task)
 
 for _ in range(10):
     # Perform one outer-loop iteration of meta-learning
