@@ -3,6 +3,12 @@
 class _Regulariser:
     """ Abstract parent class for regularisers """
 
+    def update(self, w_list):
+        """ Given a list of adapted weight-vectors, update the meta-parameters
+        so that the meta-learning model fits the observed tasks more
+        effectively """
+        raise NotImplementedError()
+
     def get_error(self, w, mean, scale):
         """ Get the regularisation error for the given task-specific parameters
         and meta-parameters (mean and scale) """
