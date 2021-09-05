@@ -5,11 +5,11 @@ from time import perf_counter
 class Timer:
     """ Timer object, which can be shared between different classes, for
     example Result, Evaluator, Terminator, which all require access to a shared
-    timer
-    """
-    def __init__(self):
+    timer """
+    def __init__(self, t_lim=None):
         """ Initialise a Timer object """
         self._start_time = None
+        self._t_lim = t_lim
 
     def begin(self):
         """ Begin the Timer object by recording the current time """
@@ -21,6 +21,12 @@ class Timer:
         Timer.begin method of this timer object must have been called before
         this method is called """
         return perf_counter() - self._start_time
+
+    def time_remaining(self):
+        """ Return the time remaining in seconds until t_lim seconds after the
+        begin method of this object was last called (assuming t_lim is not
+        None) """
+        return self._start_time + self._t_lim - perf_counter()
 
 class TimedObject:
     """ Class representing an object which has a timer. This timer can be
