@@ -90,6 +90,7 @@ class NeuralNetwork():
         self._num_units_list = list(num_hidden_units) + [output_dim]
         self._num_layers = len(self._num_units_list)
         self._error_func = error_func
+        self._regulariser = None
 
         # Initialise layers
         self._init_layers(act_funcs)
@@ -518,6 +519,9 @@ class NeuralNetwork():
         # Otherwise return the network output
         else:
             return y
+
+    def set_regulariser(self, regulariser):
+        self._regulariser = regulariser
 
 def load_network(filename, dir_name):
     raise NotImplementedError()
