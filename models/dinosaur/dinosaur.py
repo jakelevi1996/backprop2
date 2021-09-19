@@ -26,31 +26,16 @@ class Dinosaur:
             self._timer = None
 
         # Get parameters from optimising the first initialisation task
-        line_search = optimisers.LineSearch()
-        dynamic_terminator = self._get_terminator(
+        self.fast_adapt(
             primary_initialisation_task,
-        )
-        optimisers.GradientDescent(line_search).optimise(
-            model=network,
-            dataset=primary_initialisation_task,
-            evaluator=self._evaluator,
-            terminator=dynamic_terminator,
-            result=self._result,
-            batch_getter=dynamic_terminator,
+            initially_reset_parameters=False,
         )
         w1 = network.get_parameter_vector().copy()
 
         # Get parameters from optimising the second initialisation task
-        dynamic_terminator = self._get_terminator(
+        self.fast_adapt(
             secondary_initialisation_task,
-        )
-        optimisers.GradientDescent(line_search).optimise(
-            model=network,
-            dataset=secondary_initialisation_task,
-            evaluator=self._evaluator,
-            terminator=dynamic_terminator,
-            result=self._result,
-            batch_getter=dynamic_terminator,
+            initially_reset_parameters=False,
         )
         w2 = network.get_parameter_vector()
 
@@ -83,8 +68,25 @@ class Dinosaur:
             self._regulariser.update(w_list)
             i += 1
 
-    def fast_adapt(self, data_set):
+    def fast_adapt(self, data_set, initially_reset_parameters=True):
         """ Adapt to a data set, given the current meta-parameters """
+        # Optionally reset network parameters to the mean
+        if initially_reset_parameters:
+            self._network.set_parameter_vector(self._regulariser.mean)
+
+        # Initialise line search and dynamic terminator
+        line_search = optimisers.LineSearch()
+        dynamic_terminator = self._get_terminator(data_set)
+
+        # Optimise the model for the data set using gradient descent
+        optimisers.GradientDescent(line_search).optimise(
+            model=self._network,
+            dataset=data_set,
+            evaluator=self._evaluator,
+            terminator=dynamic_terminator,
+            result=self._result,
+            batch_getter=dynamic_terminator,
+        )
 
     def _get_terminator(self, dataset):
         if self._timer is not None:
