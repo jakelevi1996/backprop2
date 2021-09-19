@@ -10,6 +10,7 @@ from optimisers.evaluator import Evaluator, DoNotEvaluate
 from optimisers.terminator import Terminator, DynamicTerminator
 from optimisers.linesearch import LineSearch
 from optimisers.results import Result
+from optimisers.timer import Timer
 import data
 import models
 
