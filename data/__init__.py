@@ -19,6 +19,7 @@ from data.mixture_of_gaussians import (
 from data.xor import Xor
 from data.disk import Disk
 from data.circle import Circle
+from data.square import Square
 from data.guassian_curve import GaussianCurve, SumOfGaussianCurves
 from data.task import TaskSet
 
@@ -32,5 +33,6 @@ dataset_class_dict = {
         Xor,
         Disk,
         GaussianCurve,
+        Square,
     ]
 }

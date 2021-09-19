@@ -31,6 +31,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dDisk
 
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dSquare
+
 To get help information for the available arguments, use the following command:
 
     python Scripts/train_gradient_descent.py -h
