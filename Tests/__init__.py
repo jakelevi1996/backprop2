@@ -12,9 +12,8 @@ sys.path.append(source_dir)
 
 # Reset the output directory
 output_dir = os.path.join(current_dir, "Outputs")
-if os.path.isdir(output_dir):
-    shutil.rmtree(output_dir)
-os.makedirs(output_dir)
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
 
 # Set numpy printing options
 np.set_printoptions(
