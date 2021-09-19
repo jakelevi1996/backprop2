@@ -14,7 +14,7 @@ input_dim = 2
 output_dim = 1
 
 # Initialise network model
-num_hidden_units = [1]
+num_hidden_units = [10]
 network = models.NeuralNetwork(
     input_dim=input_dim,
     output_dim=output_dim,
@@ -68,6 +68,7 @@ dinosaur = models.Dinosaur(
     regulariser=regulariser,
     primary_initialisation_task=task_set.task_list[0],
     secondary_initialisation_task=task_set.task_list[1],
+    t_lim=10,
 )
 
 for _ in range(10):
@@ -81,3 +82,15 @@ for _ in range(10):
     # verify that a better reconstruction error, regularisation error, and
     # overall error is found for the test task that matches the distribution of
     # training tasks
+
+
+# Plot task predictions after meta-learning
+for i, task in enumerate(task_set.task_list):
+    dinosaur.fast_adapt(task)
+    plotting.plot_2D_regression(
+        "Dinosaur task %i" % i,
+        output_dir,
+        task,
+        output_dim,
+        model=network,
+    )
