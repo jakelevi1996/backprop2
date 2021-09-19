@@ -66,14 +66,16 @@ class DynamicTerminator(Terminator, _BatchGetter):
         replace=True,
         t_lim=None,
         i_lim=None,
+        p_lim=0.001,
         i_interval=5,
-        smooth_output=False,
-        smooth_mean_reduction=False,
-        smooth_std=False,
-        smooth_n=100,
+        smooth_output=True,
+        smooth_mean_reduction=True,
+        smooth_std=True,
+        smooth_n=50,
         smooth_x0=1,
     ):
         self.t_lim = t_lim
+        self._p_lim = p_lim
         self._num_iterations = i_lim
         self._init_timer()
 
@@ -109,9 +111,9 @@ class DynamicTerminator(Terminator, _BatchGetter):
         """ Return True if ready to break out of the minimisation loop,
         otherwise return False """
 
-        if self._p_improve_list[-1] < -1: # TODO: make this threshold configurable. From experiments, a threshold of 0.001 with a buffer length of 50 and triple-smoothed should work well
-            print(self._p_improve_list) # TODO: delete this line <---
-            return True
+        if self._p_lim is not None:
+            if self._p_improve_list[-1] < self._p_lim:
+                return True
 
         if self.t_lim is not None:
             if self.time_elapsed() >= self.t_lim:
