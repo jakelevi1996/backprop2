@@ -54,11 +54,26 @@ class Result(AbstractResult):
             self.add_column(col())
 
     def add_column(self, column):
-        if column.name in self._column_dict:
+        if type(column) in self._column_dict:
             raise ValueError("A column with this name has already been added")
 
         self._column_list.append(column)
         self._column_dict[type(column)] = column
+    
+    def replace_column(self, column):
+        """ Replace a column belonging to this result object with a different
+        column (provided as an argument) of the same type. If no column of the
+        same type belongs to this object already, then a new one is simply
+        added """
+        # Delete the column from this result object, if it exists already
+        if type(column) in self._column_dict:
+            existing_column = self._column_dict[type(column)]
+            self._column_list.remove(existing_column)
+
+        # Add the new column
+        self._column_list.append(column)
+        self._column_dict[type(column)] = column
+
 
     def get_iteration_number(self):
         """ Return the current iteration number, as an integer """

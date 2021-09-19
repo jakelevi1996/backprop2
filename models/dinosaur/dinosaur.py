@@ -78,4 +78,8 @@ class Dinosaur:
             replace=True,
             t_lim=t_lim,
         )
+        dynamic_terminator_column = (
+            optimisers.results.columns.BatchImprovementProbability(terminator)
+        )
+        self._result.replace_column(dynamic_terminator_column)
         return terminator
