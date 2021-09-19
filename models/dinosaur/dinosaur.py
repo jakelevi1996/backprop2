@@ -30,7 +30,6 @@ class Dinosaur:
         dynamic_terminator = self._get_terminator(
             primary_initialisation_task,
         )
-        # self._result.add_column(optimisers.results.columns.BatchImprovementProbability(dynamic_terminator))
         optimisers.GradientDescent(line_search).optimise(
             model=network,
             dataset=primary_initialisation_task,
@@ -40,7 +39,7 @@ class Dinosaur:
             batch_getter=dynamic_terminator,
         )
         w1 = network.get_parameter_vector().copy()
-        
+
         # Get parameters from optimising the second initialisation task
         dynamic_terminator = self._get_terminator(
             secondary_initialisation_task,
@@ -59,10 +58,31 @@ class Dinosaur:
         self._regulariser.update([w1, w2])
         self._network.set_regulariser(self._regulariser)
 
-    
+
     def meta_learn(self, task_set, terminator=None):
         """ Learn meta-parameters for a task-set """
-    
+        # Initialise loop variables
+        i = 0
+        terminator.set_initial_iteration(i)
+        # Start outer loop
+        while True:
+            # Initialise list of task-specific parameters for this iteration
+            w_list = []
+            # Iterate through tasks in the task set
+            for task in task_set.task_list:
+                # Check if ready to finish meta-learning
+                if terminator.ready_to_terminate(i):
+                    return
+                
+                # Adapt to the current task and store the parameters
+                self.fast_adapt(task)
+                w_task = self._network.get_parameter_vector().copy()
+                w_list.append(w_task)
+
+            # Update meta-parameters and increment loop counter
+            self._regulariser.update(w_list)
+            i += 1
+
     def fast_adapt(self, data_set):
         """ Adapt to a data set, given the current meta-parameters """
 
