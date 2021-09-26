@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy as np
 if __name__ == "__main__":
     import __init__
@@ -28,8 +29,9 @@ output_dir = os.path.join(
     "Outputs",
     "Train Dinosaur",
 )
-if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+if os.path.isdir(output_dir):
+    shutil.rmtree(output_dir)
+os.makedirs(output_dir)
 print("Saving output plots in \"%s\"" % output_dir)
 os.system("explorer \"%s\"" % output_dir)
 
