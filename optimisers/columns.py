@@ -31,7 +31,7 @@ class _Column:
         self.title_str = "{{:{}s}}".format(width).format(name)
         self.value_list = []
         self._value_fmt_str = "{{:{}{}}}".format(width, format_spec)
-    
+
     def update(self, kwargs):
         """ Given the dictionary kwargs passed from AbstractOptimiser.optimise
         to Result.update to this method, extract the appropriate value for this
@@ -47,25 +47,25 @@ class _Column:
         string is used by the Result.update method, if the Result was
         initialised with verbose=True. """
         return self._value_fmt_str.format(self.value_list[-1])
-    
+
 class Iteration(_Column):
     def __init__(self, name="Iteration", format_spec="d"):
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         self.value_list.append(kwargs["iteration"])
 
 class Time(_Column):
     def __init__(self, name="Time (s)", format_spec=".3f"):
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         self.value_list.append(kwargs["time"])
 
 class TrainError(_Column):
     def __init__(self, name="Train error", format_spec=".5f"):
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
@@ -76,7 +76,7 @@ class TrainError(_Column):
 class TestError(_Column):
     def __init__(self, name="Test error", format_spec=".5f"):
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
@@ -91,14 +91,14 @@ class StepSize(_Column):
         minimisation """
         self.line_search = line_search
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         self.value_list.append(self.line_search.s)
 
 class DbsMetric(_Column):
     def __init__(self, name="DBS metric", format_spec=".4f"):
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         self.value_list.append(kwargs["model"].get_dbs_metric())
 
@@ -106,7 +106,7 @@ class BatchSize(_Column):
     def __init__(self, batch_getter, name="Batch size", format_spec="d"):
         self.batch_getter = batch_getter
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
         self.value_list.append(int(self.batch_getter.batch_size))
 
@@ -198,7 +198,7 @@ class OptimalBatchSize(_Column):
 
         # Call parent initialiser to initialise format strings, value list etc
         super().__init__(name, format_spec="d")
-    
+
     def update(self, kwargs):
         """ Find the current optimal batch size for this model and dataset
         during the current iteration, by testing each batch size for the
@@ -328,7 +328,7 @@ class Predictions(_Column):
         self.value_list.append("Yes")
         self.store_hidden_layer_outputs = store_hidden_layer_outputs
         self.store_preactivations = store_hidden_layer_preactivations
-    
+
     def update(self, kwargs):
         """ Store the predictions of the model on this object's internal
         prediction inputs, and optionally also the activations of each hidden
@@ -388,7 +388,7 @@ class TestSetImprovementProbabilitySimple(_Column):
         self.prev_mean_test_error = model.mean_error(dataset.y_test)
         self._smoother = smoother
         self._use_cdf = use_cdf
-    
+
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
@@ -420,9 +420,9 @@ class BatchImprovementProbability(_Column):
         column must be initialised with that DynamicTerminator object """
         self._dynamic_terminator = dynamic_terminator
         super().__init__(name, format_spec)
-    
+
     def update(self, kwargs):
-        self.value_list.append(self._dynamic_terminator._p_improve_list[-1])
+        self.value_list.append(self._dynamic_terminator.p_improve_list[-1])
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
