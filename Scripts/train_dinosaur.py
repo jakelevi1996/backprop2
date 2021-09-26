@@ -88,3 +88,5 @@ for i, task in enumerate(task_set.task_list):
         output_dim,
         model=network,
     )
+
+plotting.plot_training_curves([dinosaur._result], dir_name=output_dir)
