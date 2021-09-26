@@ -86,7 +86,8 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self.replace = replace
 
         model.forward_prop(dataset.x_train)
-        self._prev_mean_error = model.mean_error(dataset.y_train)
+        self.initial_error = model.error(dataset.y_train).mean()
+        self._prev_mean_error = self.initial_error
         self._model = model
 
         self._i_interval = i_interval
