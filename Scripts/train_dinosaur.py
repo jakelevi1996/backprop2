@@ -54,14 +54,6 @@ for x in [0.3, 0.9]:
         )
         # Add task to task set
         task_set.add_task(task)
-        # Plot task for reference and save to disk
-        plotting.plot_2D_regression(
-            "Dinosaur task, x = %.1f, y = %.1f" % (x, y),
-            output_dir,
-            task,
-            output_dim,
-            model=network,
-        )
 
 # Initialise meta-learning model
 regulariser = models.dinosaur.regularisers.Quadratic()
