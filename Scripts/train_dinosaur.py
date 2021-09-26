@@ -62,7 +62,7 @@ dinosaur = models.Dinosaur(
     regulariser=regulariser,
     primary_initialisation_task=task_set.task_list[0],
     secondary_initialisation_task=task_set.task_list[1],
-    t_lim=10,
+    t_lim=20,
 )
 
 for _ in range(10):
@@ -70,7 +70,8 @@ for _ in range(10):
     dinosaur.meta_learn(task_set, terminator=optimisers.Terminator(i_lim=1))
     # Check that the mean and scale are converging to sensible values
     print(regulariser.mean)
-    print(regulariser.scale)
+    print(regulariser.parameter_scale)
+    print(regulariser.error_scale)
     # TODO: adapt to one test task that matches the distribution of training
     # tasks, and one test task that does not match that distribution, and
     # verify that a better reconstruction error, regularisation error, and

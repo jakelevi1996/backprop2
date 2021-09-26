@@ -31,11 +31,11 @@ class Dinosaur:
         w1 = network.get_parameter_vector().copy()
 
         # Get parameters from optimising the second initialisation task
-        self.fast_adapt(secondary_initialisation_task)
+        dE = self.fast_adapt(secondary_initialisation_task)
         w2 = network.get_parameter_vector()
 
         # Set the regulariser parameters and add to the network
-        self._regulariser.update([w1, w2])
+        self._regulariser.update([w1, w2], [dE])
         self._network.set_regulariser(self._regulariser)
         self._initialised_regulariser = True
 
@@ -47,21 +47,23 @@ class Dinosaur:
         terminator.set_initial_iteration(i)
         # Start outer loop
         while True:
-            # Initialise list of task-specific parameters for this iteration
+            # Initialise results lists for this iteration
             w_list = []
+            dE_list = []
             # Iterate through tasks in the task set
             for task in task_set.task_list:
                 # Check if ready to finish meta-learning
                 if terminator.ready_to_terminate(i):
                     return
 
-                # Adapt to the current task and store the parameters
-                self.fast_adapt(task)
-                w_task = self._network.get_parameter_vector().copy()
-                w_list.append(w_task)
+                # Adapt to the current task and store the results
+                dE = self.fast_adapt(task)
+                dE_list.append(dE)
+                w = self._network.get_parameter_vector().copy()
+                w_list.append(w)
 
             # Update meta-parameters and increment loop counter
-            self._regulariser.update(w_list)
+            self._regulariser.update(w_list, dE_list)
             i += 1
 
     def fast_adapt(self, data_set):
