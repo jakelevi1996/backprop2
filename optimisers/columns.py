@@ -70,7 +70,7 @@ class TrainError(_Column):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
         model.forward_prop(dataset.x_train)
-        train_error = model.mean_total_error(dataset.y_train)
+        train_error = model.reconstruction_error(dataset.y_train).mean()
         self.value_list.append(train_error)
 
 class TestError(_Column):
@@ -81,7 +81,7 @@ class TestError(_Column):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
         model.forward_prop(dataset.x_test)
-        test_error = model.mean_total_error(dataset.y_test)
+        test_error = model.reconstruction_error(dataset.y_test).mean()
         self.value_list.append(test_error)
 
 class StepSize(_Column):
