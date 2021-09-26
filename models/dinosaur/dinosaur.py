@@ -19,6 +19,7 @@ class Dinosaur:
         self._batch_size = batch_size
         self._evaluator = optimisers.Evaluator(t_interval=0.1)
         self._result = optimisers.Result(name="Dinosaur")
+        self._initialised_regulariser = False
         if t_lim is not None:
             self._timer = optimisers.Timer(t_lim)
             self._timer.begin()
@@ -26,22 +27,17 @@ class Dinosaur:
             self._timer = None
 
         # Get parameters from optimising the first initialisation task
-        self.fast_adapt(
-            primary_initialisation_task,
-            initially_reset_parameters=False,
-        )
+        self.fast_adapt(primary_initialisation_task)
         w1 = network.get_parameter_vector().copy()
 
         # Get parameters from optimising the second initialisation task
-        self.fast_adapt(
-            secondary_initialisation_task,
-            initially_reset_parameters=False,
-        )
+        self.fast_adapt(secondary_initialisation_task)
         w2 = network.get_parameter_vector()
 
         # Set the regulariser parameters and add to the network
         self._regulariser.update([w1, w2])
         self._network.set_regulariser(self._regulariser)
+        self._initialised_regulariser = True
 
 
     def meta_learn(self, task_set, terminator=None):
@@ -68,10 +64,10 @@ class Dinosaur:
             self._regulariser.update(w_list)
             i += 1
 
-    def fast_adapt(self, data_set, initially_reset_parameters=True):
+    def fast_adapt(self, data_set):
         """ Adapt to a data set, given the current meta-parameters """
         # Optionally reset network parameters to the mean
-        if initially_reset_parameters:
+        if self._initialised_regulariser:
             self._network.set_parameter_vector(self._regulariser.mean)
 
         # Initialise line search and dynamic terminator
