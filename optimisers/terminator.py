@@ -92,7 +92,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self._i_interval = i_interval
         self._i_next_update = 0
         self._i = 0
-        self.p_improve_list = [smooth_x0]
+        self.p_improve = smooth_x0
 
         if smooth_output:
             self._output_smoother = MovingAverage(smooth_x0, smooth_n)
@@ -112,7 +112,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         otherwise return False """
 
         if self._p_lim is not None:
-            if self.p_improve_list[-1] < self._p_lim:
+            if self.p_improve < self._p_lim:
                 return True
 
         if self.t_lim is not None:
@@ -151,12 +151,11 @@ class DynamicTerminator(Terminator, _BatchGetter):
             std_error = error.std()
             if self._std_smoother is not None:
                 std_error = self._std_smoother.smooth(std_error)
-            p_improve = mean_reduction / std_error
+            self.p_improve = mean_reduction / std_error
             if self._output_smoother is not None:
-                p_improve = self._output_smoother.smooth(p_improve)
+                self.p_improve = self._output_smoother.smooth(self.p_improve)
 
             # Update internal attributes
-            self.p_improve_list.append(p_improve)
             self._prev_mean_error = mean_error
             self._i_next_update += self._i_interval
 

@@ -422,7 +422,7 @@ class BatchImprovementProbability(_Column):
         super().__init__(name, format_spec)
 
     def update(self, kwargs):
-        self.value_list.append(self._dynamic_terminator.p_improve_list[-1])
+        self.value_list.append(self._dynamic_terminator.p_improve)
 
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
