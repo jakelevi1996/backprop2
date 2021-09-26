@@ -104,7 +104,7 @@ class NeuralNetwork():
         )
         self.param_vector = np.empty(self.num_params)
         self.grad_vector = np.empty(self.num_params)
-    
+
     def _init_layers(self, act_func_list):
         """
         Initialise the layers of the neural network.
@@ -130,7 +130,7 @@ class NeuralNetwork():
                 act_func(i)
             )
             self.layers.append(new_layer)
-    
+
     def glorot_initialiser(self, act_funcs):
         # TODO: Should initialisers have their own classes?
         raise NotImplementedError
@@ -245,7 +245,7 @@ class NeuralNetwork():
             # Set the biases and update the pointer
             self.param_vector[i:i+layer.num_bias] = layer.bias.ravel()
             i += layer.num_bias
-        
+
         return self.param_vector
 
     def get_gradient_vector(self, x, target):
@@ -284,7 +284,7 @@ class NeuralNetwork():
                 layer.b_grad.mean(axis=-1).ravel()
             )
             i += layer.num_bias
-        
+
         return self.grad_vector
 
     def get_hessian_blocks(self, x, target, weight_ind_list, bias_ind_list):
@@ -351,20 +351,20 @@ class NeuralNetwork():
                 )
                 hess_block_list.append(hess_block.mean(axis=-1))
                 hess_inds_list.append(block_weight_inds + offset)
-                
-            # Update the offset for hess_inds_list 
+
+            # Update the offset for hess_inds_list
             offset += layer.num_weights
-            
+
             # Iterate through each block of biases in this layer
             for block_bias_inds in bias_ind_list[i]:
                 # Calculate the Hessian block and update output lists
                 hess_block = layer.calc_bias_gradients2(block_bias_inds)
                 hess_block_list.append(hess_block.mean(axis=-1))
                 hess_inds_list.append(block_bias_inds + offset)
-            
-            # Update the offset for hess_inds_list 
+
+            # Update the offset for hess_inds_list
             offset += layer.num_bias
-        
+
         return hess_block_list, hess_inds_list
 
 
@@ -403,16 +403,17 @@ class NeuralNetwork():
             )
             i += layer.num_bias
 
-    def mean_error(self, t):
-        """ Calculate the mean (across all data points) of the error between the
+    def mean_total_error(self, t):
+        """ Calculate the mean (across all data points) of the total error
+        (including both reconstruction and regularisation error) between the
         given targets and the network's predictions for the most recent set of
         inputs that were propagated through the network.
 
         Inputs:
-        -   t: targets that the neural network is trying to predict. Should be a
-            numpy array with shape (output_dim, N_D), where N_D is the number of
-            data points (size of dimension 1) of the most recent set of inputs
-            that were propagated through the network
+        -   t: targets that the neural network is trying to predict. Should be
+            a numpy array with shape (output_dim, N_D), where N_D is the number
+            of data points (size of dimension 1) of the most recent set of
+            inputs that were propagated through the network
 
         Outputs:
         -   e: mean error across all data points, as a numpy float64 scalar
@@ -476,7 +477,7 @@ class NeuralNetwork():
         # functions as np.ndarrays in an npz file, and return the filename
         # params = self.get_parameter_vector()
         raise NotImplementedError
-    
+
     def load_model(self, filename):
         # params = np.load(filename)
         # self.set_parameter_vector(params)
@@ -520,7 +521,7 @@ class NeuralNetwork():
         y = self.forward_prop(x)
         # If targets are provided, then calculate and return the mean error
         if t is not None:
-            return self.mean_error(t)
+            return self.mean_total_error(t)
         # Otherwise return the network output
         else:
             return y

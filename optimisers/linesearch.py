@@ -11,7 +11,7 @@ class LineSearch:
         -   alpha: minimum ratio of reduction to expected reduction to accept,
             in (0, 1). A higher value of alpha means more steps will be taken
             per iteration when backtracking, to get a step size which gives a
-            better reduction in error function. Default is 0.5. 
+            better reduction in error function. Default is 0.5.
         -   beta: ratio to scale the step size by when backtracking (and inverse
             ratio to scale the step size by when forward tracking). Smaller beta
             means that the changes in step size will be bigger, so iterations
@@ -27,19 +27,19 @@ class LineSearch:
         self.alpha = alpha
         self.beta = beta
         self.max_its = max_its
-            
+
     def get_step_size(self, model, x, y, w, delta, dEdw):
         """ Find the approximate locally best step size to use to optimise the
-        model for the current batch of training data. This function is called by
-        the AbstractOptimiser.optimise method (if a valid LineSearch object is
-        passed to it).
+        model for the current batch of training data. This function is called
+        by the AbstractOptimiser.optimise method (if a valid LineSearch object
+        is passed to it).
 
         Note that at the beginning of this method we do not propagate the input
         x through the network again, because we are assuming it has just been
         propagated during the call to the _get_step method in
         AbstractOptimiser.optimise for the same batch of training data and the
-        same set of parameters, therefore we call model.mean_error(y) straight
-        away, without first propagating the data through the network.
+        same set of parameters, therefore we call model.mean_total_error(y)
+        straight away, without first propagating the data through the network.
 
         Inputs:
         -   model: instance of NeuralNetwork to be optimised
@@ -51,7 +51,7 @@ class LineSearch:
         -   dEdw: gradient of the error function at the current parameters
         """
         # Calculate initial parameters
-        E_old = E_0 = model.mean_error(y)
+        E_old = E_0 = model.mean_total_error(y)
         E_new = model(x, y, w + self.s * delta)
         delta_dot_dEdw = np.dot(delta, dEdw)
 

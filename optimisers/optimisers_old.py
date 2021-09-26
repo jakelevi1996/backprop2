@@ -59,7 +59,7 @@ def old_backtrack_condition(t, model, w, delta, dataset, alpha, dEdw, E0):
     alpha.
     """
     model.set_parameter_vector(w + t * delta)
-    E_new = model.mean_error(dataset.y_train, dataset.x_train)
+    E_new = model.mean_total_error(dataset.y_train, dataset.x_train)
     min_reduction = -alpha * t * np.dot(delta, dEdw)
     return min_reduction > (E0 - E_new)
 
@@ -98,7 +98,7 @@ def sgd_2way_tracking(
             result.update(model, dataset, i, t)
         # Get the gradient and mean error for the current parameters
         dEdw = model.get_gradient_vector(dataset.x_train, dataset.y_train)
-        E0 = model.mean_error(dataset.y_train)
+        E0 = model.mean_total_error(dataset.y_train)
         # Check if the current step size gives sufficient error reduction
         backtrack_params = (model, w, -dEdw, dataset, alpha, dEdw, E0)
         if old_backtrack_condition(t, *backtrack_params):

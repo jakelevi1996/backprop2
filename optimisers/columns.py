@@ -70,7 +70,7 @@ class TrainError(_Column):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
         model.forward_prop(dataset.x_train)
-        train_error = model.mean_error(dataset.y_train)
+        train_error = model.mean_total_error(dataset.y_train)
         self.value_list.append(train_error)
 
 class TestError(_Column):
@@ -81,7 +81,7 @@ class TestError(_Column):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
         model.forward_prop(dataset.x_test)
-        test_error = model.mean_error(dataset.y_test)
+        test_error = model.mean_total_error(dataset.y_test)
         self.value_list.append(test_error)
 
 class StepSize(_Column):
@@ -212,7 +212,7 @@ class OptimalBatchSize(_Column):
         if self._using_line_search:
             s_0 = self._optimiser.line_search.s
         model.forward_prop(dataset.x_test)
-        E_0 = model.mean_error(dataset.y_test)
+        E_0 = model.mean_total_error(dataset.y_test)
         # Iterate through batch sizes
         reduction_dict = dict()
         for batch_size in self.batch_size_list:
@@ -236,7 +236,7 @@ class OptimalBatchSize(_Column):
                 )
                 # Calculate new error and add the reduction to the list
                 model.forward_prop(dataset.x_test)
-                E_new = model.mean_error(dataset.y_test)
+                E_new = model.mean_total_error(dataset.y_test)
                 error_reduction = E_0 - E_new
                 reduction_dict[batch_size].append(error_reduction)
                 # Reset parameters
@@ -385,7 +385,7 @@ class TestSetImprovementProbabilitySimple(_Column):
     ):
         super().__init__(name, format_spec)
         model.forward_prop(dataset.x_test)
-        self.prev_mean_test_error = model.mean_error(dataset.y_test)
+        self.prev_mean_test_error = model.mean_total_error(dataset.y_test)
         self._smoother = smoother
         self._use_cdf = use_cdf
 

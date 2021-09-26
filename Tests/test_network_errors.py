@@ -26,7 +26,7 @@ def test_set_vector_errors(repeat):
     with pytest.raises(ValueError):
         # Wrong number of parameters
         n.set_parameter_vector(np.zeros(num_params - 3))
-    
+
     with pytest.raises(ValueError):
         # Parameter array has the wrong shape (should be 1-dimensional)
         n.set_parameter_vector(np.zeros([1, num_params]))
@@ -43,7 +43,7 @@ def test_invalid_act_function(repeat):
     with pytest.raises(TypeError):
         # act_funcs argument should be a list of activation function objects
         n = NeuralNetwork(act_funcs=models.activations.gaussian)
-    
+
     n = NeuralNetwork(act_funcs=[models.activations._Gaussian])
     x, _ = get_random_inputs(n.input_dim)
     with pytest.raises(TypeError):
@@ -55,7 +55,7 @@ def test_invalid_act_function(repeat):
     with pytest.raises(TypeError):
         # Activation function None is not callable
         n.forward_prop(x)
-        
+
     n = NeuralNetwork(act_funcs=[abs])
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
@@ -76,14 +76,14 @@ def test_invalid_error_function(repeat):
     n.forward_prop(x)
     with pytest.raises(TypeError):
         # Network is initialised with the SumOfSquares class, not an instance
-        n.mean_error(t)
+        n.mean_total_error(t)
 
     n = NeuralNetwork(error_func=sum)
     x, N_D = get_random_inputs(n.input_dim)
     t = get_random_targets(n.output_dim, N_D)
     n.forward_prop(x)
     # Error function sum is callable, so mean_error is okay
-    n.mean_error(t)
+    n.mean_total_error(t)
     with pytest.raises(AttributeError):
         # Error function sum has no dydx method, so backprop fails
         n.back_prop(x, t)

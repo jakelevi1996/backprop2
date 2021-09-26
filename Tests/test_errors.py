@@ -32,7 +32,7 @@ def _get_output_dim_act_funcs(error_func):
     else:
         output_dim = None
         act_funcs = None
-    
+
     return output_dim, act_funcs
 
 
@@ -67,7 +67,7 @@ def test_propagation(repeat, error_func):
     n.forward_prop(x)
     n.back_prop(x, t)
     n.back_prop2(x, t)
-    n.mean_error(t)
+    n.mean_total_error(t)
 
 @pytest.mark.parametrize("repeat", range(3))
 @pytest.mark.parametrize("error_func", error_func_list)
@@ -87,7 +87,7 @@ def test_error_func_id(repeat, error_func):
     )
     y = n(x)
     assert np.all(error_func_from_id(y, 0) == error_func(y, 0))
-    
+
 def test_error_func_ids_unique():
     """ Check that all of the error function IDs are unique """
     id_list = [error_func.get_id_from_func() for error_func in error_func_list]

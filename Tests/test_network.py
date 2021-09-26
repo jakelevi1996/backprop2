@@ -208,7 +208,7 @@ def test_mean_error(repeat):
     set_random_seed_from_args("test_mean_error", repeat)
     n, x, t, _ = get_random_network_inputs_targets()
     n.forward_prop(x)
-    mean_error = n.mean_error(t)
+    mean_error = n.mean_total_error(t)
     assert mean_error.shape == ()
     assert mean_error.size == 1
 
