@@ -385,7 +385,9 @@ class TestSetImprovementProbabilitySimple(_Column):
     ):
         super().__init__(name, format_spec)
         model.forward_prop(dataset.x_test)
-        self.prev_mean_test_error = model.mean_total_error(dataset.y_test)
+        self.prev_mean_test_error = (
+            model.reconstruction_error(dataset.y_test).mean()
+        )
         self._smoother = smoother
         self._use_cdf = use_cdf
 
