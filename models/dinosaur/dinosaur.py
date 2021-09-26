@@ -54,7 +54,7 @@ class Dinosaur:
                 # Check if ready to finish meta-learning
                 if terminator.ready_to_terminate(i):
                     return
-                
+
                 # Adapt to the current task and store the parameters
                 self.fast_adapt(task)
                 w_task = self._network.get_parameter_vector().copy()
@@ -65,7 +65,12 @@ class Dinosaur:
             i += 1
 
     def fast_adapt(self, data_set):
-        """ Adapt to a data set, given the current meta-parameters """
+        """ Adapt to a data set, given the current meta-parameters. If the
+        regulariser for this Dinosaur object has already been initialised, then
+        before adaptation, the parameters of this Dinosaur object's internal
+        NeuralNetwork object are reset to the mean parameters according to the
+        regulariser. This method returns the reduction in the mean
+        reconstruction error which results from optimisation """
         # Optionally reset network parameters to the mean
         if self._initialised_regulariser:
             self._network.set_parameter_vector(self._regulariser.mean)
@@ -83,6 +88,13 @@ class Dinosaur:
             result=self._result,
             batch_getter=dynamic_terminator,
         )
+
+        # Return the reduction in the mean reconstruction error
+        mean_reconstruction_error_reduction = (
+            dynamic_terminator.initial_mean_reconstruction_error
+            - self._result.get_final_train_reconstruction_error()
+        )
+        return mean_reconstruction_error_reduction
 
     def _get_terminator(self, dataset):
         if self._timer is not None:
