@@ -59,7 +59,7 @@ class Result(AbstractResult):
 
         self._column_list.append(column)
         self._column_dict[type(column)] = column
-    
+
     def replace_column(self, column):
         """ Replace a column belonging to this result object with a different
         column (provided as an argument) of the same type. If no column of the
@@ -78,7 +78,7 @@ class Result(AbstractResult):
     def get_iteration_number(self):
         """ Return the current iteration number, as an integer """
         return self._iteration
-    
+
     def get_values(self, column_type):
         """ Given the type of column, return the list of values for the column
         with the matching type.
@@ -86,7 +86,12 @@ class Result(AbstractResult):
         Raises KeyError if this Result object does not have a Column with a
         matching type. """
         return self._column_dict[column_type].value_list
-    
+
+    def get_final_train_reconstruction_error(self):
+        """ Return the final mean reconstruction error of the model on the
+        training set """
+        return self._column_dict[columns.TrainError].value_list[-1]
+
     def get_column_name(self, column_type):
         """ Given the type of column, return the name of the column with the
         matching type.
@@ -94,7 +99,7 @@ class Result(AbstractResult):
         Raises KeyError if this Result object does not have a Column with a
         matching type. """
         return self._column_dict[column_type].name
-    
+
     def begin(self):
         """ Display column headers for the columns in this result (if this
         result object is verbose, and these column headers have not already
@@ -109,14 +114,14 @@ class Result(AbstractResult):
         unnecessarily initialising an extra timer object """
         if self.verbose:
             self._display_headers()
-        
+
         if not self.has_timer():
             timer = Timer()
             self.set_timer(timer)
             timer.begin()
-        
+
         self.begun = True
-    
+
     def update(self, **kwargs):
         """ Update all the columns in this Result object with new values.
         Depending on the columns used by this object, certain keyword arguments
@@ -132,7 +137,7 @@ class Result(AbstractResult):
 
         if self.verbose:
             self._display_last()
-    
+
     def _display_headers(self):
         title_list = [col.title_str for col in self._column_list]
         print("\nPerforming test \"{}\"...".format(self.name),  file=self.file)
@@ -142,7 +147,7 @@ class Result(AbstractResult):
     def _display_last(self):
         """
         Display the results of the last time the update method was called.
-        Raises IndexError if update has not been called on this object before 
+        Raises IndexError if update has not been called on this object before
         """
         print(
             " | ".join(col.get_value_str() for col in self._column_list),
@@ -169,6 +174,6 @@ class Result(AbstractResult):
             end="\n\n",
             file=self.file
         )
-    
+
     def __repr__(self):
         return "Result({})".format(repr(self.name))
