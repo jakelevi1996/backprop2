@@ -110,7 +110,7 @@ def test_get_hessian_blocks(seed):
     n, x, t, _ = get_random_network_inputs_targets(
         act_funcs=[activations.cauchy, activations.identity]
     )
-    
+
     # Set block inds for get_hessian_blocks method
     max_block_size = np.random.randint(3, 6)
     weight_inds_list = [
@@ -125,7 +125,7 @@ def test_get_hessian_blocks(seed):
             np.ceil(layer.num_bias / max_block_size)
         ) for layer in n.layers
     ]
-    
+
     # Get Hessian blocks
     n.forward_prop(x)
     n.back_prop(x, t)
@@ -135,20 +135,20 @@ def test_get_hessian_blocks(seed):
         weight_inds_list,
         bias_inds_list
     )
-    
+
     # Calculate expected shapes
     expected_shapes = []
     for layer_w_inds, layer_b_inds in zip(weight_inds_list, bias_inds_list):
         expected_shapes += [(block.size, block.size) for block in layer_w_inds]
         expected_shapes += [(block.size, block.size) for block in layer_b_inds]
-    
+
     # Iterate through each block and expected shape
     for block, shape in zip(hess_block_list, expected_shapes):
         # Check the shape is as expected
         assert block.shape == shape
         # Check that the Hessian block is symmetric
         assert np.allclose(block, block.T)
-    
+
     # Check that Hessian inds are all unique and the right length
     unpacked_hess_inds_list = [
         ind
@@ -219,7 +219,7 @@ def test_error(repeat):
     set_random_seed_from_args("test_std_error", repeat)
     n, x, t, N_D = get_random_network_inputs_targets()
     n.forward_prop(x)
-    error = n.error(t)
+    error = n.reconstruction_error(t)
     assert error.shape == (1, N_D)
 
 @pytest.mark.parametrize("repeat", range(3))
@@ -270,12 +270,12 @@ def test_too_few_act_funcs():
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
 
     assert len(n.layers) == len(num_hidden_units) + 1
-    
+
     for layer in n.layers[:-1]:
         assert type(layer.act_func) is activations._Gaussian
-    
+
     assert type(n.layers[-1].act_func) is activations._Identity
-    
+
 def test_too_many_act_funcs():
     """ Initialise a neural network with more activation functions than hidden
     units in the input arguments, and make sure that there are the correct
@@ -286,8 +286,8 @@ def test_too_many_act_funcs():
     n = NeuralNetwork(num_hidden_units=num_hidden_units, act_funcs=act_funcs)
 
     assert len(n.layers) == len(num_hidden_units) + 1
-    
+
     for layer in n.layers[:-1]:
         assert type(layer.act_func) is activations._Gaussian
-    
+
     assert type(n.layers[-1].act_func) is activations._Identity

@@ -393,7 +393,7 @@ class TestSetImprovementProbabilitySimple(_Column):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
         model.forward_prop(dataset.x_test)
-        error = model.error(dataset.y_test)
+        error = model.reconstruction_error(dataset.y_test)
         mean_test_error = error.mean()
         std_test_error = error.std()
         p_improve = (

@@ -419,10 +419,15 @@ class NeuralNetwork():
         """
         return self._error_func(self.y, t).mean()
 
-    def error(self, t):
-        """ Calculate the error between the given targets and the network's
-        predictions for the most recent set of inputs that were propagated
-        through the network.
+    def reconstruction_error(self, t):
+        """ Calculate the reconstruction error (not including regularisation
+        error) between the given targets and the network's predictions for the
+        most recent set of inputs that were propagated through the network,
+        returning the error for each data point in a numpy array with shape (1,
+        N_D).
+
+        It is assumed that the forward_prop method has first been called for
+        the inputs corresponding to the targets provided to this method.
 
         Inputs:
         -   t: targets that the neural network is trying to predict. Should be

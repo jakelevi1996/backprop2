@@ -86,8 +86,9 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self.replace = replace
 
         model.forward_prop(dataset.x_train)
-        self.initial_error = model.error(dataset.y_train).mean()
-        self._prev_mean_error = self.initial_error
+        initial_error = model.reconstruction_error(dataset.y_train)
+        self.initial_mean_reconstruction_error = initial_error.mean()
+        self._prev_mean_error = self.initial_mean_reconstruction_error
         self._model = model
 
         self._i_interval = i_interval
@@ -142,7 +143,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         if self._i >= self._i_next_update:
             # Calculate the probability of improvement
             self._model.forward_prop(x_batch)
-            error = self._model.error(y_batch)
+            error = self._model.reconstruction_error(y_batch)
             mean_error = error.mean()
             mean_reduction = self._prev_mean_error - mean_error
             if self._mean_reduction_smoother is not None:
