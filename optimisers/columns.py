@@ -341,7 +341,7 @@ class Predictions(_Column):
         model       = kwargs["model"]
         iteration   = kwargs["iteration"]
         # Calculate and store the predictions of the model
-        y_pred = model(self.x_pred)
+        y_pred = model.forward_prop(self.x_pred)
         self.predictions_dict[iteration] = y_pred
         # If specified, store the hidden layer outputs or preactivations
         if self.store_hidden_layer_outputs:

@@ -79,10 +79,13 @@ def test_get_gradient_vector(seed):
     # Change the weights and calculate the change in error
     dw_max = 1e-7
     tol = 1e-5
-    E_0 = n(x, t)
+    n.forward_prop(x)
+    E_0 = n.mean_total_error(t)
     w = n.get_parameter_vector()
     dw = np.random.uniform(-dw_max, dw_max, grad_0.shape)
-    E_1 = n(x, t, w + dw)
+    n.set_parameter_vector(w + dw)
+    n.forward_prop(x)
+    E_1 = n.mean_total_error(t)
     dE = E_1 - E_0
 
     # Calculate relative error based on approximate Taylor series
@@ -189,7 +192,7 @@ def test_set_parameter_vector(repeat):
     set_random_seed_from_args("test_set_parameter_vector", repeat)
     n, x, _, N_D = get_random_network_inputs_targets()
     # Get a copy of the old network params and output
-    y_old = n(x)
+    y_old = n.forward_prop(x)
     w_old = n.get_parameter_vector().copy()
     # Set new network params
     w_new = w_old + 0.1
@@ -198,7 +201,7 @@ def test_set_parameter_vector(repeat):
     assert (n.get_parameter_vector() == w_new).all()
     assert (n.get_parameter_vector() != w_old).all()
     # Get new network output, and verify it is different to the old output
-    y_new = n(x)
+    y_new = n.forward_prop(x)
     assert not (y_old == y_new).all()
 
 @pytest.mark.parametrize("repeat", range(3))

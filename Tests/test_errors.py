@@ -85,7 +85,7 @@ def test_error_func_id(repeat, error_func):
         output_dim=output_dim,
         act_funcs=act_funcs,
     )
-    y = n(x)
+    y = n.forward_prop(x)
     assert np.all(error_func_from_id(y, 0) == error_func(y, 0))
 
 def test_error_func_ids_unique():

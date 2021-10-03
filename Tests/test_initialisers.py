@@ -6,7 +6,7 @@ from .util import get_output_dir
 
 # Get name of output directory, and create it if it doesn't exist
 output_dir = get_output_dir("Initialisers")
-    
+
 def _print_pre_activation_statistics(nn, output_fname):
     np.set_printoptions(precision=3, linewidth=1000, suppress=True)
     output_path = os.path.join(output_dir, output_fname)
@@ -51,7 +51,7 @@ def test_ConstantPreActivationStatistics(seed, mean, std):
         initialiser=initialiser
     )
 
-    assert nn(sin_data.x_train).shape == sin_data.y_train.shape
+    assert nn.forward_prop(sin_data.x_train).shape == sin_data.y_train.shape
     output_fname = "test_ConstantPreActivationStatistics, seed=%i.txt" % seed
     _print_pre_activation_statistics(nn, output_fname)
 
@@ -81,6 +81,6 @@ def test_ConstantParameterStatistics(seed):
         initialiser=initialiser
     )
 
-    assert nn(sin_data.x_train).shape == sin_data.y_train.shape
+    assert nn.forward_prop(sin_data.x_train).shape == sin_data.y_train.shape
     output_fname = "test_ConstantParameterStatistics, seed=%i.txt" % seed
     _print_pre_activation_statistics(nn, output_fname)

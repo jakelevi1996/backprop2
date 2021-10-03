@@ -514,31 +514,6 @@ class NeuralNetwork():
                 "-" * 50, sep="\n", file=file
             )
 
-    def __call__(self, x, t=None, w=None):
-        """ Wrapper for the forward_prop method, and optionally also the
-        set_parameter_vector and mean_error methods. If parameters are provided,
-        then they are first set as the model parameters. Next, the inputs are
-        propagated through the network. Finally, if targets are provided, then
-        the mean error between the network output and the targets is calculated
-        and returned. Otherwise the network output is returned.
-
-        Inputs:
-        -   x: inputs to be propagated through the network
-        -   t (optional): targets, used to calculate mean error
-        -   w (optional): new parameters to apply to the model
-        """
-        # Update parameter vector, if new parameters are provided
-        if w is not None:
-            self.set_parameter_vector(w)
-        # Propagate inputs through the network
-        y = self.forward_prop(x)
-        # If targets are provided, then calculate and return the mean error
-        if t is not None:
-            return self.mean_total_error(t)
-        # Otherwise return the network output
-        else:
-            return y
-
     def set_regulariser(self, regulariser):
         self._regulariser = regulariser
 

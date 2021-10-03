@@ -90,7 +90,7 @@ def plot_data_predictions(dataset, **kwargs):
     Outputs:
     -   full_path: full path to the file in which the output image is saved
     """
-    
+
     if isinstance(dataset, data.Regression):
         # Plot regression dataset
         if dataset.input_dim == 1:
@@ -101,7 +101,7 @@ def plot_data_predictions(dataset, **kwargs):
             raise ValueError(
                 "dataset.input_dim must be 1 or 2, got %r" % dataset.input_dim
             )
-    
+
     elif isinstance(dataset, data.BinaryClassification):
         # Plot binary classication dataset
         if "output_dim" in kwargs:
@@ -115,7 +115,7 @@ def plot_data_predictions(dataset, **kwargs):
             raise ValueError(
                 "dataset.input_dim must be 2, got %r" % dataset.input_dim
             )
-    
+
     elif isinstance(dataset, data.Classification):
         # Plot multi-class classication dataset
         if dataset.input_dim == 2:
@@ -124,13 +124,13 @@ def plot_data_predictions(dataset, **kwargs):
             raise ValueError(
                 "dataset.input_dim must be 2, got %r" % dataset.input_dim
             )
-    
+
     else:
         raise ValueError(
             "dataset must be either a regression, binary classification, or "
             "multi-class classification data set"
         )
-    
+
     return full_path
 
 def plot_1D_regression(
@@ -186,7 +186,7 @@ def plot_1D_regression(
             dataset.x_test.max(axis=1),
             axis=1,
         )
-        y_pred = model(x_pred)
+        y_pred = model.forward_prop(x_pred)
     else:
         raise ValueError(
             "Either model or preds must be provided (and not None)"
@@ -287,7 +287,7 @@ def plot_2D_regression(
         )
         xx0, xx1 = np.meshgrid(x01[0], x01[1])
         x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
-        y_pred = model(x_pred)
+        y_pred = model.forward_prop(x_pred)
     else:
         raise ValueError(
             "Either model or preds must be provided (and not None)"
@@ -529,7 +529,7 @@ def plot_2D_classification(
         raise ValueError(
             "Either model or preds must be provided (and not None)"
         )
-    
+
     # Plot training data
     axes[0].scatter(
         dataset.x_train[0],
@@ -569,7 +569,7 @@ def plot_2D_classification(
             levels=levels,
             colors=cmap_table,
         )
-    
+
     # Format, save and close
     axes[0].set_xlabel("Training data")
     axes[1].set_xlabel("Test data and predictions")
@@ -636,12 +636,12 @@ def plot_2D_binary_classification(
         x1 = x01[1]
         xx0, xx1 = np.meshgrid(x0, x1)
         x_pred = np.stack([xx0.ravel(), xx1.ravel()], axis=0)
-        y_pred = model(x_pred)
+        y_pred = model.forward_prop(x_pred)
     else:
         raise ValueError(
             "Either model or preds must be provided (and not None)"
         )
-    
+
     # Plot training data
     axes[0].scatter(
         dataset.x_train[0],
@@ -675,7 +675,7 @@ def plot_2D_binary_classification(
         levels=levels,
         cmap=plt.get_cmap("bwr"),
     )
-    
+
     # Format, save and close
     axes[0].set_xlabel("Training data")
     axes[1].set_xlabel("Test data and predictions")
@@ -845,7 +845,7 @@ def plot_training_curves(
         axes[2].set_xlabel("Time (s)")
         axes[2].set_ylabel("Iteration")
         axes[2].grid(True)
-    
+
     # Set axis limits
     if e_lims is None:
         error_val_list = sorted(
@@ -857,7 +857,7 @@ def plot_training_curves(
         median = np.median(error_val_list)
         iqr = stats.iqr(error_val_list)
         e_lims = [min(median - n_iqr*iqr, 0), max(median + n_iqr*iqr, 0)]
-        
+
     axes[0].set_ylim(e_lims)
     axes[1].set_ylim(e_lims)
     if t_lims is not None:
@@ -916,7 +916,7 @@ def plot_error_func(error_func, dir_name, xlims, npoints, y=None, t=None):
         "$E(y, t)$",
         "$\\frac{dE}{dy}(y, t)$",
         "$\\frac{d^2E}{dy^2}(y, t)$",
-        "Target $t = 0.0$", 
+        "Target $t = 0.0$",
     ])
     plt.title(error_func.name)
     plt.grid(True)
@@ -948,7 +948,7 @@ def plot_binary_cross_entropy_error_func(
         "$E(y, t)$",
         "$\\frac{dE}{dy}(y, t)$",
         "$\\frac{d^2E}{dy^2}(y, t)$",
-        "Target $t = 0.0$", 
+        "Target $t = 0.0$",
     ])
     plt.xlabel("$\\sigma^{-1}(y)$")
     plt.title(error_func.name)
@@ -1335,7 +1335,7 @@ def plot_error_reductions_vs_batch_size_gif(
             n_sigma
         )
         filename_list.append(filename)
-    
+
     # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
 
@@ -1433,7 +1433,7 @@ def plot_parameter_sweep_results(
         "label": "Default",
     }
     mean_fmt = {"c": "b", "ls": "--", "zorder": 30, "label": "Mean"}
-    
+
     # Calculate mean and standard deviation, in ordered numpy arrays
     val_list = param.val_range
     mean = np.array([np.mean(experiment_results[val]) for val in val_list])
@@ -1461,7 +1461,7 @@ def plot_parameter_sweep_results(
     )
     if param.default in val_fmt_dict:
         plt.axvline(val_fmt_dict[param.default], **param_default_fmt)
-    
+
     # Format, save and close the figure
     plt.title(plot_name)
     plt.xlabel(param.name)
@@ -1602,7 +1602,7 @@ def plot_predictions_gif(
         filename_list.append(filename)
         if verbose:
             print(".", end="", flush=True)
-    
+
     # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
     if verbose:
@@ -1636,7 +1636,7 @@ def plot_hidden_outputs(dataset, **kwargs):
         raise ValueError(
             "dataset.input_dim must be 1 or 2, got %r" % dataset.input_dim
         )
-    
+
     return full_path
 
 
@@ -1693,7 +1693,7 @@ def plot_hidden_outputs_gif(
         filename_list.append(filename)
         if verbose:
             print(".", end="", flush=True)
-    
+
     # Make a gif out of the image frames
     make_gif(plot_name, dir_name, filename_list, duration, loop=loop)
     if verbose:
