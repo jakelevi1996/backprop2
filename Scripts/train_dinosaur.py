@@ -37,23 +37,27 @@ os.system("explorer \"%s\"" % output_dir)
 
 # Initialise task set
 task_set = data.TaskSet()
+create_task = lambda x, y: data.GaussianCurve(
+    input_dim=input_dim,
+    output_dim=output_dim,
+    n_train=2000,
+    n_test=2000,
+    x_lo=-1,
+    x_hi=1,
+    input_offset=np.array([x, y]).reshape([input_dim, 1]),
+    input_scale=5,
+    output_offset=0,
+    output_scale=10,
+)
 for x in [0.3, 0.9]:
     for y in [0.5, 0.7]:
         # Initialise task
-        task = data.GaussianCurve(
-            input_dim=input_dim,
-            output_dim=output_dim,
-            n_train=2000,
-            n_test=2000,
-            x_lo=-1,
-            x_hi=1,
-            input_offset=np.array([x, y]).reshape([input_dim, 1]),
-            input_scale=5,
-            output_offset=0,
-            output_scale=10,
-        )
+        task = create_task(x, y)
         # Add task to task set
         task_set.add_task(task)
+
+# Create out-of-distribution task
+out_of_distribution_task = create_task(-0.5, -0.5)
 
 # Initialise meta-learning model
 regulariser = models.dinosaur.regularisers.Quadratic()
@@ -72,11 +76,8 @@ for _ in range(10):
     print(regulariser.mean)
     print(regulariser.parameter_scale)
     print(regulariser.error_scale)
-    # TODO: adapt to one test task that matches the distribution of training
-    # tasks, and one test task that does not match that distribution, and
-    # verify that a better reconstruction error, regularisation error, and
-    # overall error is found for the test task that matches the distribution of
-    # training tasks
+    # Compare adapting to a task that does not match the training distribution
+    dinosaur.fast_adapt(out_of_distribution_task)
 
 
 # Plot task predictions after meta-learning
@@ -89,5 +90,14 @@ for i, task in enumerate(task_set.task_list):
         output_dim,
         model=network,
     )
+
+dinosaur.fast_adapt(out_of_distribution_task)
+plotting.plot_2D_regression(
+    "Dinosaur predictions for out-of-distribution task",
+    output_dir,
+    out_of_distribution_task,
+    output_dim,
+    model=network,
+)
 
 plotting.plot_training_curves([dinosaur._result], dir_name=output_dir)
