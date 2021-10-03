@@ -79,6 +79,8 @@ class Dinosaur:
 
         # Initialise line search and dynamic terminator
         line_search = optimisers.LineSearch()
+        step_size_column = optimisers.results.columns.StepSize(line_search)
+        self._result.replace_column(step_size_column)
         dynamic_terminator = self._get_terminator(data_set)
 
         # Optimise the model for the data set using gradient descent
