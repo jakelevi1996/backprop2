@@ -58,17 +58,17 @@ class Quadratic(_Regulariser):
     def update(self, w_list, dE_list):
         w_array = np.array(w_list)
         self.mean = np.mean(w_array, axis=0)
-        self.parameter_scale = np.var(w_array - self.mean, axis=0)
+        self.parameter_scale = 1.0 / np.var(w_array - self.mean, axis=0)
         self._update_error_scale(dE_list)
 
     def get_error(self, w):
         error_unscaled = np.sum(
-            np.square(w - self.mean) / self.parameter_scale
+            np.square(w - self.mean) * self.parameter_scale
         )
         error = error_unscaled * self.error_scale
         return error
 
     def get_gradient(self, w):
-        dEdw_unscaled = 2.0 * (w - self.mean) / self.parameter_scale
+        dEdw_unscaled = 2.0 * (w - self.mean) * self.parameter_scale
         dEdw = dEdw_unscaled * self.error_scale
         return dEdw
