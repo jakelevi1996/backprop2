@@ -285,6 +285,10 @@ class NeuralNetwork():
             )
             i += layer.num_bias
 
+        if self._regulariser is not None:
+            w = self.get_parameter_vector()
+            self.grad_vector += self._regulariser.get_gradient(w)
+
         return self.grad_vector
 
     def get_hessian_blocks(self, x, target, weight_ind_list, bias_ind_list):
@@ -409,6 +413,9 @@ class NeuralNetwork():
         given targets and the network's predictions for the most recent set of
         inputs that were propagated through the network.
 
+        It is assumed that the forward_prop method has first been called for
+        the inputs corresponding to the targets provided to this method.
+
         Inputs:
         -   t: targets that the neural network is trying to predict. Should be
             a numpy array with shape (output_dim, N_D), where N_D is the number
@@ -418,7 +425,13 @@ class NeuralNetwork():
         Outputs:
         -   e: mean error across all data points, as a numpy float64 scalar
         """
-        return self._error_func(self.y, t).mean()
+        mean_error = self._error_func(self.y, t).mean()
+
+        if self._regulariser is not None:
+            w = self.get_parameter_vector()
+            mean_error += self._regulariser.get_error(w)
+
+        return mean_error
 
     def reconstruction_error(self, t):
         """ Calculate the reconstruction error (not including regularisation
