@@ -2,6 +2,7 @@
 meta-learning """
 
 import numpy as np
+import util
 
 class _Regulariser:
     """ Abstract parent class for regularisers """
@@ -100,7 +101,21 @@ class Quartic(_Regulariser):
         dEdw = dEdw_unscaled * self.error_scale
         return dEdw
 
+class QuarticType2(Quartic):
+    """ Class for a quartic regulariser which sets the local optimum for
+    task-specific parameters to the mean absolute distance of the parameter
+    vector from the mean """
+
+    def update(self, w_list, dE_list):
+        w_array = np.array(w_list)
+        self.mean = np.mean(w_array, axis=0)
+        x2 = np.square(w_array - self.mean)
+        x4 = np.square(x2)
+        self.parameter_scale = np.mean(np.abs(w_array - self.mean), axis=0)
+        self._update_error_scale(dE_list)
+
+# Get dictionary mapping names of regularisers to the corresponding type
 regulariser_names_dict = {
     regulariser.__name__: regulariser
-    for regulariser in _Regulariser.__subclasses__()
+    for regulariser in util.all_subclasses(_Regulariser)
 }
