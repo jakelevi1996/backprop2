@@ -286,8 +286,9 @@ class NeuralNetwork():
             i += layer.num_bias
 
         if self._regulariser is not None:
-            w = self.get_parameter_vector()
-            self.grad_vector += self._regulariser.get_gradient(w)
+            self.grad_vector += self._regulariser.get_gradient(
+                self._weight_vector
+            )
 
         return self.grad_vector
 
@@ -407,6 +408,8 @@ class NeuralNetwork():
             )
             i += layer.num_bias
 
+        self._weight_vector = new_parameters
+
     def mean_total_error(self, t):
         """ Calculate the mean (across all data points) of the total error
         (including both reconstruction and regularisation error) between the
@@ -428,8 +431,7 @@ class NeuralNetwork():
         mean_error = self._error_func(self.y, t).mean()
 
         if self._regulariser is not None:
-            w = self.get_parameter_vector()
-            mean_error += self._regulariser.get_error(w)
+            mean_error += self._regulariser.get_error(self._weight_vector)
 
         return mean_error
 
