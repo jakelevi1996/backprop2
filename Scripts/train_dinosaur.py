@@ -79,6 +79,8 @@ for _ in range(10):
     # Compare adapting to a task that does not match the training distribution
     dinosaur.fast_adapt(out_of_distribution_task)
 
+# Plot training curves
+plotting.plot_training_curves([dinosaur._result], dir_name=output_dir)
 
 # Plot task predictions after meta-learning
 for i, task in enumerate(task_set.task_list):
@@ -91,6 +93,7 @@ for i, task in enumerate(task_set.task_list):
         model=network,
     )
 
+# Plot adaptation to out of distribution task
 dinosaur.fast_adapt(out_of_distribution_task)
 plotting.plot_2D_regression(
     "Dinosaur predictions for out-of-distribution task",
@@ -100,4 +103,14 @@ plotting.plot_2D_regression(
     model=network,
 )
 
-plotting.plot_training_curves([dinosaur._result], dir_name=output_dir)
+# Plot adaptation to out of distribution task without regularisation
+network._regulariser = None
+network.set_parameter_vector(regulariser.mean)
+dinosaur.fast_adapt(out_of_distribution_task)
+plotting.plot_2D_regression(
+    "Dinosaur predictions for out-of-distribution task without regularisation",
+    output_dir,
+    out_of_distribution_task,
+    output_dim,
+    model=network,
+)
