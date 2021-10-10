@@ -72,3 +72,30 @@ class Quadratic(_Regulariser):
         dEdw_unscaled = 2.0 * (w - self.mean) * self.parameter_scale
         dEdw = dEdw_unscaled * self.error_scale
         return dEdw
+
+class Quartic(_Regulariser):
+    """ Class for a multi-modal quartic regularisation function, which
+    encourages parameters to move away from the mean in either direction
+    towards a local optimum """
+
+    def update(self, w_list, dE_list):
+        w_array = np.array(w_list)
+        self.mean = np.mean(w_array, axis=0)
+        x2 = np.square(w_array - self.mean)
+        x4 = np.square(x2)
+        self.parameter_scale = np.sum(x2, axis=0) / np.sum(x4, axis=0)
+        self._update_error_scale(dE_list)
+
+    def get_error(self, w):
+        x2 = np.square(w - self.mean)
+        error_unscaled = np.square((self.parameter_scale * x2) - 1.0).sum()
+        error = error_unscaled * self.error_scale
+        return error
+
+    def get_gradient(self, w):
+        x = w - self.mean
+        ax = self.parameter_scale * x
+        ax2 = ax * x
+        dEdw_unscaled = 4.0 * ax * (ax2 - 1.0)
+        dEdw = dEdw_unscaled * self.error_scale
+        return dEdw
