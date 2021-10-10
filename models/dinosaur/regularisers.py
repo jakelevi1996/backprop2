@@ -111,7 +111,9 @@ class QuarticType2(Quartic):
         self.mean = np.mean(w_array, axis=0)
         x2 = np.square(w_array - self.mean)
         x4 = np.square(x2)
-        self.parameter_scale = np.mean(np.abs(w_array - self.mean), axis=0)
+        self.parameter_scale = (
+            1.0 / np.mean(np.abs(w_array - self.mean), axis=0)
+        )
         self._update_error_scale(dE_list)
 
 class QuarticType3(Quartic):
@@ -124,7 +126,7 @@ class QuarticType3(Quartic):
         self.mean = np.mean(w_array, axis=0)
         x2 = np.square(w_array - self.mean)
         x4 = np.square(x2)
-        self.parameter_scale = np.sqrt(np.mean(np.square(
+        self.parameter_scale = 1.0 / np.sqrt(np.mean(np.square(
             w_array - self.mean,
         ), axis=0))
         self._update_error_scale(dE_list)
