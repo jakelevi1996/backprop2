@@ -11,6 +11,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_dinosaur.py --regulariser QuarticType2
 
+    python Scripts/train_dinosaur.py --regulariser QuarticType3
+
 To get help information for the available arguments, use the following command:
 
     python Scripts/train_dinosaur.py -h
@@ -83,7 +85,7 @@ def main(args):
 
     # Initialise meta-learning model
     regulariser_type = models.dinosaur.regularisers.regulariser_names_dict[
-        args.regulariser,
+        args.regulariser
     ]
     regulariser = regulariser_type()
     dinosaur = models.Dinosaur(

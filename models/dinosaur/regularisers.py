@@ -114,6 +114,21 @@ class QuarticType2(Quartic):
         self.parameter_scale = np.mean(np.abs(w_array - self.mean), axis=0)
         self._update_error_scale(dE_list)
 
+class QuarticType3(Quartic):
+    """ Class for a quartic regulariser which sets the local optimum for
+    task-specific parameters to the RMS distance of the parameter vector from
+    the mean """
+
+    def update(self, w_list, dE_list):
+        w_array = np.array(w_list)
+        self.mean = np.mean(w_array, axis=0)
+        x2 = np.square(w_array - self.mean)
+        x4 = np.square(x2)
+        self.parameter_scale = np.sqrt(np.mean(np.square(
+            w_array - self.mean,
+        ), axis=0))
+        self._update_error_scale(dE_list)
+
 # Get dictionary mapping names of regularisers to the corresponding type
 regulariser_names_dict = {
     regulariser.__name__: regulariser
