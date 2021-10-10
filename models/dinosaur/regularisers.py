@@ -99,3 +99,8 @@ class Quartic(_Regulariser):
         dEdw_unscaled = 4.0 * ax * (ax2 - 1.0)
         dEdw = dEdw_unscaled * self.error_scale
         return dEdw
+
+regulariser_names_dict = {
+    regulariser.__name__: regulariser
+    for regulariser in _Regulariser.__subclasses__()
+}
