@@ -426,5 +426,13 @@ class BatchImprovementProbability(_Column):
     def update(self, kwargs):
         self.value_list.append(self._dynamic_terminator.p_improve)
 
+class RegularisationError(_Column):
+    def __init__(self, name="Regularisation error", format_spec=".5f"):
+        super().__init__(name, format_spec)
+
+    def update(self, kwargs):
+        model = kwargs["model"]
+        self.value_list.append(model.regularisation_error())
+
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
