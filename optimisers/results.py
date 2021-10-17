@@ -113,7 +113,7 @@ class Result(AbstractResult):
         be called before this method (Result.begin), in order to avoid
         unnecessarily initialising an extra timer object """
         if self.verbose:
-            self._display_headers()
+            self.display_headers()
 
         if not self.has_timer():
             timer = Timer()
@@ -138,7 +138,7 @@ class Result(AbstractResult):
         if self.verbose:
             self._display_last()
 
-    def _display_headers(self):
+    def display_headers(self):
         title_list = [col.title_str for col in self._column_list]
         print("\nPerforming test \"{}\"...".format(self.name),  file=self.file)
         print(" | ".join(title_list),                           file=self.file)

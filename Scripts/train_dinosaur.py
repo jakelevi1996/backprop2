@@ -98,6 +98,7 @@ def main(args):
 
     for _ in range(10):
         # Perform one outer-loop iteration of meta-learning
+        dinosaur._result.display_headers()
         dinosaur.meta_learn(
             task_set,
             terminator=optimisers.Terminator(i_lim=1),
@@ -134,7 +135,7 @@ def main(args):
     )
 
     # Plot adaptation to out of distribution task without regularisation
-    network._regulariser = None
+    network._regulariser.error_scale = 0
     network.set_parameter_vector(regulariser.mean)
     dinosaur.fast_adapt(out_of_distribution_task)
     plotting.plot_2D_regression(
