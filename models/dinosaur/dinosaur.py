@@ -20,6 +20,11 @@ class Dinosaur:
         self._evaluator = optimisers.Evaluator(t_interval=0.1)
         self._result = optimisers.Result(name="Dinosaur")
         self._initialised_regulariser = False
+        self._line_search = optimisers.LineSearch()
+        self._result.add_column(
+            optimisers.results.columns.StepSize(self._line_search)
+        )
+        self._optimiser = optimisers.GradientDescent(self._line_search)
         if t_lim is not None:
             self._timer = optimisers.Timer(t_lim)
             self._timer.begin()
@@ -79,13 +84,11 @@ class Dinosaur:
             self._network.set_parameter_vector(self._regulariser.mean)
 
         # Initialise line search and dynamic terminator
-        line_search = optimisers.LineSearch()
-        step_size_column = optimisers.results.columns.StepSize(line_search)
-        self._result.replace_column(step_size_column)
+        self._line_search.reset()
         dynamic_terminator = self._get_terminator(data_set)
 
         # Optimise the model for the data set using gradient descent
-        optimisers.GradientDescent(line_search).optimise(
+        self._optimiser.optimise(
             model=self._network,
             dataset=data_set,
             evaluator=self._evaluator,
