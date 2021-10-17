@@ -19,7 +19,7 @@ class Identity(_Smoother):
     def __init__(self, x0):
         """ Initialise a trivial smoother which doesn't do any actual
         smoothing, and just returns the input x as the smoothed output """
-        
+
     def smooth(self, x):
         return x
 
@@ -46,7 +46,7 @@ class Exponential(_Smoother):
         assert (alpha > 0) and (alpha < 1), "alpha must be in (0, 1)"
         self._alpha = alpha
         self._y = x0
-    
+
     def smooth(self, x):
         self._y = (self._alpha * x) + ((1.0 - self._alpha) * self._y)
         return self._y
@@ -66,7 +66,8 @@ class MovingAverage(_Smoother):
         self._buffer = np.full(n, x0, dtype=float)
         self._i = 0
         self._n = n
-    
+        self._x0 = x0
+
     def smooth(self, x):
         self._buffer[self._i] = x
         self._i += 1
@@ -74,6 +75,9 @@ class MovingAverage(_Smoother):
             self._i = 0
         y = self._buffer.mean()
         return y
+
+    def reset(self):
+        self._buffer[:] = self._x0
 
 class MovingMaximum(_Smoother):
     def __init__(self, x0, n=5):
@@ -90,7 +94,7 @@ class MovingMaximum(_Smoother):
         self._buffer = [x0] * n
         self._i = 0
         self._n = n
-    
+
     def smooth(self, x):
         self._buffer[self._i] = x
         self._i += 1
