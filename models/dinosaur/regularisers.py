@@ -109,8 +109,6 @@ class QuarticType2(Quartic):
     def update(self, w_list, dE_list):
         w_array = np.array(w_list)
         self.mean = np.mean(w_array, axis=0)
-        x2 = np.square(w_array - self.mean)
-        x4 = np.square(x2)
         self.parameter_scale = (
             1.0 / np.mean(np.abs(w_array - self.mean), axis=0)
         )
@@ -124,8 +122,6 @@ class QuarticType3(Quartic):
     def update(self, w_list, dE_list):
         w_array = np.array(w_list)
         self.mean = np.mean(w_array, axis=0)
-        x2 = np.square(w_array - self.mean)
-        x4 = np.square(x2)
         self.parameter_scale = 1.0 / np.sqrt(np.mean(np.square(
             w_array - self.mean,
         ), axis=0))
