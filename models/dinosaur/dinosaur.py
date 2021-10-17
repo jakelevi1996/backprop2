@@ -31,8 +31,23 @@ class Dinosaur:
         else:
             self._timer = None
 
+        self._terminator = optimisers.DynamicTerminator(
+            model=self._network,
+            dataset=primary_initialisation_task,
+            batch_size=self._batch_size,
+            replace=True,
+            t_lim=t_lim,
+        )
+        self._result.add_column(
+            optimisers.results.columns.BatchImprovementProbability(
+                self._terminator
+            )
+        )
+
         # Get parameters from optimising the first initialisation task
+        self._reset_terminator = False
         self.fast_adapt(primary_initialisation_task)
+        self._reset_terminator = True
         w1 = network.get_parameter_vector().copy()
 
         # Get parameters from optimising the second initialisation task
@@ -85,39 +100,26 @@ class Dinosaur:
 
         # Initialise line search and dynamic terminator
         self._line_search.reset()
-        dynamic_terminator = self._get_terminator(data_set)
+        if self._reset_terminator:
+            if self._timer is not None:
+                t_lim = self._timer.time_remaining()
+            else:
+                t_lim = None
+            self._terminator.reset(data_set=data_set, t_lim=t_lim)
 
         # Optimise the model for the data set using gradient descent
         self._optimiser.optimise(
             model=self._network,
             dataset=data_set,
             evaluator=self._evaluator,
-            terminator=dynamic_terminator,
+            terminator=self._terminator,
             result=self._result,
-            batch_getter=dynamic_terminator,
+            batch_getter=self._terminator,
         )
 
         # Return the reduction in the mean reconstruction error
         mean_reconstruction_error_reduction = (
-            dynamic_terminator.initial_mean_reconstruction_error
+            self._terminator.initial_mean_reconstruction_error
             - self._result.get_final_train_reconstruction_error()
         )
         return mean_reconstruction_error_reduction
-
-    def _get_terminator(self, dataset):
-        if self._timer is not None:
-            t_lim = self._timer.time_remaining()
-        else:
-            t_lim = None
-        terminator = optimisers.DynamicTerminator(
-            model=self._network,
-            dataset=dataset,
-            batch_size=self._batch_size,
-            replace=True,
-            t_lim=t_lim,
-        )
-        dynamic_terminator_column = (
-            optimisers.results.columns.BatchImprovementProbability(terminator)
-        )
-        self._result.replace_column(dynamic_terminator_column)
-        return terminator
