@@ -11,6 +11,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_dinosaur.py --regulariser QuarticType2
 
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --error_scale_coefficient 1e-1
+
     python Scripts/train_dinosaur.py --regulariser QuarticType3
 
 To get help information for the available arguments, use the following command:
@@ -87,7 +89,9 @@ def main(args):
     regulariser_type = models.dinosaur.regularisers.regulariser_names_dict[
         args.regulariser
     ]
-    regulariser = regulariser_type()
+    regulariser = regulariser_type(
+        error_scale_coefficient=args.error_scale_coefficient,
+    )
     dinosaur = models.Dinosaur(
         network=network,
         regulariser=regulariser,
@@ -169,6 +173,13 @@ if __name__ == "__main__":
         default="Quadratic",
         type=str,
         choices=models.dinosaur.regularisers.regulariser_names_dict.keys(),
+    )
+    parser.add_argument(
+        "--error_scale_coefficient",
+        help="Constant coefficient to multiply by the error scale when "
+        "updating the regulariser parameters",
+        default=1e-2,
+        type=float,
     )
 
     # Parse arguments
