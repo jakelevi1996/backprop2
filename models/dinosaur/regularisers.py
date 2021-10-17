@@ -7,10 +7,11 @@ import util
 class _Regulariser:
     """ Abstract parent class for regularisers """
 
-    def __init__(self):
+    def __init__(self, error_scale_coefficient=1e-2):
         self.mean = None
         self.parameter_scale = None
         self.error_scale = None
+        self._error_scale_coefficient = error_scale_coefficient
 
     def update(self, w_list, dE_list):
         """ Given a list of adapted weight-vectors for each task, and a list of
@@ -48,7 +49,10 @@ class _Regulariser:
         has been an increase in the mean reduction in reconstruction error
         across tasks, then during the next iteration of the meta-learning outer
         loop, no regularisation error is applied. """
-        self.error_scale = max(np.mean(dE_list), 0)
+        self.error_scale = (
+            self._error_scale_coefficient
+            * max(np.mean(dE_list), 0)
+        )
 
 
 class Quadratic(_Regulariser):
