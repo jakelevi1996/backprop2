@@ -94,6 +94,7 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self._i_interval = i_interval
         self._i_next_update = 0
         self._i = 0
+        self._smooth_x0 = smooth_x0
         self.p_improve = smooth_x0
 
         if smooth_output:
@@ -165,4 +166,23 @@ class DynamicTerminator(Terminator, _BatchGetter):
 
         # Return the inputs and outputs for the new batch
         return x_batch, y_batch
+
+    def reset(self, data_set, t_lim=None):
+        self.t_lim = t_lim
+
+        self._model.forward_prop(data_set.x_train)
+        initial_error = self._model.reconstruction_error(data_set.y_train)
+        self.initial_mean_reconstruction_error = initial_error.mean()
+        self._prev_mean_error = self.initial_mean_reconstruction_error
+
+        self._i_next_update = 0
+        self._i = 0
+        self.p_improve = self._smooth_x0
+
+        if self._mean_reduction_smoother is not None:
+            self._mean_reduction_smoother.reset()
+        if self._std_smoother is not None:
+            self._std_smoother.reset()
+        if self._output_smoother is not None:
+            self._output_smoother.reset()
 
