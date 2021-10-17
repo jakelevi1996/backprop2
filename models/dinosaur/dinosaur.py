@@ -38,6 +38,7 @@ class Dinosaur:
         self._regulariser.update([w1, w2], [dE])
         self._network.set_regulariser(self._regulariser)
         self._initialised_regulariser = True
+        self._result.add_column(optimisers.columns.RegularisationError())
 
 
     def meta_learn(self, task_set, terminator=None):
