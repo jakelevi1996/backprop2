@@ -412,9 +412,11 @@ class NeuralNetwork():
 
     def mean_total_error(self, t):
         """ Calculate the mean (across all data points) of the total error
-        (including both reconstruction and regularisation error) between the
-        given targets and the network's predictions for the most recent set of
-        inputs that were propagated through the network.
+        (including both reconstruction and regularisation error, if a
+        regulariser has been added to this NeuralNetwork instance using the
+        set_regulariser method) between the given targets and the network's
+        predictions for the most recent set of inputs that were propagated
+        through the network.
 
         It is assumed that the forward_prop method has first been called for
         the inputs corresponding to the targets provided to this method.
@@ -431,7 +433,7 @@ class NeuralNetwork():
         mean_error = self._error_func(self.y, t).mean()
 
         if self._regulariser is not None:
-            mean_error += self._regulariser.get_error(self._weight_vector)
+            mean_error += self.regularisation_error()
 
         return mean_error
 
@@ -456,14 +458,30 @@ class NeuralNetwork():
         """
         return self._error_func(self.y, t)
 
+    def regularisation_error(self):
+        """ Return the regularisation error, which is a measure of how well the
+        current network parameters agree with the learned meta-parameters.
+        Raises an AttributeError if the regulariser hasn't yet been
+        initialised.
+
+        The regularisation error is calculated using a reference to the network
+        parameters which is stored during the most recent call to the
+        NeuralNetwork.set_parameter_vector method. This is partly to avoid the
+        inefficiency of calling the NeuralNetwork.get_parameter_vector method,
+        and partly to avoid overwriting the memory belonging to the
+        NeuralNetwork.param_vector attribute, which can cause bugs in sections
+        of the code which contain a reference to that attribute which is
+        returned by the NeuralNetwork.get_parameter_vector method """
+        return self._regulariser.get_error(self._weight_vector)
+
     def softmax_output_probabilities(self, x):
         """ Given an input matrix x, propagate that input through the network,
         and apply a softmax function to the output to calculate output
         probabilities. Softmax is not implemented as an activation function in
-        the activations module because it is not a 1D element-wise function (see
-        the docstring for the _SoftmaxCrossEntropy class in the errors module
-        for more information about using softmax for multi-class classification
-        models).
+        the activations module because it is not a 1D element-wise function
+        (see the docstring for the _SoftmaxCrossEntropy class in the errors
+        module for more information about using softmax for multi-class
+        classification models).
 
         Inputs:
         -   x: input to the neural network. Should be a numpy array with shape
@@ -473,9 +491,9 @@ class NeuralNetwork():
 
         Outputs:
         -   probabilities: a numpy array with shape (output_dim, N_D), in which
-            each column refers to a different data point, and each row refers to
-            the probability of the corresponding input point belonging to the
-            class corresponding to that row (so the first row has the
+            each column refers to a different data point, and each row refers
+            to the probability of the corresponding input point belonging to
+            the class corresponding to that row (so the first row has the
             probabilities of each data point belonging class 1, the second row
             has the probabilities for class 2, etc)
         """
