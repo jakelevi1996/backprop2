@@ -23,6 +23,7 @@ class LineSearch:
             but will prevent finding the optimal step size every time
             get_step_size is called. Default is 10.
         """
+        self._s0 = s0
         self.s = s0
         self.alpha = alpha
         self.beta = beta
@@ -101,11 +102,5 @@ class LineSearch:
         expected_reduction = -self.s * delta_dot_dEdw
         return reduction < (self.alpha * expected_reduction)
 
-# def check_bad_step_size(s):
-#     if s == 0:
-#         print("s has converged to 0; resetting t0 s_old * beta ...")
-#         return True
-#     elif not np.isfinite(s):
-#         print("s has diverged; resetting t0 s_old/beta ...")
-#         return True
-#     else: return False
+    def reset(self):
+        self.s = self._s0
