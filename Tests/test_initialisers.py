@@ -37,10 +37,10 @@ def test_ConstantPreActivationStatistics(seed, mean, std):
     x_hi = np.random.uniform(0, 10)
     sin_data = data.Sinusoidal(input_dim, output_dim, N_D, 0, x_lo, x_hi)
     initialiser = models.initialisers.ConstantPreActivationStatistics(
-        sin_data.x_train,
-        sin_data.y_train,
+        sin_data.train.x,
+        sin_data.train.y,
         mean,
-        std
+        std,
     )
     num_hidden_layers = np.random.randint(3, 6)
     num_hidden_units = np.random.randint(3, 6, num_hidden_layers)
@@ -48,10 +48,10 @@ def test_ConstantPreActivationStatistics(seed, mean, std):
         input_dim,
         output_dim,
         num_hidden_units,
-        initialiser=initialiser
+        initialiser=initialiser,
     )
 
-    assert nn.forward_prop(sin_data.x_train).shape == sin_data.y_train.shape
+    assert nn.forward_prop(sin_data.train.x).shape == sin_data.train.y.shape
     output_fname = "test_ConstantPreActivationStatistics, seed=%i.txt" % seed
     _print_pre_activation_statistics(nn, output_fname)
 
@@ -78,9 +78,9 @@ def test_ConstantParameterStatistics(seed):
         input_dim,
         output_dim,
         num_hidden_units,
-        initialiser=initialiser
+        initialiser=initialiser,
     )
 
-    assert nn.forward_prop(sin_data.x_train).shape == sin_data.y_train.shape
+    assert nn.forward_prop(sin_data.train.x).shape == sin_data.train.y.shape
     output_fname = "test_ConstantParameterStatistics, seed=%i.txt" % seed
     _print_pre_activation_statistics(nn, output_fname)

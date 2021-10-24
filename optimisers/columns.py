@@ -69,8 +69,8 @@ class TrainError(_Column):
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
-        model.forward_prop(dataset.x_train)
-        train_error = model.reconstruction_error(dataset.y_train).mean()
+        model.forward_prop(dataset.train.x)
+        train_error = model.reconstruction_error(dataset.train.y).mean()
         self.value_list.append(train_error)
 
 class TestError(_Column):
@@ -80,8 +80,8 @@ class TestError(_Column):
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
-        model.forward_prop(dataset.x_test)
-        test_error = model.reconstruction_error(dataset.y_test).mean()
+        model.forward_prop(dataset.test.x)
+        test_error = model.reconstruction_error(dataset.test.y).mean()
         self.value_list.append(test_error)
 
 class StepSize(_Column):
@@ -211,8 +211,8 @@ class OptimalBatchSize(_Column):
         w_0 = model.get_parameter_vector().copy()
         if self._using_line_search:
             s_0 = self._optimiser.line_search.s
-        model.forward_prop(dataset.x_test)
-        E_0 = model.mean_total_error(dataset.y_test)
+        model.forward_prop(dataset.test.x)
+        E_0 = model.mean_total_error(dataset.test.y)
         # Iterate through batch sizes
         reduction_dict = dict()
         for batch_size in self.batch_size_list:
@@ -235,8 +235,8 @@ class OptimalBatchSize(_Column):
                     display_summary=False,
                 )
                 # Calculate new error and add the reduction to the list
-                model.forward_prop(dataset.x_test)
-                E_new = model.mean_total_error(dataset.y_test)
+                model.forward_prop(dataset.test.x)
+                E_new = model.mean_total_error(dataset.test.y)
                 error_reduction = E_0 - E_new
                 reduction_dict[batch_size].append(error_reduction)
                 # Reset parameters
@@ -318,8 +318,8 @@ class Predictions(_Column):
         self.predictions_dict = dict()
         self.hidden_outputs_dict = dict()
         self.x_unique = np.linspace(
-            dataset.x_test.min(axis=1),
-            dataset.x_test.max(axis=1),
+            dataset.test.x.min(axis=1),
+            dataset.test.x.max(axis=1),
             num=n_points_per_dim,
             axis=1,
         )
@@ -384,9 +384,9 @@ class TestSetImprovementProbabilitySimple(_Column):
         use_cdf=False,
     ):
         super().__init__(name, format_spec)
-        model.forward_prop(dataset.x_test)
+        model.forward_prop(dataset.test.x)
         self.prev_mean_test_error = (
-            model.reconstruction_error(dataset.y_test).mean()
+            model.reconstruction_error(dataset.test.y).mean()
         )
         self._smoother = smoother
         self._use_cdf = use_cdf
@@ -394,8 +394,8 @@ class TestSetImprovementProbabilitySimple(_Column):
     def update(self, kwargs):
         dataset = kwargs["dataset"]
         model = kwargs["model"]
-        model.forward_prop(dataset.x_test)
-        error = model.reconstruction_error(dataset.y_test)
+        model.forward_prop(dataset.test.x)
+        error = model.reconstruction_error(dataset.test.y)
         mean_test_error = error.mean()
         std_test_error = error.std()
         p_improve = (

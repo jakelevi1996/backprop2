@@ -150,7 +150,7 @@ def plot_1D_regression(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   output_dim: number of output dimensions to plot
     -   preds: (optional) predictions to plot, as a dictionary containing the
         keys "x_pred" and "y_pred", which specify the prediction inputs and
@@ -182,8 +182,8 @@ def plot_1D_regression(
         y_pred = preds["y_pred"]
     elif model is not None:
         x_pred = np.linspace(
-            dataset.x_test.min(axis=1),
-            dataset.x_test.max(axis=1),
+            dataset.test.x.min(axis=1),
+            dataset.test.x.max(axis=1),
             axis=1,
         )
         y_pred = model.forward_prop(x_pred)
@@ -195,14 +195,14 @@ def plot_1D_regression(
     for i in range(output_dim):
         # Plot training, test and prediction data
         axes[0, i].plot(
-            dataset.x_train.ravel(),
-            dataset.y_train[i, :],
+            dataset.train.x.ravel(),
+            dataset.train.y[i, :],
             **train_data_fmt,
             alpha=tp,
         )
         axes[0, i].plot(
-            dataset.x_test.ravel(),
-            dataset.y_test[i, :],
+            dataset.test.x.ravel(),
+            dataset.test.y[i, :],
             **test_data_fmt,
             alpha=tp,
         )
@@ -249,7 +249,7 @@ def plot_2D_regression(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   output_dim: number of output dimensions to plot
     -   preds: (optional) predictions to plot, as a dictionary containing the
         keys "x_pred" and "y_pred", which specify the prediction inputs and
@@ -273,16 +273,16 @@ def plot_2D_regression(
         figsize=[4 * (output_dim + 1), 10],
         gridspec_kw={"width_ratios": ([1] * output_dim) + [0.2]},
     )
-    y_min = dataset.y_test.min()
-    y_max = dataset.y_test.max()
+    y_min = dataset.test.y.min()
+    y_max = dataset.test.y.max()
     # Make predictions
     if preds is not None:
         x_pred = preds["x_pred"]
         y_pred = preds["y_pred"]
     elif model is not None:
         x01 = np.linspace(
-            dataset.x_test.min(axis=1),
-            dataset.x_test.max(axis=1),
+            dataset.test.x.min(axis=1),
+            dataset.test.x.max(axis=1),
             axis=1,
         )
         xx0, xx1 = np.meshgrid(x01[0], x01[1])
@@ -296,9 +296,9 @@ def plot_2D_regression(
     for i in range(output_dim):
         # Plot training data
         axes[0][i].scatter(
-            dataset.x_train[0, :],
-            dataset.x_train[1, :],
-            c=dataset.y_train[i, :],
+            dataset.train.x[0, :],
+            dataset.train.x[1, :],
+            c=dataset.train.y[i, :],
             vmin=y_min,
             vmax=y_max,
             alpha=tp,
@@ -306,9 +306,9 @@ def plot_2D_regression(
         )
         # Plot test data
         axes[1][i].scatter(
-            dataset.x_test[0, :],
-            dataset.x_test[1, :],
-            c=dataset.y_test[i, :],
+            dataset.test.x[0, :],
+            dataset.test.x[1, :],
+            c=dataset.test.y[i, :],
             vmin=y_min,
             vmax=y_max,
             alpha=tp,
@@ -361,7 +361,7 @@ def plot_1D_hidden_outputs(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   x_pred: inputs that are propagated through the model in order to
         calculate the hidden layer outputs and predictions. Should be in a
         numpy array with shape (1, n_pred), where n_pred is the number of
@@ -409,14 +409,14 @@ def plot_1D_hidden_outputs(
     # Plot data and output predictions
     for i in range(output_dim):
         axes[0].plot(
-            dataset.x_train.flat,
-            dataset.y_train[i],
+            dataset.train.x.flat,
+            dataset.train.y[i],
             **train_data_fmt,
             alpha=tp,
         )
         axes[0].plot(
-            dataset.x_test.flat,
-            dataset.y_test[i],
+            dataset.test.x.flat,
+            dataset.test.y[i],
             **test_data_fmt,
             alpha=tp,
         )
@@ -476,7 +476,7 @@ def plot_2D_classification(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   output_dim: number of classes in the dataset
     -   preds: (optional) predictions to plot, as a dictionary containing the
         keys "n_points_per_dim", "x_unique", and "y_pred", which specify the
@@ -515,8 +515,8 @@ def plot_2D_classification(
         y_pred = softmax(preds["y_pred"], axis=0)
     elif model is not None:
         x01 = np.linspace(
-            dataset.x_test.min(axis=1),
-            dataset.x_test.max(axis=1),
+            dataset.test.x.min(axis=1),
+            dataset.test.x.max(axis=1),
             axis=1,
             num=n_points_per_axis,
         )
@@ -532,8 +532,8 @@ def plot_2D_classification(
 
     # Plot training data
     axes[0].scatter(
-        dataset.x_train[0],
-        dataset.x_train[1],
+        dataset.train.x[0],
+        dataset.train.x[1],
         c=dataset.train_labels,
         vmin=0,
         vmax=output_dim,
@@ -542,8 +542,8 @@ def plot_2D_classification(
     )
     # Plot test data
     axes[1].scatter(
-        dataset.x_test[0],
-        dataset.x_test[1],
+        dataset.test.x[0],
+        dataset.test.x[1],
         c=dataset.test_labels,
         vmin=0,
         vmax=output_dim,
@@ -595,7 +595,7 @@ def plot_2D_binary_classification(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   preds: (optional) predictions to plot, as a dictionary containing the
         keys "n_points_per_dim", "x_unique", and "y_pred", which specify the
         number of points in each direction, the unique inputs along each
@@ -627,8 +627,8 @@ def plot_2D_binary_classification(
         y_pred = preds["y_pred"]
     elif model is not None:
         x01 = np.linspace(
-            dataset.x_test.min(axis=1),
-            dataset.x_test.max(axis=1),
+            dataset.test.x.min(axis=1),
+            dataset.test.x.max(axis=1),
             axis=1,
             num=n_points_per_axis,
         )
@@ -644,9 +644,9 @@ def plot_2D_binary_classification(
 
     # Plot training data
     axes[0].scatter(
-        dataset.x_train[0],
-        dataset.x_train[1],
-        c=dataset.y_train.ravel(),
+        dataset.train.x[0],
+        dataset.train.x[1],
+        c=dataset.train.y.ravel(),
         cmap=plt.get_cmap("bwr"),
         vmin=0,
         vmax=1,
@@ -655,9 +655,9 @@ def plot_2D_binary_classification(
     )
     # Plot test data
     axes[1].scatter(
-        dataset.x_test[0],
-        dataset.x_test[1],
-        c=dataset.y_test.ravel(),
+        dataset.test.x[0],
+        dataset.test.x[1],
+        c=dataset.test.y.ravel(),
         cmap=plt.get_cmap("bwr"),
         vmin=0,
         vmax=1,
@@ -702,7 +702,7 @@ def plot_2D_hidden_outputs(
     -   dir_name: name of directory to save plot to (will be created if it
         doesn't already exist)
     -   dataset: should be an instance of data.DataSet, and should contain
-        x_train, y_train, x_test, and y_test attributes
+        x_train, y_train, test.x, and test.y attributes
     -   x_pred: inputs that are propagated through the model in order to
         calculate the hidden layer outputs and predictions. Should be in a
         numpy array with shape (2, n_pred), where n_pred is the number of
@@ -761,18 +761,18 @@ def plot_2D_hidden_outputs(
     for i in range(output_dim):
         ax = next(axes_iter)
         ax.scatter(
-            dataset.x_train[0],
-            dataset.x_train[1],
-            c=dataset.y_train[i],
+            dataset.train.x[0],
+            dataset.train.x[1],
+            c=dataset.train.y[i],
             alpha=tp,
         )
         ax.set_title("Train data, dimension %i" % (i + 1))
     for i in range(output_dim):
         ax = next(axes_iter)
         ax.scatter(
-            dataset.x_test[0],
-            dataset.x_test[1],
-            c=dataset.y_test[i],
+            dataset.test.x[0],
+            dataset.test.x[1],
+            c=dataset.test.y[i],
             alpha=tp,
         )
         ax.set_title("Test data, dimension %i" % (i + 1))

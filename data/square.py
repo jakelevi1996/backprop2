@@ -18,18 +18,19 @@ class Square(Regression):
         x_hi=2,
     ):
         """ Initialise a dataset for regression which consists of a square """
+        Regression.__init__(self)
         # Set shape constants
         self.set_shape_constants(input_dim, output_dim, n_train, n_test)
         # Generate input/output training and test data
-        self.x_train = np.random.uniform(
+        self.train.x = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_train]
+            size=[input_dim, self.train.n],
         )
-        self.x_test  = np.random.uniform(
+        self.test.x  = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_test]
+            size=[input_dim, self.test.n],
         )
-        self.y_train    = _square(self.x_train, output_dim)
-        self.y_test     = _square(self.x_test,  output_dim)
+        self.train.y    = _square(self.train.x, output_dim)
+        self.test.y     = _square(self.test.x,  output_dim)

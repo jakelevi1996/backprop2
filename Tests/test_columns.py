@@ -134,7 +134,7 @@ def test_batch_improvement_probability_column(smooth_output):
     n_its = np.random.randint(50, 100)
     model = get_random_network(input_dim=1, output_dim=1)
     sin_data = data.Sinusoidal(input_dim=1, output_dim=1, n_train=n_train)
-    batch_size = np.random.randint(3, sin_data.n_train)
+    batch_size = np.random.randint(3, sin_data.train.n)
     test_name = (
         "test_batch_improvement_probability_column, smooth_output=%s"
         % smooth_output
@@ -188,13 +188,13 @@ def test_dbs_column():
         )
         result.add_column(optimisers.results.columns.DbsMetric())
         # Initialise gradient vector before DBS is calculated
-        model.get_gradient_vector(sin_data.x_train, sin_data.x_test)
+        model.get_gradient_vector(sin_data.train.x, sin_data.train.y)
         optimisers.gradient_descent(
             model,
             sin_data,
             result=result,
             terminator=optimisers.Terminator(i_lim=n_its),
-            evaluator=optimisers.Evaluator(i_interval=1)
+            evaluator=optimisers.Evaluator(i_interval=1),
         )
 
 def test_optimal_batch_size_column():
@@ -223,9 +223,9 @@ def test_optimal_batch_size_column():
         gd_optimiser = optimisers.GradientDescent(line_search)
         optimal_batch_size_col = columns.OptimalBatchSize(
             gd_optimiser,
-            sin_data.n_train,
+            sin_data.train.n,
             n_repeats=n_repeats,
-            n_batch_sizes=n_batch_sizes
+            n_batch_sizes=n_batch_sizes,
         )
         result.add_column(optimal_batch_size_col)
         # Call optimisation function
@@ -322,12 +322,12 @@ def test_predictions_column(
     # Test that the Prediction object attributes are as expected
     n_pred_grid = pow(n_pred, input_dim)
     assert prediction_column.x_pred.shape == (input_dim, n_pred_grid)
-    
+
     iter_set = set(iter_list)
     assert set(prediction_column.predictions_dict.keys()) == iter_set
     for y_pred in prediction_column.predictions_dict.values():
         assert y_pred.shape == (output_dim, n_pred_grid)
-    
+
     hidden_outputs_dict = prediction_column.hidden_outputs_dict
     if store_hidden:
         assert set(hidden_outputs_dict.keys()) == iter_set

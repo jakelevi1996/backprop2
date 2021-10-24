@@ -14,16 +14,12 @@ class DataSet:
 
     TODO: implement get_train_batch and get_test_batch and incorporate into
     optimisers module """
-    def __init__(self, filename=None, dir_name="."):
-        # If a filename is specified, then load from file
-        if filename is not None:
-            self.load(filename, dir_name)
-        else:
-            self.input_dim  , self.output_dim   = None, None
-            self.n_train    , self.n_test       = None, None
-            self.x_train    , self.y_train      = None, None
-            self.x_test     , self.y_test       = None, None
-    
+    def __init__(self):
+        self.input_dim  = None
+        self.output_dim = None
+        self.train      = DataSubset()
+        self.test       = DataSubset()
+
     def set_shape_constants(self, input_dim, output_dim, n_train, n_test):
         """ Set the input_dim, output_dim, n_train, and n_test attributes for
         this DataSet object, which determine the dimensionalities of the inputs
@@ -50,18 +46,18 @@ class DataSet:
         # Set shape constants
         self.input_dim      = input_dim
         self.output_dim     = output_dim
-        self.n_train        = n_train
-        self.n_test         = n_test
+        self.train.n        = n_train
+        self.test.n         = n_test
 
-    
+
     def save(self, filename, dir_name="."):
         path = os.path.join(dir_name, filename + ".npz")
         np.savez(
             path,
             input_dim=self.input_dim,   output_dim=self.output_dim,
-            n_train=self.n_train,       n_test=self.n_test,
-            x_train=self.x_train,       x_test=self.x_test,
-            y_train=self.y_train,       y_test=self.y_test
+            n_train=self.train.n,       n_test=self.test.n,
+            x_train=self.train.x,       x_test=self.test.x,
+            y_train=self.train.y,       y_test=self.test.y,
         )
 
     def load(self, filename, dir_name="."):
@@ -70,34 +66,36 @@ class DataSet:
         with np.load(path) as data:
             self.input_dim              = data['input_dim']
             self.output_dim             = data['output_dim']
-            self.n_train, self.n_test   = data['n_train'],  data['n_test']
-            self.x_train, self.x_test   = data['x_train'],  data['x_test']
-            self.y_train, self.y_test   = data['y_train'],  data['y_test']
+            self.train.n, self.test.n   = data['n_train'],  data['n_test']
+            self.train.x, self.test.x   = data['x_train'],  data['x_test']
+            self.train.y, self.test.y   = data['y_train'],  data['y_test']
         # Assert that the arrays have the correct shape
-        assert self.x_train.shape == (self.input_dim    ,   self.n_train)
-        assert self.y_train.shape == (self.output_dim   ,   self.n_train)
-        assert self.x_test.shape  == (self.input_dim    ,   self.n_test )
-        assert self.y_test.shape  == (self.output_dim   ,   self.n_test )
-    
+        assert self.train.x.shape == (self.input_dim    ,   self.train.n)
+        assert self.train.y.shape == (self.output_dim   ,   self.train.n)
+        assert self.test.x.shape  == (self.input_dim    ,   self.test.n )
+        assert self.test.y.shape  == (self.output_dim   ,   self.test.n )
+
+        return self
+
     def print_data(self, first_n=10, file=None):
         print(
-            "x_train.T:",   self.x_train.T[:first_n],
-            "y_train.T:",   self.y_train.T[:first_n],
-            "x_test.T:",    self.x_test.T[:first_n],
-            "y_test.T:",    self.y_test.T[:first_n],
+            "train.x.T:",   self.train.x.T[:first_n],
+            "train.y.T:",   self.train.y.T[:first_n],
+            "test.x.T:",    self.test.x.T[:first_n],
+            "test.y.T:",    self.test.y.T[:first_n],
             sep="\n",
             file=file
         )
-    
+
     def __repr__(self):
         """ Return a string representation of this Dataset object, including
         the type of the object whose method is called, and the input and output
         dimensions, and number of points in the training and test sets """
-        s = "%s(input_dim=%i, output_dim=%i, n_train=%i, n_test=%i)" % (
+        s = "%s(input_dim=%i, output_dim=%i, train.n=%i, test.n=%i)" % (
             type(self).__name__,
             self.input_dim,
             self.output_dim,
-            self.n_train,
-            self.n_test,
+            self.train.n,
+            self.test.n,
         )
         return s

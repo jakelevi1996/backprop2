@@ -22,15 +22,13 @@ def test_save_load(dataset_type, repeat):
     dataset = get_dataset_and_name_from_type(dataset_type)
     dataset_name = repr(dataset)
     dataset.save(dataset_name, output_dir)
-    dataset_loaded = data.DataSet(dataset_name, output_dir)
-    attr_list = [
-        "input_dim" , "output_dim"  ,
-        "n_train"   , "n_test"      ,
-        "x_train"   , "x_test"      ,
-        "y_train"   , "y_test"      ,
-    ]
-    for a in attr_list:
-        assert np.all(getattr(dataset, a) == getattr(dataset_loaded, a))
+    dataset_loaded = data.DataSet().load(dataset_name, output_dir)
+    assert np.all(dataset.train.x  == dataset_loaded.train.x    )
+    assert np.all(dataset.train.y  == dataset_loaded.train.y    )
+    assert np.all(dataset.train.n  == dataset_loaded.train.n    )
+    assert np.all(dataset.test.x   == dataset_loaded.test.x     )
+    assert np.all(dataset.test.y   == dataset_loaded.test.y     )
+    assert np.all(dataset.test.n   == dataset_loaded.test.n     )
 
 @pytest.mark.parametrize("repeat", range(3))
 @pytest.mark.parametrize("dataset_type", data.dataset_class_dict.values())
@@ -60,16 +58,16 @@ def test_sinusoidal_valid_xlim():
 
 def test_sinusoidal_invalid_xlim():
     """ Test that a ValueError is raised when initialising a Sinusoidal DataSet
-    with x-limits that don't broadcast to the size of x_train and x_test.
+    with x-limits that don't broadcast to the size of x_train and test.x.
 
     As stated in the docstring for the data.Sinusoidal initialiser, x_hi
     "should be a float, or a numpy array with shape [input_dim, 1]". """
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=3, x_lo=[1, 2])
-    
+
     with pytest.raises(ValueError):
         d = data.Sinusoidal(input_dim=4, x_hi=[3, 4, 5, 6], n_train=10)
-    
+
     with pytest.raises(ValueError):
         x_hi = np.array([3, 4, 5, 6]).reshape(1, -1)
         d = data.Sinusoidal(input_dim=4, x_hi=x_hi, n_train=10)
@@ -104,12 +102,12 @@ def test_gaussian_mixture_num_components(n_mixture_components):
         n_test=n_test,
         n_mixture_components=n_mixture_components,
     )
-    assert classification_data.x_train.shape        == (input_dim, n_train)
-    assert classification_data.x_test.shape         == (input_dim, n_test)
+    assert classification_data.train.x.shape        == (input_dim, n_train)
+    assert classification_data.test.x.shape         == (input_dim, n_test)
     assert classification_data.train_labels.shape   == (n_train, )
     assert classification_data.test_labels.shape    == (n_test, )
-    assert classification_data.y_train.shape        == (output_dim, n_train)
-    assert classification_data.y_test.shape         == (output_dim, n_test)
+    assert classification_data.train.y.shape        == (output_dim, n_train)
+    assert classification_data.test.y.shape         == (output_dim, n_test)
 
 @pytest.mark.parametrize("n_mixture_components", [2, 5])
 def test_binary_gaussian_mixture_num_components(n_mixture_components):
@@ -132,7 +130,7 @@ def test_binary_gaussian_mixture_num_components(n_mixture_components):
         n_test=n_test,
         n_mixture_components=n_mixture_components,
     )
-    assert classification_data.x_train.shape        == (input_dim, n_train)
-    assert classification_data.x_test.shape         == (input_dim, n_test)
-    assert classification_data.y_train.shape        == (1, n_train)
-    assert classification_data.y_test.shape         == (1, n_test)
+    assert classification_data.train.x.shape        == (input_dim, n_train)
+    assert classification_data.test.x.shape         == (input_dim, n_test)
+    assert classification_data.train.y.shape        == (1, n_train)
+    assert classification_data.test.y.shape         == (1, n_test)

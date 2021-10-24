@@ -85,8 +85,8 @@ class DynamicTerminator(Terminator, _BatchGetter):
         self.batch_size = batch_size
         self.replace = replace
 
-        model.forward_prop(dataset.x_train)
-        initial_error = model.reconstruction_error(dataset.y_train)
+        model.forward_prop(dataset.train.x)
+        initial_error = model.reconstruction_error(dataset.train.y)
         self.initial_mean_reconstruction_error = initial_error.mean()
         self._prev_mean_error = self.initial_mean_reconstruction_error
         self._model = model
@@ -128,18 +128,18 @@ class DynamicTerminator(Terminator, _BatchGetter):
 
         return False
 
-    def get_batch(self, dataset):
+    def get_batch(self, data_subset):
         """ Get a batch for the next iteration, and also calculate the
         probability of improvement using the new batch, which will be used when
         the ready_to_terminate method is called """
         # Choose the batch
         batch_inds = np.random.choice(
-            dataset.n_train,
+            data_subset.n,
             size=self.batch_size,
-            replace=self.replace
+            replace=self.replace,
         )
-        x_batch = dataset.x_train[:, batch_inds]
-        y_batch = dataset.y_train[:, batch_inds]
+        x_batch = data_subset.x[:, batch_inds]
+        y_batch = data_subset.y[:, batch_inds]
 
         if self._i >= self._i_next_update:
             # Calculate the probability of improvement

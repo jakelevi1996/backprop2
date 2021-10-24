@@ -27,8 +27,8 @@ from scipy.stats import norm
 class _BatchGetter():
     """ Abstract parent class for batch-getters, containing the get_batch
     method. This class should be subclassed by public subclasses, which
-    implement different strategies for choosing a batch from a data-set"""
-    def get_batch(self, dataset):
+    implement different strategies for choosing a batch from a data-set """
+    def get_batch(self, data_subset):
         """ Get a batch of data, used for one iteration of training. This method
         is called by AbstractOptimiser.optimise """
         raise NotImplementedError()
@@ -38,8 +38,8 @@ class FullTrainingSet(_BatchGetter):
     This is useful when the size of the data-set is small, EG on the order of
     100 data-points, especially with data-sets that have one-dimensional inputs
     """
-    def get_batch(self, dataset):
-        return dataset.x_train, dataset.y_train
+    def get_batch(self, data_subset):
+        return data_subset.x, data_subset.y
 
 class ConstantBatchSize(_BatchGetter):
     """ Class for a batch-getter which returns a randomly-selected batch of a
@@ -50,11 +50,13 @@ class ConstantBatchSize(_BatchGetter):
 
         self.batch_size = batch_size
         self.replace = replace
-    
-    def get_batch(self, dataset):
+
+    def get_batch(self, data_subset):
         batch_inds = np.random.choice(
-            dataset.n_train,
+            data_subset.n,
             size=self.batch_size,
             replace=self.replace,
         )
-        return dataset.x_train[:, batch_inds], dataset.y_train[:, batch_inds]
+        x_batch = data_subset.x[:, batch_inds]
+        y_batch = data_subset.y[:, batch_inds]
+        return x_batch, y_batch

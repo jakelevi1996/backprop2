@@ -22,30 +22,31 @@ class Disk(BinaryClassification):
             be None or a positive integer. If n_test is None, then it is chosen
             to be equal to the number of points in the training set
         """
+        BinaryClassification.__init__(self)
         # Set shape constants
         self.set_shape_constants(input_dim, 1, n_train, n_test)
 
         # Generate input data
-        self.x_train = np.random.uniform(
+        self.train.x = np.random.uniform(
             low=-1,
             high=1,
-            size=[self.input_dim, self.n_train],
+            size=[self.input_dim, self.train.n],
         )
-        self.x_test = np.random.uniform(
+        self.test.x = np.random.uniform(
             low=-1,
             high=1,
-            size=[self.input_dim, self.n_test],
+            size=[self.input_dim, self.test.n],
         )
 
         # Generate output labels
-        x_train_radius  = np.square(self.x_train).sum(axis=0, keepdims=True)
-        x_test_radius   = np.square(self.x_test).sum(axis=0, keepdims=True)
-        self.y_train    = np.logical_and(
+        x_train_radius  = np.square(self.train.x).sum(axis=0, keepdims=True)
+        x_test_radius   = np.square(self.test.x).sum(axis=0, keepdims=True)
+        self.train.y    = np.logical_and(
             x_train_radius > 0.5,
             x_train_radius < 0.75,
             dtype=int,
         )
-        self.y_test     = np.logical_and(
+        self.test.y     = np.logical_and(
             x_test_radius > 0.5,
             x_test_radius < 0.75,
             dtype=int,

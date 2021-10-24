@@ -21,9 +21,9 @@ def test_full_training_set_batch(repeat):
     set_random_seed_from_args("test_full_training_set_batch", repeat)
     dataset = get_random_dataset()
     batch_getter = optimisers.batch.FullTrainingSet()
-    x_batch, y_batch = batch_getter.get_batch(dataset)
-    assert x_batch.shape == dataset.x_train.shape
-    assert y_batch.shape == dataset.y_train.shape
+    x_batch, y_batch = batch_getter.get_batch(dataset.train)
+    assert x_batch.shape == dataset.train.x.shape
+    assert y_batch.shape == dataset.train.y.shape
 
 @pytest.mark.parametrize("repeat", range(3))
 def test_constant_batch_size(repeat):
@@ -33,9 +33,9 @@ def test_constant_batch_size(repeat):
     dataset = get_random_dataset()
     batch_size = np.random.randint(10, 20)
     batch_getter = optimisers.batch.ConstantBatchSize(batch_size)
-    x_batch, y_batch = batch_getter.get_batch(dataset)
-    assert x_batch.shape == (dataset.x_train.shape[0], batch_size)
-    assert y_batch.shape == (dataset.y_train.shape[0], batch_size)
+    x_batch, y_batch = batch_getter.get_batch(dataset.train)
+    assert x_batch.shape == (dataset.train.x.shape[0], batch_size)
+    assert y_batch.shape == (dataset.train.y.shape[0], batch_size)
 
 def test_constant_batch_size_non_integer_fail():
     """ Test that using a non-integer batch size raises an exception when using

@@ -50,7 +50,7 @@ def test_dynamic_terminator(
         input_dim=dataset.input_dim,
         output_dim=dataset.output_dim,
     )
-    batch_size = np.random.randint(3, dataset.n_train)
+    batch_size = np.random.randint(3, dataset.train.n)
     dynamic_terminator = optimisers.DynamicTerminator(
         model=model,
         dataset=dataset,
@@ -63,7 +63,7 @@ def test_dynamic_terminator(
     )
     dynamic_terminator.set_initial_iteration(0)
     for i in range(num_iters):
-        x_batch, y_batch = dynamic_terminator.get_batch(dataset)
+        x_batch, y_batch = dynamic_terminator.get_batch(dataset.train)
         assert x_batch.shape == (dataset.input_dim, batch_size)
         assert y_batch.shape == (dataset.output_dim, batch_size)
         assert dynamic_terminator._i == (i + 1)

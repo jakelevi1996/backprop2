@@ -23,21 +23,22 @@ class Xor(BinaryClassification):
             be None or a positive integer. If n_test is None, then it is chosen
             to be equal to the number of points in the training set
         """
+        BinaryClassification.__init__(self)
         # Set shape constants
         self.set_shape_constants(input_dim, 1, n_train, n_test)
 
         # Generate input data
-        self.x_train = np.random.uniform(
+        self.train.x = np.random.uniform(
             low=-1,
             high=1,
-            size=[self.input_dim, self.n_train],
+            size=[self.input_dim, self.train.n],
         )
-        self.x_test = np.random.uniform(
+        self.test.x = np.random.uniform(
             low=-1,
             high=1,
-            size=[self.input_dim, self.n_test],
+            size=[self.input_dim, self.test.n],
         )
 
         # Generate output labels
-        self.y_train    = (self.x_train > 0).sum(axis=0, keepdims=True) % 2
-        self.y_test     = (self.x_test  > 0).sum(axis=0, keepdims=True) % 2
+        self.train.y    = (self.train.x > 0).sum(axis=0, keepdims=True) % 2
+        self.test.y     = (self.test.x  > 0).sum(axis=0, keepdims=True) % 2

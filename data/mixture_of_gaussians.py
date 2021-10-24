@@ -99,17 +99,18 @@ class MixtureOfGaussians(Classification):
             overlap and become more difficult to distinguish, making the
             classification task "harder"
         """
+        Classification.__init__(self)
         # Set shape constants and number of mixture components
         self.set_shape_constants(input_dim, output_dim, n_train, n_test)
         if n_mixture_components is None:
             n_mixture_components = self.output_dim
-        
+
         # Generate mean and scale for each mixture component
         mean = np.random.normal(size=[n_mixture_components, input_dim])
         scale_matrix = scale * np.random.normal(
-            size=[n_mixture_components, input_dim, input_dim]
+            size=[n_mixture_components, input_dim, input_dim],
         )
-        
+
         # Initialise mixture_to_class which maps mixture components to classes
         if n_mixture_components > output_dim:
             mixture_to_class = np.full(n_mixture_components, np.nan)
@@ -134,21 +135,21 @@ class MixtureOfGaussians(Classification):
             )
         else:
             mixture_to_class = np.arange(output_dim)
-        
+
         # Generate inputs, outputs and labels
-        self.x_train, self.train_labels, self.y_train = _mixture_of_gaussians(
+        self.train.x, self.train_labels, self.train.y = _mixture_of_gaussians(
             self.input_dim,
             self.output_dim,
-            self.n_train,
+            self.train.n,
             n_mixture_components,
             scale_matrix,
             mean,
             mixture_to_class,
         )
-        self.x_test, self.test_labels, self.y_test = _mixture_of_gaussians(
+        self.test.x, self.test_labels, self.test.y = _mixture_of_gaussians(
             self.input_dim,
             self.output_dim,
-            self.n_test,
+            self.test.n,
             n_mixture_components,
             scale_matrix,
             mean,
@@ -237,11 +238,12 @@ class BinaryMixtureOfGaussians(BinaryClassification):
             overlap and become more difficult to distinguish, making the
             classification task "harder"
         """
+        BinaryClassification.__init__(self)
         # Set shape constants and number of mixture components
         self.set_shape_constants(input_dim, 1, n_train, n_test)
         if n_mixture_components is None:
             n_mixture_components = self.output_dim
-        
+
         # Generate mean and scale for each mixture component
         mean = np.random.normal(size=[n_mixture_components, input_dim])
         scale_matrix = scale * np.random.normal(
@@ -264,19 +266,19 @@ class BinaryMixtureOfGaussians(BinaryClassification):
             mixture_to_class = mixture_to_class.astype(int)
         else:
             mixture_to_class = np.array([0, 1])
-        
+
         # Generate inputs, outputs and labels
-        self.x_train, self.y_train = _binary_mixture_of_gaussians(
+        self.train.x, self.train.y = _binary_mixture_of_gaussians(
             self.input_dim,
-            self.n_train,
+            self.train.n,
             n_mixture_components,
             scale_matrix,
             mean,
             mixture_to_class,
         )
-        self.x_test, self.y_test = _binary_mixture_of_gaussians(
+        self.test.x, self.test.y = _binary_mixture_of_gaussians(
             self.input_dim,
-            self.n_test,
+            self.test.n,
             n_mixture_components,
             scale_matrix,
             mean,

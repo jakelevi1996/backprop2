@@ -87,8 +87,9 @@ class Sinusoidal(Regression):
 
         Raises:
         -   ValueError: if x-limits x_lo and x_hi don't broadcast to the size
-            of x_train and x_test
+            of train.x and test.x
         """
+        Regression.__init__(self)
         # Set shape constants and unspecified parameters
         self.set_shape_constants(input_dim, output_dim, n_train, n_test)
         if phase is None:
@@ -100,31 +101,31 @@ class Sinusoidal(Regression):
         if offset is None:
             offset = np.random.normal(size=[output_dim, 1])
         # Generate input/output training and test data
-        self.x_train = np.random.uniform(
+        self.train.x = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_train]
+            size=[input_dim, self.train.n],
         )
-        self.x_test  = np.random.uniform(
+        self.test.x  = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_test]
+            size=[input_dim, self.test.n],
         )
-        self.y_train = noisy_sin(
-            self.x_train,
+        self.train.y = noisy_sin(
+            self.train.x,
             phase,
             freq,
             ampl,
             offset,
             noise_std,
-            output_dim
+            output_dim,
         )
-        self.y_test = noisy_sin(
-            self.x_test,
+        self.test.y = noisy_sin(
+            self.test.x,
             phase,
             freq,
             ampl,
             offset,
             noise_std,
-            output_dim
+            output_dim,
         )

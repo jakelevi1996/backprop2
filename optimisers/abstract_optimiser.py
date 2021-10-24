@@ -68,9 +68,9 @@ class AbstractOptimiser:
         display_summary=True
     ):
         """ Optimise the given model to fit the given dataset. The code in this
-        method is abstract, and depends on the output from the _get_step private
-        method, which will be overriden by subclasses which are specific to
-        different optimisation algorithms.
+        method is abstract, and depends on the output from the _get_step
+        private method, which will be overriden by subclasses which are
+        specific to different optimisation algorithms.
 
         Inputs:
         -   model: model that will be optimised. Should be an instance of
@@ -78,23 +78,24 @@ class AbstractOptimiser:
         -   dataset: dataset that model will be optimised to fit. Should be an
             instance of data.DataSet
         -   evaluator: (optional) object which is used to decide when to
-            evaluate the model during optimisation, based on either time, or the
-            number of iterations that have been completed. Should be an instance
-            of optimisers.Evaluator. Default is to evaluate every 100 iterations
+            evaluate the model during optimisation, based on either time, or
+            the number of iterations that have been completed. Should be an
+            instance of optimisers.Evaluator. Default is to evaluate every 100
+            iterations
         -   terminator: (optional) object which is used to decide when to stop
-            optimising the model, based on either time, the number of iterations
-            that have been completed, or the current value of the error
-            function. Should be an instance of optimisers.Terminator. Default is
-            to terminate after 1000 iterations
+            optimising the model, based on either time, the number of
+            iterations that have been completed, or the current value of the
+            error function. Should be an instance of optimisers.Terminator.
+            Default is to terminate after 1000 iterations
         -   result: (optional) result used to calculate, store, and display the
             progress of the model during optimisation. Can be configured with
             different columns from the optimisers.results.columns module. This
             object can also be passed to multiple different plotting functions.
             Should be an instance of optimisers.Result
-        -   batch_getter: (optional) object which is used to choose batches from
-            the training set used to optimise the model. Should be an instance
-            of optimisers.batch._BatchGetter. Default is to use the full
-            training set for each iteration of optimisation
+        -   batch_getter: (optional) object which is used to choose batches
+            from the training set used to optimise the model. Should be an
+            instance of optimisers.batch._BatchGetter. Default is to use the
+            full training set for each iteration of optimisation
         -   display_summary: (optional) whether or not to display a summary of
             the optimisation results after optimisation has finished. Should be
             a Boolean. Default is True
@@ -120,7 +121,7 @@ class AbstractOptimiser:
         terminator.set_timer(timer)
         if not result.has_timer():
             result.set_timer(timer)
-        
+
         # Begin the result and timer objects
         if not result.begun:
             result.begin()
@@ -130,13 +131,13 @@ class AbstractOptimiser:
             # Evaluate the model
             if evaluator.ready_to_evaluate(i):
                 result.update(model=model, dataset=dataset, iteration=i)
-            
+
             # Get batch of training data
-            x_batch, y_batch = batch_getter.get_batch(dataset)
+            x_batch, y_batch = batch_getter.get_batch(dataset.train)
 
             # Get gradient and initial step
             delta, dEdw = self._get_step(model, x_batch, y_batch)
-            
+
             # Update parameters
             if self.line_search is not None:
                 s = self.line_search.get_step_size(
@@ -154,11 +155,11 @@ class AbstractOptimiser:
             model.set_parameter_vector(w)
 
             i += 1
-            
+
             # Check if ready to terminate minimisation
             if terminator.ready_to_terminate(i):
                 break
-            
+
         # Evaluate final performance
         result.update(model=model, dataset=dataset, iteration=i)
         if display_summary and result.verbose:

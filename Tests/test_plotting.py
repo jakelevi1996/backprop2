@@ -33,8 +33,8 @@ def test_plot_1D_regression(output_dim):
         low=2,
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=sin_data.x_train,
-            y_train=sin_data.y_train,
+            x_train=sin_data.train.x,
+            y_train=sin_data.train.y,
         ),
     )
     # Call plotting function under test
@@ -71,8 +71,8 @@ def test_plot_1D_hidden_outputs(output_dim):
         low=2,
         high=6,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=sin_data.x_train,
-            y_train=sin_data.y_train,
+            x_train=sin_data.train.x,
+            y_train=sin_data.train.y,
         ),
     )
     # Initialise result and column objects
@@ -124,8 +124,8 @@ def test_plot_2D_hidden_outputs(output_dim):
         low=2,
         high=6,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=sin_data.x_train,
-            y_train=sin_data.y_train,
+            x_train=sin_data.train.x,
+            y_train=sin_data.train.y,
         ),
     )
     # Initialise result and column objects
@@ -178,8 +178,8 @@ def test_plot_2D_regression(output_dim):
         low=2,
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=sin_data.x_train,
-            y_train=sin_data.y_train,
+            x_train=sin_data.train.x,
+            y_train=sin_data.train.y,
         )
     )
     # Call plotting function under test
@@ -211,8 +211,8 @@ def test_plot_2D_classification():
         low=2,
         high=3,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=classification_data.x_train,
-            y_train=classification_data.y_train,
+            x_train=classification_data.train.x,
+            y_train=classification_data.train.y,
         )
     )
     # Call plotting function under test
@@ -249,8 +249,8 @@ def test_plot_binary_2D_classification():
         high=3,
         act_funcs=[models.activations.identity, models.activations.logistic],
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=classification_data.x_train,
-            y_train=classification_data.y_train,
+            x_train=classification_data.train.x,
+            y_train=classification_data.train.y,
         )
     )
     # Call plotting function under test
@@ -276,14 +276,14 @@ def test_plot_training_curves():
         w = n.get_parameter_vector()
         result = optimisers.Result(name="Network {}".format(j))
         result.begin()
-        
+
         # Call the result.update method a few times
         for i in range(n_iters):
             n.set_parameter_vector(w + i)
             result.update(model=n, dataset=d, iteration=i)
-        
+
         results_list.append(result)
-    
+
     plotting.plot_training_curves(
         results_list,
         "Test plot_training_curves",
@@ -318,9 +318,9 @@ def test_plot_result_attribute():
             for j in range(n_its):
                 ls.s = np.random.uniform() + i
                 result.update(iteration=j)
-        
+
         results_list.append(result)
-    
+
     plotting.plot_result_attribute(
         "test_plot_result_attribute_linesearch",
         output_dir,
@@ -342,7 +342,7 @@ def test_plot_result_attribute_subplots():
     results_list = []
     for i in range(5):
         model = models.NeuralNetwork(input_dim=1, output_dim=1)
-        model.get_gradient_vector(sin_data.x_train, sin_data.y_train)
+        model.get_gradient_vector(sin_data.train.x, sin_data.train.y)
         name = "test_plot_result_attribute_subplots_%i" % (i + 1)
         output_text_filename = os.path.join(output_dir, name + ".txt")
         with open(output_text_filename, "w") as f:
@@ -361,7 +361,7 @@ def test_plot_result_attribute_subplots():
                 evaluator=optimisers.Evaluator(i_interval=1)
             )
         results_list.append(result)
-    
+
     attribute_list = [
         optimisers.results.columns.TrainError,
         optimisers.results.columns.TestError,
@@ -427,7 +427,7 @@ def test_plot_error_reductions_vs_batch_size_gif():
     columns = optimisers.results.columns
     optimal_batch_size_col = columns.OptimalBatchSize(
         gd_optimiser,
-        sin_data.n_train,
+        sin_data.train.n,
         n_repeats=3,
         n_batch_sizes=3,
         min_batch_size=2
@@ -470,7 +470,7 @@ def test_plot_optimal_batch_sizes():
     columns = optimisers.results.columns
     optimal_batch_size_col = columns.OptimalBatchSize(
         gd_optimiser,
-        sin_data.n_train,
+        sin_data.train.n,
         n_repeats=3,
         n_batch_sizes=3,
         min_batch_size=2
@@ -527,8 +527,8 @@ def test_plot_predictions_gif(dataset_type):
         input_dim=input_dim,
         output_dim=output_dim,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=dataset.x_train,
-            y_train=dataset.y_train,
+            x_train=dataset.train.x,
+            y_train=dataset.train.y,
         ),
     )
     # Initialise Result and Predictions column object
@@ -572,8 +572,8 @@ def test_plot_hidden_outputs_gif():
         input_dim=1,
         output_dim=1,
         initialiser=models.initialisers.ConstantPreActivationStatistics(
-            x_train=dataset.x_train,
-            y_train=dataset.y_train,
+            x_train=dataset.train.x,
+            y_train=dataset.train.y,
         ),
     )
     # Initialise Result and Predictions column object

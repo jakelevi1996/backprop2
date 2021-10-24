@@ -41,6 +41,7 @@ class GaussianCurve(Regression):
         output_scale=None,
     ):
         """ Initialise a GaussianCurve object """
+        Regression.__init__(self)
         # Set shape constants and unspecified parameters
         self.set_shape_constants(input_dim, output_dim, n_train, n_test)
         if input_offset is None:
@@ -52,18 +53,18 @@ class GaussianCurve(Regression):
         if output_scale is None:
             output_scale = np.random.normal(scale=5, size=[output_dim, 1])
         # Generate input/output training and test data
-        self.x_train = np.random.uniform(
+        self.train.x = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_train]
+            size=[input_dim, self.train.n],
         )
-        self.x_test  = np.random.uniform(
+        self.test.x  = np.random.uniform(
             x_lo,
             x_hi,
-            size=[input_dim, self.n_test]
+            size=[input_dim, self.test.n],
         )
-        self.y_train = _noisy_gaussian(
-            self.x_train,
+        self.train.y = _noisy_gaussian(
+            self.train.x,
             input_offset,
             input_scale,
             output_offset,
@@ -71,8 +72,8 @@ class GaussianCurve(Regression):
             noise_std,
             output_dim,
         )
-        self.y_test = _noisy_gaussian(
-            self.x_test,
+        self.test.y = _noisy_gaussian(
+            self.test.x,
             input_offset,
             input_scale,
             output_offset,
