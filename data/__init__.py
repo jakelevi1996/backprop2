@@ -22,6 +22,7 @@ from data.circle import Circle
 from data.square import Square
 from data.guassian_curve import GaussianCurve, SumOfGaussianCurves
 from data.task import TaskSet
+from data.mnist import Mnist
 
 # Create dictionary mapping name-strings to non-abstract dataset classes
 dataset_class_dict = {
