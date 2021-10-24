@@ -1,6 +1,12 @@
 import os
 import numpy as np
 
+class DataSubset:
+    def __init__(self, x=None, y=None, n=None):
+        self.x = x
+        self.y = y
+        self.n = n
+
 class DataSet:
     """ Interface class for data sets, which contains shape constants and
     train/test inputs and outputs as attributes, and methods for loading,
