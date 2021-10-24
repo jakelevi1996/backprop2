@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 from data.task import TaskMap, TaskSubMap
-from data.dataset import DataSubset
+from data.dataset import DataSet
 
 CURRENT_DIR         = os.path.dirname(os.path.abspath(__file__))
 MNIST_DATA_DIRNAME  = os.path.join(CURRENT_DIR, "saved_data")
@@ -86,7 +86,15 @@ class Mnist(TaskMap):
             [self.task_map_validation,  y_validation,   validation_labels   ],
         ]:
             for y, label in zip(y_subset, label_subset):
-                task_submap.add_task(DataSubset(x, y, n, label), label)
+                task = DataSet()
+                task.input_dim  = MNIST_INPUT_DIM
+                task.output_dim = MNIST_OUTPUT_DIM
+                for data_subset in [task.train, task.test]:
+                    data_subset.x = x
+                    data_subset.y = y
+                    data_subset.n = n
+                    data_subset.label = label
+                task_submap.add_task(task, label)
 
         if not os.path.isdir(MNIST_DATA_DIRNAME):
             os.makedirs(MNIST_DATA_DIRNAME)
