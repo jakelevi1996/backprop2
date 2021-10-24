@@ -15,6 +15,8 @@ Below are some examples for calling this script:
 
     python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data
 
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data --error_scale_coefficient 1e-1
+
     python Scripts/train_dinosaur.py --regulariser QuarticType3
 
 To get help information for the available arguments, use the following command:
@@ -49,12 +51,25 @@ def main(args):
         num_hidden_units=args.num_hidden_units,
     )
 
-    # Get directory for saving outputs to disk
+    # Get output directory which is specific to the relevant script parameters
+    param_str = " ".join([
+        "mnist" if args.use_mnist_data else "synthetic",
+        "r%s"   % args.regulariser,
+        "e%s"   % args.error_scale_coefficient,
+        "u%s"   % args.num_hidden_units,
+    ])
+    if args.use_mnist_data:
+        param_str += " " + " ".join([
+            "t%s"   % args.mnist_num_train_tasks,
+            "l%s"   % args.mnist_train_distribution_label,
+            "o%s"   % args.mnist_out_of_distribution_label,
+        ])
     current_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(
         current_dir,
         "Outputs",
         "Train Dinosaur",
+        param_str,
     )
     if os.path.isdir(output_dir):
         shutil.rmtree(output_dir)
