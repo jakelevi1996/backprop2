@@ -34,6 +34,9 @@ class TaskSubMap:
 
         self.num_tasks += 1
 
+    def get_batch(self, label, batch_size, replace=False):
+        return self.dict[label].get_batch(batch_size, replace)
+
 class TaskMap:
     def __init__(self):
         self.train        = TaskSubMap()
