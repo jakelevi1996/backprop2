@@ -37,19 +37,19 @@ def test_update(seed, result=None):
     w = n.get_parameter_vector()
     if result is None:
         result = results.Result()
-    
+
     result.begin()
     # Call the result.update method a few times
     for i in range(5):
         n.set_parameter_vector(w + i)
         result.update(model=n, dataset=d, iteration=i)
-    
+
     # Check that value lists for the default columns have non-zero length
     assert len(result.get_values(optimisers.results.columns.TrainError)) > 0
     assert len(result.get_values(optimisers.results.columns.TestError)) > 0
     assert len(result.get_values(optimisers.results.columns.Iteration)) > 0
     assert len(result.get_values(optimisers.results.columns.Time)) > 0
-    
+
     return result
 
 @pytest.mark.parametrize("seed", [9843, 1213, 1005])
@@ -58,7 +58,7 @@ def test_display_headers(seed, use_updated_result):
     """ Test the display_headers method of the Result class """
     result = get_updated_or_empty_result(use_updated_result, seed)
 
-    result._display_headers()
+    result.display_headers()
 
 @pytest.mark.parametrize("seed", [9190, 6940, 6310])
 @pytest.mark.parametrize("use_updated_result", [True])
@@ -87,7 +87,7 @@ def test_output_file():
     with open(path, "w") as f:
         result = results.Result("Test result", True, f)
         test_update(seed=seed, result=result)
-        result._display_headers()
+        result.display_headers()
         result._display_last()
         result.display_summary(10)
 
@@ -112,7 +112,7 @@ def test_line_search_column(seed):
         for s in step_sizes:
             ls.s = s
             result.update()
-        
+
         assert np.all(result.get_values(type(col)) == step_sizes)
 
 def test_get_iteration_number():
