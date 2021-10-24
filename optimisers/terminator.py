@@ -170,8 +170,8 @@ class DynamicTerminator(Terminator, _BatchGetter):
     def reset(self, data_set, t_lim=None):
         self.t_lim = t_lim
 
-        self._model.forward_prop(data_set.x_train)
-        initial_error = self._model.reconstruction_error(data_set.y_train)
+        self._model.forward_prop(data_set.train.x)
+        initial_error = self._model.reconstruction_error(data_set.train.y)
         self.initial_mean_reconstruction_error = initial_error.mean()
         self._prev_mean_error = self.initial_mean_reconstruction_error
 
