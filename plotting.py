@@ -534,7 +534,7 @@ def plot_2D_classification(
     axes[0].scatter(
         dataset.train.x[0],
         dataset.train.x[1],
-        c=dataset.train_labels,
+        c=dataset.train.labels,
         vmin=0,
         vmax=output_dim,
         alpha=tp,
@@ -544,7 +544,7 @@ def plot_2D_classification(
     axes[1].scatter(
         dataset.test.x[0],
         dataset.test.x[1],
-        c=dataset.test_labels,
+        c=dataset.test.labels,
         vmin=0,
         vmax=output_dim,
         alpha=tp,

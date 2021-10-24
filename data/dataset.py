@@ -2,10 +2,11 @@ import os
 import numpy as np
 
 class DataSubset:
-    def __init__(self, x=None, y=None, n=None):
+    def __init__(self, x=None, y=None, n=None, labels=None):
         self.x = x
         self.y = y
         self.n = n
+        self.labels = labels
 
 class DataSet:
     """ Interface class for data sets, which contains shape constants and

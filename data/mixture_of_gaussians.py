@@ -137,7 +137,7 @@ class MixtureOfGaussians(Classification):
             mixture_to_class = np.arange(output_dim)
 
         # Generate inputs, outputs and labels
-        self.train.x, self.train_labels, self.train.y = _mixture_of_gaussians(
+        self.train.x, self.train.labels, self.train.y = _mixture_of_gaussians(
             self.input_dim,
             self.output_dim,
             self.train.n,
@@ -146,7 +146,7 @@ class MixtureOfGaussians(Classification):
             mean,
             mixture_to_class,
         )
-        self.test.x, self.test_labels, self.test.y = _mixture_of_gaussians(
+        self.test.x, self.test.labels, self.test.y = _mixture_of_gaussians(
             self.input_dim,
             self.output_dim,
             self.test.n,

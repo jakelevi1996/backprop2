@@ -104,8 +104,8 @@ def test_gaussian_mixture_num_components(n_mixture_components):
     )
     assert classification_data.train.x.shape        == (input_dim, n_train)
     assert classification_data.test.x.shape         == (input_dim, n_test)
-    assert classification_data.train_labels.shape   == (n_train, )
-    assert classification_data.test_labels.shape    == (n_test, )
+    assert classification_data.train.labels.shape   == (n_train, )
+    assert classification_data.test.labels.shape    == (n_test, )
     assert classification_data.train.y.shape        == (output_dim, n_train)
     assert classification_data.test.y.shape         == (output_dim, n_test)
 
