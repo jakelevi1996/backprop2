@@ -12,6 +12,8 @@ MNIST_N_TRAIN       = 60000
 MNIST_N_TEST        = 10000
 MNIST_WIDTH_PIXELS  = 28
 MNIST_HEIGHT_PIXELS = 28
+MNIST_INPUT_DIM     = 2
+MNIST_OUTPUT_DIM    = 1
 
 class Mnist(TaskMap):
     def __init__(self, num_validation=MNIST_N_TEST):
@@ -52,8 +54,9 @@ class Mnist(TaskMap):
             MNIST_HEIGHT_PIXELS,
             MNIST_WIDTH_PIXELS,
         )
-        y_train = y_train / 255.0
-        y_test  = y_test  / 255.0
+        n = MNIST_WIDTH_PIXELS * MNIST_HEIGHT_PIXELS
+        y_train = y_train.reshape(MNIST_N_TRAIN, MNIST_OUTPUT_DIM, n) / 255.0
+        y_test  =  y_test.reshape(MNIST_N_TEST , MNIST_OUTPUT_DIM, n) / 255.0
 
         validation_inds = np.random.choice(
             MNIST_N_TRAIN,
@@ -67,12 +70,11 @@ class Mnist(TaskMap):
         validation_labels   = train_labels[validation_bool_inds]
         train_labels        = train_labels[~validation_bool_inds]
 
-        n = MNIST_WIDTH_PIXELS * MNIST_HEIGHT_PIXELS
         x0 = np.linspace(-1, 1, MNIST_WIDTH_PIXELS)
         x1 = np.linspace(-1, 1, MNIST_HEIGHT_PIXELS)
         xx = np.meshgrid(x0, x1)
         x = np.stack([xx[0].ravel(), np.flip(xx[1].ravel())], axis=0)
-        assert x.shape == (2, n)
+        assert x.shape == (MNIST_INPUT_DIM, n)
 
         self.task_map_train = TaskSubMap()
         self.task_map_test = TaskSubMap()
