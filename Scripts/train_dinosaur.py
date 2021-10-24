@@ -167,13 +167,13 @@ def get_synthetic_data():
 def get_mnist_data(args):
     task_set = data.TaskSet()
     mnist_task_map = data.Mnist()
-    task_batch = mnist_task_map.task_map_train.get_batch(
+    task_batch = mnist_task_map.train.get_batch(
         args.mnist_train_distribution_label,
         args.mnist_num_train_tasks,
     )
     for task in task_batch:
         task_set.add_task(task)
-    out_of_distribution_task = mnist_task_map.task_map_train.get_batch(
+    out_of_distribution_task = mnist_task_map.train.get_batch(
         args.mnist_out_of_distribution_label,
         1,
     )[0]

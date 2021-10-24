@@ -20,20 +20,19 @@ class Mnist(TaskMap):
         if os.path.exists(MNIST_DATA_FILENAME):
             with open(MNIST_DATA_FILENAME, "rb") as f:
                 (
-                    self.task_map_train,
-                    self.task_map_test,
-                    self.task_map_validation,
+                    self.train,
+                    self.test,
+                    self.validation,
                 ) = pickle.load(f)
 
 
             assert (
-                self.task_map_train.num_tasks
-                + self.task_map_validation.num_tasks
+                self.train.num_tasks + self.validation.num_tasks
                 == MNIST_N_TRAIN
             )
-            assert self.task_map_test.num_tasks == MNIST_N_TEST
+            assert self.test.num_tasks == MNIST_N_TEST
 
-            if self.task_map_validation.num_tasks != num_validation:
+            if self.validation.num_tasks != num_validation:
                 self._gen_data(num_validation)
 
         else:
@@ -76,14 +75,14 @@ class Mnist(TaskMap):
         x = np.stack([xx[0].ravel(), np.flip(xx[1].ravel())], axis=0)
         assert x.shape == (MNIST_INPUT_DIM, n)
 
-        self.task_map_train = TaskSubMap()
-        self.task_map_test = TaskSubMap()
-        self.task_map_validation = TaskSubMap()
+        self.train      = TaskSubMap()
+        self.test       = TaskSubMap()
+        self.validation = TaskSubMap()
 
         for task_submap, y_subset, label_subset in [
-            [self.task_map_train,       y_train,        train_labels        ],
-            [self.task_map_test,        y_test,         test_labels         ],
-            [self.task_map_validation,  y_validation,   validation_labels   ],
+            [self.train,       y_train,        train_labels        ],
+            [self.test,        y_test,         test_labels         ],
+            [self.validation,  y_validation,   validation_labels   ],
         ]:
             for y, label in zip(y_subset, label_subset):
                 task = DataSet()
@@ -102,9 +101,9 @@ class Mnist(TaskMap):
         with open(MNIST_DATA_FILENAME, "wb") as f:
             pickle.dump(
                 [
-                    self.task_map_train,
-                    self.task_map_test,
-                    self.task_map_validation,
+                    self.train,
+                    self.test,
+                    self.validation,
                 ],
                 f,
             )
