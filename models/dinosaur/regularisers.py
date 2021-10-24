@@ -113,8 +113,10 @@ class QuarticType2(Quartic):
     def update(self, w_list, dE_list):
         w_array = np.array(w_list)
         self.mean = np.mean(w_array, axis=0)
-        self.parameter_scale = (
-            1.0 / np.mean(np.abs(w_array - self.mean), axis=0)
+        self.parameter_scale = np.clip(
+            1.0 / np.mean(np.abs(w_array - self.mean), axis=0),
+            None,
+            1e4,
         )
         self._update_error_scale(dE_list)
 
