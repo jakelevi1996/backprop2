@@ -33,6 +33,10 @@ Below are some examples for calling this script:
 
     python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20,20 -t1 --plot_preds -dSquare
 
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20 -t5 --plot_preds -dThree --seed 2
+
+    python Scripts/train_gradient_descent.py -i2 -n1000 -b200 -u 20 -t5 --plot_preds -dThree --seed 2 --plot_hidden_gif
+
 To get help information for the available arguments, use the following command:
 
     python Scripts/train_gradient_descent.py -h
@@ -155,7 +159,7 @@ def main(args):
                 ),
             )
             result.add_column(pred_column)
-        
+
         if args.plot_test_set_improvement_probability:
             test_set_improvement_column = (
                 columns.TestSetImprovementProbabilitySimple(
@@ -165,7 +169,7 @@ def main(args):
                 )
             )
             result.add_column(test_set_improvement_column)
-        
+
         if args.dynamic_terminator:
             dynamic_terminator = optimisers.DynamicTerminator(
                 model=model,
@@ -209,7 +213,7 @@ def main(args):
         model_list.append(model)
         if args.plot_pred_gif or args.plot_hidden_gif:
             prediction_column_list.append(pred_column)
-    
+
     # Make output plots
     print("Plotting output plots in \"%s\"..." % output_dir)
     os.system("explorer \"%s\"" % output_dir)
@@ -281,7 +285,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    
+
     # Define CLI using argparse
     parser = argparse.ArgumentParser(
         description="train a model on a dataset using gradient descent, and "
@@ -465,7 +469,7 @@ if __name__ == "__main__":
     args.num_hidden_units = [
         int(i) for i in args.num_hidden_units_str.split(",")
     ]
-    
+
     args.line_search = None if args.no_line_search else optimisers.LineSearch()
 
     args.t_eval = args.t_lim / 50 if args.t_eval is None else args.t_eval
