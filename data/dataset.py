@@ -15,9 +15,9 @@ class DataSet:
 
     TODO: implement get_train_batch and get_test_batch and incorporate into
     optimisers module """
-    def __init__(self):
-        self.input_dim  = None
-        self.output_dim = None
+    def __init__(self, input_dim=None, output_dim=None):
+        self.input_dim  = input_dim
+        self.output_dim = output_dim
         self.train      = DataSubset()
         self.test       = DataSubset()
 
