@@ -35,6 +35,7 @@ dataset_class_dict = {
         Xor,
         Disk,
         GaussianCurve,
+        SumOfGaussianCurves,
         Square,
         Three,
     ]

@@ -22,9 +22,6 @@ def _noisy_gaussian(
     y = (y_pre_affine_transformation * output_scale) + noisy_offset
     return y
 
-class SumOfGaussianCurves(Regression):
-    pass
-
 class GaussianCurve(Regression):
     def __init__(
         self,
@@ -39,6 +36,8 @@ class GaussianCurve(Regression):
         input_scale=None,
         output_offset=None,
         output_scale=None,
+        x_train=None,
+        x_test=None,
     ):
         """ Initialise a GaussianCurve object """
         Regression.__init__(self)
@@ -53,16 +52,22 @@ class GaussianCurve(Regression):
         if output_scale is None:
             output_scale = np.random.normal(scale=5, size=[output_dim, 1])
         # Generate input/output training and test data
-        self.train.x = np.random.uniform(
-            x_lo,
-            x_hi,
-            size=[input_dim, self.train.n],
-        )
-        self.test.x  = np.random.uniform(
-            x_lo,
-            x_hi,
-            size=[input_dim, self.test.n],
-        )
+        if x_train is None:
+            self.train.x = np.random.uniform(
+                x_lo,
+                x_hi,
+                size=[input_dim, self.train.n],
+            )
+        else:
+            self.train.x = x_train
+        if x_test is None:
+            self.test.x  = np.random.uniform(
+                x_lo,
+                x_hi,
+                size=[input_dim, self.test.n],
+            )
+        else:
+            self.test.x = x_test
         self.train.y = _noisy_gaussian(
             self.train.x,
             input_offset,
@@ -81,3 +86,17 @@ class GaussianCurve(Regression):
             noise_std,
             output_dim,
         )
+
+class SumOfGaussianCurves(Regression):
+    def __init__(self, *args, n_components=4, **kwargs):
+        assert ("x_train" not in kwargs) and ("x_test" not in kwargs)
+        GaussianCurve.__init__(self, *args, **kwargs)
+        for _ in range(n_components - 1):
+            g = GaussianCurve(
+                *args,
+                **kwargs,
+                x_train=self.train.x,
+                x_test=self.test.x,
+            )
+            self.train.y += g.train.y
+            self.test.y += g.test.y
