@@ -434,5 +434,24 @@ class RegularisationError(_Column):
         model = kwargs["model"]
         self.value_list.append(model.regularisation_error())
 
+class Parameters(_Column):
+    """ This column is for storing the parameters of the model at different
+    points during training. Once training is complete, this object can be used
+    to plot functions of the model as its parameters evolve during training.
+    """
+    def __init__(self, name="Parameters"):
+        """ Initialise this Parameters column """
+        super().__init__(name, "s")
+        self.parameters_dict = dict()
+        self.value_list.append("Yes")
+
+    def update(self, kwargs):
+        """ Store the parameters of the model """
+        # Get the model and iteration number
+        model       = kwargs["model"]
+        iteration   = kwargs["iteration"]
+        # Store the parameters of the model
+        self.parameters_dict[iteration] = model.get_parameter_vector().copy()
+
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
