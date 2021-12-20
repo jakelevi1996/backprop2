@@ -1,5 +1,6 @@
 """ This module contains the Dinosaur class for meta-learning """
 import optimisers
+from models.dinosaur.regularisers import Eve
 
 class Dinosaur:
     """ Dinosaur class for meta-learning """
@@ -56,9 +57,15 @@ class Dinosaur:
 
         # Set the regulariser parameters and add to the network
         self._regulariser.update([w1, w2], [dE])
-        self._network.set_regulariser(self._regulariser)
+        if isinstance(self._regulariser, Eve):
+            self._optimiser = self._regulariser
+            self._optimiser.set_line_search(self._line_search)
+            eve_column = optimisers.columns.EveConvergence(self._regulariser)
+            self._result.add_column(eve_column)
+        else:
+            self._network.set_regulariser(self._regulariser)
+            self._result.add_column(optimisers.columns.RegularisationError())
         self._initialised_regulariser = True
-        self._result.add_column(optimisers.columns.RegularisationError())
 
 
     def meta_learn(self, task_set, terminator=None):
