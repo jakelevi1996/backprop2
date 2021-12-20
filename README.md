@@ -79,7 +79,7 @@ So now say we train one meta-learning model for each different class of digit (s
 
 So to decide which class the test image came from, we just choose the meta-learning model with the lowest adapted reconstruction loss. If we wanted a probability distribution over classes, we simply put all 10 of the reconstruction losses from each meta-learning model through a softmax function.
 
-An interesting interpretation is that we can think of each of these meta-learning models as forming an adaptive memory for each digit. The parameters of each digit-model are all distinct from those of the other models, and each model reconstructively encodes the class which it represents, including the variance within that class, which is encoded in the scale parameters. Adaptively reconstructing a particular observation of an unseen digit from MNIST using the appropriate class can be thought of as 'remembering' the class from which that image came
+An interesting interpretation is that we can think of each of these meta-learning models as forming an adaptive memory for each digit. The parameters of each digit-model are all distinct from those of the other models, and each model reconstructively encodes the class which it represents, including the variance within that class, which is encoded in the scale parameters. Adaptively reconstructing a particular observation of an unseen digit from MNIST using the appropriate class can be thought of as 'remembering' the class from which that image came.
 
 ### So how well did this work in practise?
 
