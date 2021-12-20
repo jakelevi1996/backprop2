@@ -26,6 +26,7 @@ I find this problem especially interesting because one of the big drawbacks with
 To this end, I developed this repository over the last 2 years as a basis for 2 main research objectives:
 1. Develop new methods for meta-learning which model parameter scale in addition to initialisation values
 1. Apply these new meta-learning methods using a novel approach to try to improve data-efficiency on the MNIST dataset of handwritten digits
+
 (I also used this repository to work on 2 other minor research topics, discussed briefly in the [end-note](#endnote-other-topics-i-researched-using-this-repository) in this read-me).
 
 ## Meta-learning
