@@ -453,5 +453,17 @@ class Parameters(_Column):
         # Store the parameters of the model
         self.parameters_dict[iteration] = model.get_parameter_vector().copy()
 
+class EveConvergence(_Column):
+    """ This column is for plotting the convergence metric according to the Eve
+    regulariser """
+    def __init__(self, eve, name="Eve metric", format_spec=".3f"):
+        super().__init__(name, format_spec)
+        self._eve = eve
+
+    def update(self, kwargs):
+        model = kwargs["model"]
+        eve_metric = self._eve.get_convergence_metric(model)
+        self.value_list.append(eve_metric)
+
 # Create dictionary mapping names to _Column subclasses, for saving/loading
 column_names_dict = {col.__name__: col for col in _Column.__subclasses__()}
