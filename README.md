@@ -1,5 +1,7 @@
 # backprop2
 
+![image](https://github.com/jakelevi1996/backprop2/raw/master/Results/Images%20for%20Readme/Hidden%20activations%20meta-learning%203%20-%20collage.png "Meta-learning model adapted to 3 different examples of an image of a 3")
+
 ## Contents
 
 - [backprop2](#backprop2)
