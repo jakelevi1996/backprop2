@@ -44,6 +44,7 @@ Meta-learning was a topic I researched during my 4th year research project with 
 In my opinion, what’s missing from both of these models is a sense of **parameter scale**. Here are 2 examples of when this could be a problem:
 - For some task-distributions, a large number of parameters might be required to learn each task, but only a small subset of parameters might need to vary in order to adapt to different tasks within the distribution
 - You could have 2 task distributions which require the same mean parameter initialisations, but fitting samples from one task distribution requires the parameters to deviate much further from the mean parameters compared to the other task-distribution
+
 In both cases, a knowledge of parameter scale is required to learn the true task-distribution and to adapt effectively to unseen tasks within that distribution, and seeing as both the MAML and Reptile algorithms only learn initialisation values for parameters and neither learns a sense of parameter scale, they will be incapable of demonstrating optimal performance on such task distributions.
 
 I addressed this problem by developing meta-learning models which learn a scale for each parameter in addition to a mean initialisation value. There were 2 approaches I took to learning parameter scale:
