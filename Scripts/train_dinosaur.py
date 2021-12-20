@@ -15,9 +15,23 @@ Below are some examples for calling this script:
 
     python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data
 
-    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data --error_scale_coefficient 1e-1
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data --error_scale_coefficient 1e-5
+
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data --error_scale_coefficient 1e-4
+
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20,20 --use_mnist_data --error_scale_coefficient 1e-3
+
+    python Scripts/train_dinosaur.py --regulariser QuarticType2 --num_hidden_units 20 --use_mnist_data --error_scale_coefficient 1e-5
 
     python Scripts/train_dinosaur.py --regulariser QuarticType3
+
+    python Scripts/train_dinosaur.py --regulariser Eve --num_hidden_units 20 --use_mnist_data
+
+    python Scripts/train_dinosaur.py --regulariser Eve --num_hidden_units 20,20 --use_mnist_data
+
+    python Scripts/train_dinosaur.py --regulariser Eve --num_hidden_units 20,20 --use_mnist_data --seed 2
+
+    python Scripts/train_dinosaur.py --regulariser Eve --num_hidden_units 20,20 --use_mnist_data --seed 2 --mnist_train_distribution_label 8 --mnist_out_of_distribution_label 7
 
 To get help information for the available arguments, use the following command:
 
@@ -139,7 +153,11 @@ def main(args):
 
     # Plot adaptation to out of distribution task without regularisation
     print("Plotting adaptation without regularisation")
-    network._regulariser.error_scale = 0
+    if isinstance(regulariser, models.dinosaur.regularisers.Eve):
+        ls = optimisers.LineSearch()
+        dinosaur._optimiser = optimisers.GradientDescent(ls)
+    else:
+        network._regulariser.error_scale = 0
     network.set_parameter_vector(regulariser.mean)
     dinosaur.fast_adapt(out_of_distribution_task)
     plotting.plot_2D_regression(
