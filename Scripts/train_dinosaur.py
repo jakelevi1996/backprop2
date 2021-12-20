@@ -139,6 +139,12 @@ def main(args):
             OUTPUT_DIM,
             model=network,
         )
+        plot_hidden_activations(
+            task,
+            network,
+            "Hidden activations for task %i" % i,
+            output_dir,
+        )
 
     # Plot adaptation to out of distribution task
     print("Plotting adaptation to out of distribution task")
@@ -149,6 +155,12 @@ def main(args):
         out_of_distribution_task,
         OUTPUT_DIM,
         model=network,
+    )
+    plot_hidden_activations(
+        out_of_distribution_task,
+        network,
+        "Hidden activations for out-of-distribution task",
+        output_dir,
     )
 
     # Plot adaptation to out of distribution task without regularisation
@@ -168,7 +180,37 @@ def main(args):
         OUTPUT_DIM,
         model=network,
     )
+    plot_hidden_activations(
+        out_of_distribution_task,
+        network,
+        "Hidden activations for out-of-distribution task without "
+        "regularisation",
+        output_dir,
+    )
 
+def plot_hidden_activations(dataset, model, plot_name, dir_name):
+    """ Plot hidden activations for the given model and dataset, and save the
+    image to disk.
+
+    TODO: instead of having this wrapper function, it would be better to modify
+    the plot_hidden_outputs function in the plotting module so that it just
+    accepts a parameter vector, which is stored throughout training by an
+    appropriate column/extracted from the model when needed, and applied to the
+    model in the plotting function """
+    prediction_column = optimisers.results.columns.Predictions(
+        dataset,
+        store_hidden_layer_outputs=True,
+    )
+    prediction_column.update(dict(model=model, iteration=0))
+    plotting.plot_hidden_outputs(
+        plot_name=plot_name,
+        dir_name=dir_name,
+        dataset=dataset,
+        x_pred=prediction_column.x_pred,
+        y_pred=prediction_column.predictions_dict[0],
+        hidden_output_list=prediction_column.hidden_outputs_dict[0],
+        output_dim=1,
+    )
 
 def get_synthetic_data():
     # Initialise task set
