@@ -3,6 +3,7 @@ meta-learning """
 
 import numpy as np
 import util
+from optimisers.abstract_optimiser import AbstractOptimiser
 
 class _Regulariser:
     """ Abstract parent class for regularisers """
@@ -51,7 +52,6 @@ class _Regulariser:
         loop, no regularisation error is applied. """
         self.error_scale = (
             self._error_scale_coefficient
-            * max(np.mean(dE_list), 0)
         )
 
 
@@ -132,6 +132,50 @@ class QuarticType3(Quartic):
             w_array - self.mean,
         ), axis=0))
         self._update_error_scale(dE_list)
+
+class Eve(_Regulariser, AbstractOptimiser):
+    """ Class for the Eve regulariser, which modifies the learning rate of each
+    parameter according to the variance across tasks of the adapted
+    task-specific values of that parameter (in such a way that parameters that
+    vary significantly between tasks are given higher learning rates). This is
+    the opposite of the Adam optimisation algorithm, which gives a higher
+    learning rate to parameters that don't change very often. This approach is
+    different to the other regularisation classes in this module, because there
+    is no regularisation error function """
+
+    def set_line_search(self, line_search):
+        AbstractOptimiser.__init__(self, line_search)
+
+    def update(self, w_list, _):
+        w_array = np.array(w_list)
+        self.mean = np.mean(w_array, axis=0)
+        self.variance = np.var(w_array, axis=0)
+        self.variance = np.clip(
+            self.variance,
+            a_min=(np.max(self.variance) / 1e6),
+            a_max=None,
+        )
+        self.precision = 1.0 / self.variance
+        self.learning_rate_scale = self.variance / np.mean(self.variance)
+        self.parameter_scale = self.learning_rate_scale
+
+    def _get_step(self, model, x_batch, y_batch):
+        dEdw = model.get_gradient_vector(x_batch, y_batch)
+        # Use stored _weight_vector attribute here? Needs to be made public
+        w = model.get_parameter_vector()
+        learning_rate = (
+            self.learning_rate_scale
+            * np.exp(-0.2 * self.precision * np.square(w - self.mean))
+        )
+        delta = -learning_rate * dEdw
+
+        return delta, dEdw
+
+    def get_convergence_metric(self, model):
+        w = model.get_parameter_vector()
+        distance_norm = np.sqrt(self.precision * np.square(w - self.mean))
+        convergence_metric = np.mean(distance_norm)
+        return convergence_metric
 
 # Get dictionary mapping names of regularisers to the corresponding type
 regulariser_names_dict = {
