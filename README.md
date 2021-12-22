@@ -79,7 +79,7 @@ So now say we train one meta-learning model for each different class of digit (s
 
 So to decide which class the test image came from, we just choose the meta-learning model with the lowest adapted reconstruction loss. If we wanted a probability distribution over classes, we simply put all 10 of the reconstruction losses from each meta-learning model through a softmax function.
 
-An interesting interpretation is that we can think of each of these meta-learning models as forming an adaptive memory for each digit. The parameters of each digit-model are all distinct from those of the other models, and each model reconstructively encodes the class which it represents, including the variance within that class, which is encoded in the scale parameters. Adaptively reconstructing a particular observation of an unseen digit from MNIST using the appropriate class can be thought of as 'remembering' the class from which that image came.
+An interesting interpretation is that we can think of each of these meta-learning models as forming an adaptive memory for each digit. The parameters of each digit-model are all distinct from those of the other models, and each model reconstructively encodes the class which it represents. The scale-parameters within a digit-model encode the observed variance within the associated class, and allow the model to adapt to differences between memory and observation in terms of location, rotation, scale, brightness, and more abstract forms of variance. Adaptively reconstructing a particular observation of an unseen digit from MNIST using the appropriate digit-model can be thought of as 'remembering' the class from which that image came.
 
 ### So how well did this work in practise?
 
@@ -94,8 +94,6 @@ What does this mean for my idea of using meta-learning to improve data-efficienc
 This is because my original motivation for researching this was wanting to match human level performance in terms of data-efficiency and invariance learning, and these are still very much goals that I want to achieve. But my intuition has shifted recently towards thinking that if we want to achieve human level performance in machine learning, then it makes sense to try and understand the proprties and dynamics of human learning more thoroughly from a computational perspective, and try and make our computational models more realistic in comparison to the proprties and dynamics of human learning.
 
 For all we know, it may well be that some features of biological brains (feaures which we might already know from neuroscience) might actually be fundamental to their greater success compared to state-of-the-art ML models. This is why *biological plausibility in ML* is what I want to focus on in my research moving forwards.
-
-While the concept I've described here of using meta-learning reconstruction as an approach to image classification has advantages over models such as CNNs in terms of invariance learning, which itself is a feature of biological plausibility, there are definitely aspects of it which are not biologically plausible. One example is the fact that inputs from the retina are place-coded in different neurons which are fed into LGN and V1, not compared with outputs from a global function which has the coordinate of each rod/cone as its inputs. This is something I want to incorporate into my research into biologically plausible ML moving forward.
 
 ## Endnote: other topics I researched using this repository
 
