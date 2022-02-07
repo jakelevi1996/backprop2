@@ -6,6 +6,7 @@
 
 - [backprop2](#backprop2)
   - [Contents](#contents)
+  - [Project description in brief](#project-description-in-brief)
   - [Introduction](#introduction)
   - [Meta-learning](#meta-learning)
     - [What is meta-learning, and how is it different to ordinary supervised machine learning?](#what-is-meta-learning-and-how-is-it-different-to-ordinary-supervised-machine-learning)
@@ -16,6 +17,25 @@
     - [So how well did this work in practise?](#so-how-well-did-this-work-in-practise)
     - [What next for this concept?](#what-next-for-this-concept)
   - [Endnote: other topics I researched using this repository](#endnote-other-topics-i-researched-using-this-repository)
+
+## Project description in brief
+
+- The ability to learn invariance (for example, scale, translation and rotational invariance in vision) is important in human intelligence and has the potential to have a big impact on machine learning (ML)
+- A common work-around in the absence of invariance learning in ML models is data-augmentation, however an ML algorithm (EG a vision-based reinforcement learning algorithm) could not be considered truly intelligent unless it is able to learn new image categories online without requiring data-augmentation, which is something humans demonstrate every day
+- If ML models were able to learn invariance, they would arguably be able to generalise more successfully in general, and therefore also be more data-efficient
+- In this personal research project, I developed new approaches to invariance learning, based on new approaches to meta-learning which I also developed within this project
+- The idea underlying these new approaches to invariance learning is as follows: imagine a random sample from the MNIST data-set of handwritten digits (for example, an image of the digit "3"), and imagine a function ![simple equation](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;f:\mathbb{R}^2\rightarrow[0,1] "simple equation") which returns the brightness of a given pixel (EG as a scalar in the range [0, 1]) as a function of the co-ordinates of that pixel in 2D space
+- Now, the image which this function corresponds to can be thought of as a set 784 samples from this function, in which the input coordinates of these samples are arranged in a 28 x 28 grid
+- Importantly, we could incorporate scale, translation and rotational invariance into this image representation simply by applying appropriate affine transformations to the 2D input points to the function ![simple equation](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;f "simple equation")
+- If this function was represented by a multi-layer neural network, we could incorporate more general types of invariance in the image (EG line thickness) by modifying the parameters in all layers of the network
+- This is where I incorporated meta-learning: in order to learn to classify images from MNIST, I used 10 meta-learning models (1 per class), and each meta-learning model is trained to reconstruct images (IE perform regression on brightness values as a function of the 2D coordinates of each pixel) from a particular class (EG one model reconstructs images of the digit "0", one model reconstructs images of the digit "1", etc)
+- Each image is considered to be a data-set for regression, and each meta-learning model is trained on multiple images from its corresponding class, such that it can generalise to reconstruct unseen images from the class it was trained on
+- The objective is for each meta-learning model to reconstruct images from the class it was trained on successfully, and reconstruct images from all other classes badly
+- Classification of an unseen image can then be performed by applying a softmax function across the reconstruction losses of all 10 meta-learning models on the unseen image
+- As part of this research project I also developed new approaches to meta-learning, which importantly learn a sense of parameter scale in addition to mean/initialisation parameter values, which can be used to define a probability distribution over task-specific parameters
+- Some of the new meta-learning approaches I developed were based on using regularisation error functions, and I experimented with different regularisation error functions, including quadratic and multi-model quartic regularisation functions
+- I also developed new approaches to meta-learning based on learning adaptive learning rates for each parameter in the model, for which the learning rates decay as those parameters get far from their mean initialisation values relative to the learned scale for each model parameter (this is instead of using regularisation error functions)
+- My overall goal for the project was to use these approaches to perform MNIST classification with high accuracy, but using a very small fraction of the entire MNIST training set, IE to improve data-efficiency for learning MNIST
 
 ## Introduction
 
